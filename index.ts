@@ -1,5 +1,10 @@
-// import express = require('express');
+import express = require('express');
+let app: any = express();
 
-// var app = express();
+app.get('/', (req: any, res: any) =>{
+    res.send('testerino');
+} )
 
-console.log('lolol');
+app.listen('3000', () =>{
+    console.log('listening');
+} )
