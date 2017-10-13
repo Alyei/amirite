@@ -1,10 +1,7 @@
 import express = require('express');
 let app: any = express();
+import { Server } from './src/server';
 
-app.get('/', (req: any, res: any) =>{
-    res.send('testerino');
-} )
+let serc: Server.serverino = new Server.serverino();
 
-app.listen('3000', () =>{
-    console.log('listening');
-} )
+serc.StartListening(1234);
