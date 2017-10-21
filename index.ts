@@ -1,7 +1,6 @@
 import express = require('express');
 let app: any = express();
-import { Server } from './src/server';
+import { bandTest } from './src/bandwidthTest';
 
-let serc: Server.serverino = new Server.serverino();
+let serv = new bandTest.socketServer();
 
-serc.StartListening(1234);
