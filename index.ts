@@ -1,6 +1,11 @@
 import express = require('express');
 let app: any = express();
-import { bandTest } from './src/bandwidthTest';
+import { bandTest } from './src/test/bandwidthTest';
+import * as route from './src/server/server' ;
 
-let serv = new bandTest.socketServer();
+let server = new route.Server.Serverino();
+
+server.StartListening();
+
+//let serv = new bandTest.socketServer();
 
