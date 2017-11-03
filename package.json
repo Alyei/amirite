@@ -20,6 +20,7 @@
   "devDependencies": {
     "@types/oauth2-server": "^3.0.3",
     "@types/passport": "^0.3.5",
+    "@types/passport-local": "^1.0.32",
     "@types/socket.io": "^1.4.31",
     "nodemon": "^1.12.1",
     "ts-node": "^3.3.0",
@@ -32,6 +33,7 @@
     "express": "^4.16.2",
     "node-oauth2-server": "^2.4.0",
     "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
     "socketio": "^1.0.0"
   }
 }

@@ -1,11 +1,18 @@
-import express = require('express');
+import * as express from 'express';
+import * as server from './src/server/server';
+import * as fs from 'fs';
+import * as env from 'dotenv';
+env.config();
+let pKey: string = fs.readFileSync(process.env.tls_key as string).toString();
+let cert: string = fs.readFileSync(process.env.tls_cert as string).toString();
+let creds: object = {
+    key: pKey,
+    cert: cert    
+}
+
+let serverano = new server.Server.Serverino(creds);
+
 let app: any = express();
-import { bandTest } from './src/test/bandwidthTest';
-import * as route from './src/server/server' ;
+serverano.StartListening();
 
-let server = new route.Server.Serverino();
-
-server.StartListening();
-
-//let serv = new bandTest.socketServer();
 
