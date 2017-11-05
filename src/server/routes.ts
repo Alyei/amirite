@@ -11,23 +11,23 @@ export namespace ExpressRoutes{
     export class Https{
 
         private app: any;
-        private res?: any;
+        private pass?: any;
 
         /**
          * Sets up the routes.
          * @param app Express server.
-         * @param res Passport object.
+         * @param pass Passport object.
          */
-        constructor(app: any, res?: any){
+        constructor(app: any, pass?: any){
             this.app = app;
-            this.res = res;
+            this.pass = pass;
             this.setRoutes();
         }
 
         /**
          * Sets the express server's routes.
          */
-        private setRoutes(){
+        private setRoutes(): void{
             this.app.get('/', (req: any, res: any) => {
                 res.sendFile(path.join(__dirname, '..', '..', 'public', 'index.html'));
             })
@@ -40,7 +40,7 @@ export namespace ExpressRoutes{
                 res.sendFile(path.join(__dirname, '..', '..', 'public', 'signup.html'));
             })
             
-            this.app.post('/login', (req: any, res: any) => {
+            this.app.post('/login', this.pass.authenticate('local'), (req: any, res: any) => {
                 console.log(req);
             })
         }
