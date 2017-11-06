@@ -40,9 +40,9 @@ export namespace ExpressRoutes{
                 res.sendFile(path.join(__dirname, '..', '..', 'public', 'signup.html'));
             })
             
-            this.app.post('/login', this.pass.authenticate('local'), (req: any, res: any) => {
+            /*this.app.post('/login', this.pass.authenticate('local'), (req: any, res: any) => {
                 console.log(req);
-            })
+            })*/
         }
 
     }
