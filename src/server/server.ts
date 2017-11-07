@@ -1,6 +1,6 @@
 import * as express from 'express';
 import * as https from 'https';
-import  * as dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import {ExpressRoutes} from './routes';
 import * as auth from './user_management';
 import * as http from 'http';
