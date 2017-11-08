@@ -1,10 +1,12 @@
 import * as pass from 'passport';
 import * as local from 'passport-local';
 import * as scrypt from 'scrypt';
+import { models }  from '../models/user';
 
 export namespace UserManagement{
     export class Authentication{
         private LocalStrategy: local.Strategy;
+        private User: models.User = new models.User();
 
         constructor(passport: any){
             pass.serializeUser((user: any, done: any) => {
@@ -22,7 +24,7 @@ export namespace UserManagement{
             })
 
             pass.deserializeUser((id: any, done: any) => {
-                User.findById(id, (err: any, user: any) => {
+                this.User.userSchema.findById(id, (err: any, user: any) => {
                     done(err, user);
                 })
             })
