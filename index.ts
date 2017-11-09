@@ -2,6 +2,7 @@ import * as express from 'express';
 import * as server from './src/server/server';
 import * as fs from 'fs';
 import * as env from 'dotenv';
+import { UserManagement } from './src/server/user_management';
 
 env.config();
 let pKey: string = fs.readFileSync(process.env.tls_key as string).toString();
@@ -10,6 +11,7 @@ let creds: object = {
     key: pKey,
     cert: cert    
 }
+let pass: any = new UserManagement.Authentication();
 
 let serverano = new server.Server.Serverino(creds);
 
@@ -40,4 +42,10 @@ console.log('verifying wrong pw');
 console.time('wrong');
 let wrongResult: any = scrypt.verifyKdfSync(s2, wrong);
 console.timeEnd('wrong');
-console.log(wrongResult);*/
+console.log(wrongResult);
+
+import { config } from './src/config/database';
+
+let test: any = config.database.options;
+
+console.log(test['url_readWrite']);*/

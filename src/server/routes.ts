@@ -40,9 +40,17 @@ export namespace ExpressRoutes{
                 res.sendFile(path.join(__dirname, '..', '..', 'public', 'signup.html'));
             })
             
-            /*this.app.post('/login', this.pass.authenticate('local'), (req: any, res: any) => {
+            this.app.post('/login', this.pass.authenticate('local'), (req: any, res: any) => {
                 console.log(req);
-            })*/
+            })
+
+            
+
+            this.app.post('/signup', this.pass.authenticate('local-signup', {
+                successRedirect : '/profile', // redirect to the secure profile section
+                failureRedirect : '/signup', // redirect back to the signup page if there is an error
+                failureFlash : false // allow flash messages  #IMPLEMENT
+            }));
         }
 
     }

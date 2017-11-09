@@ -21,6 +21,7 @@ export class Serverino{
     private httpExpress: any;
     private httpServer: any;
     private env: any;
+    private passport: any;
 
     /**
      * Initializes the HTTPS server.
@@ -30,13 +31,14 @@ export class Serverino{
         this.certificate = certificate;
         this.httpsServer = https.createServer(this.certificate, this.app);
         this.env = dotenv.config();
+        this.passport = new auth.UserManagement.Authentication();
     }  
     
     /**
      * Starts the HTTPS server and the HTTP to HTTPS redirection.
      */
     StartListening():void {
-        let route: any = new ExpressRoutes.Https(this.app);
+        let route: any = new ExpressRoutes.Https(this.app, this.passport.passport);
         this.httpRedirect();
         this.httpsServer.listen(this.port, (req: any, res: any) => {console.log('Listening on port ' + this.port)});
     }
