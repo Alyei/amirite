@@ -1,4 +1,4 @@
-import * as express from 'express';
+/*import * as express from 'express';
 import * as server from './src/server/server';
 import * as fs from 'fs';
 import * as env from 'dotenv';
@@ -16,17 +16,18 @@ let pass: any = new UserManagement.Authentication();
 let serverano = new server.Server.Serverino(creds);
 
 let app: any = express();
-serverano.StartListening();
+serverano.StartListening();*/
 
 /*import * as scrypt from 'scrypt';
 
 let params: scrypt.ParamsObject = scrypt.paramsSync(0.00001, 1024,  0.5);
 
-let s1: string = 'lo5454545454lo';
+let s1: string = 'sklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsd';
 let wrong: string = 'falsepw';
 console.log('hashing pw');
 console.time('kdfSync');
 let s2: any = scrypt.kdfSync(s1, params);
+console.log(s2.toString('hex'));
 console.timeEnd('kdfSync');
 
 
@@ -42,10 +43,14 @@ console.log('verifying wrong pw');
 console.time('wrong');
 let wrongResult: any = scrypt.verifyKdfSync(s2, wrong);
 console.timeEnd('wrong');
-console.log(wrongResult);
+console.log(wrongResult);*/
 
 import { config } from './src/config/database';
+import * as mongo from 'mongoose';
+import { schemas } from './src/models/userSchema';
 
-let test: any = config.database.options;
+mongo.connect('mongodb://localhost:27017/users');
+let schema: any = new schemas.user;
+let user: any = mongo.model('user');
 
-console.log(test['url_readWrite']);*/
+
