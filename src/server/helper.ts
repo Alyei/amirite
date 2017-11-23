@@ -2,11 +2,10 @@ import * as scrypt from "scrypt";
 import * as crypto from "crypto";
 
 export class UserData {
-  public static hashPwAndSave(
-    model: any,
-    paramsObject: scrypt.ParamsObject
-  ): void {
-    scrypt.kdf(model.password, paramsObject, (err: any, hash: any) => {
+  private static params: scrypt.ParamsObject = scrypt.paramsSync(2);
+
+  public static hashPwAndSave(model: any): void {
+    scrypt.kdf(model.password, this.params, (err: any, hash: any) => {
       model.password = hash.toString("hex");
       model.save((err: any, user: any) => {
         if (err) return console.error(err);

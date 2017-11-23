@@ -1,9 +1,8 @@
-/*import * as express from "express";
+import * as express from "express";
 import * as server from "./src/server/server";
 import * as fs from "fs";
 import * as env from "dotenv";
 import { UserManagement } from "./src/server/user_management";
-
 
 env.config();
 let pKey: string = fs.readFileSync(process.env.tls_key as string).toString();
@@ -12,17 +11,14 @@ let creds: object = {
   key: pKey,
   cert: cert
 };
-//let pass: any = new UserManagement.Authentication();
+let pass: any = new UserManagement.Authentication();
 
 let serverano = new server.Server.Serverino(creds);
 
-
-
 let app: any = express();
-serverano.StartListening();*/
+serverano.StartListening();
 
 /*
-
 import * as scrypt from 'scrypt';
 import * as mongo from 'mongoose';
 import { Schema } from 'mongoose';
@@ -58,14 +54,13 @@ console.log('verifying wrong pw');
 console.time('wrong');
 let wrongResult: any = scrypt.verifyKdfSync(s2, wrong);
 console.timeEnd('wrong');
-console.log(wrongResult);*/
+console.log(wrongResult);
 
 import { config } from "./src/config/database";
 import * as mongo from "mongoose";
 import * as test from "./src/models/userSchema";
 import { UserData } from "./src/server/helper";
 import { MongooseThenable } from "mongoose";
-import * as users from "./src/models/user_new";
 import * as scrypt from "scrypt";
 
 let dbPromise: MongooseThenable = mongo.connect(
@@ -85,7 +80,7 @@ let user: any = mongo.model("user", test.userSchema);
 andrej.save((err: any, user: any) => {
   if (err) return console.error(err);
   console.log("Saved");
-});*/
+});
 
 let params: scrypt.ParamsObject = scrypt.paramsSync(2);
 
@@ -101,4 +96,4 @@ user.findOne({ username: testUser.username }, (err: any, person: any) => {
   else {
     return console.log("user exists");
   }
-});
+});*/
