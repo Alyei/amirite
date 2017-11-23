@@ -1,8 +1,9 @@
-import * as express from "express";
+/*import * as express from "express";
 import * as server from "./src/server/server";
 import * as fs from "fs";
 import * as env from "dotenv";
 import { UserManagement } from "./src/server/user_management";
+
 
 env.config();
 let pKey: string = fs.readFileSync(process.env.tls_key as string).toString();
@@ -18,7 +19,7 @@ let serverano = new server.Server.Serverino(creds);
 
 
 let app: any = express();
-serverano.StartListening();
+serverano.StartListening();*/
 
 /*
 
@@ -57,12 +58,47 @@ console.log('verifying wrong pw');
 console.time('wrong');
 let wrongResult: any = scrypt.verifyKdfSync(s2, wrong);
 console.timeEnd('wrong');
-console.log(wrongResult);
-/*
-import { config } from './src/config/database';
-import * as mongo from 'mongoose';
-import { schemas } from './src/models/userSchema';
+console.log(wrongResult);*/
 
-mongo.connect('mongodb://localhost:27017/users');
-let schema: any = new schemas.user;
-let user: any = mongo.model('user');*/
+import { config } from "./src/config/database";
+import * as mongo from "mongoose";
+import * as test from "./src/models/userSchema";
+import { UserData } from "./src/server/helper";
+import { MongooseThenable } from "mongoose";
+import * as users from "./src/models/user_new";
+import * as scrypt from "scrypt";
+
+let dbPromise: MongooseThenable = mongo.connect(
+  "mongodb://localhost:27017/users",
+  {
+    useMongoClient: true
+  }
+);
+
+let user: any = mongo.model("user", test.userSchema);
+/*let andrej: any = new user({
+  userId: "69",
+  username: "alyei",
+  password: "pwtest234243",
+  email: "test@test.com"
+});
+andrej.save((err: any, user: any) => {
+  if (err) return console.error(err);
+  console.log("Saved");
+});*/
+
+let params: scrypt.ParamsObject = scrypt.paramsSync(2);
+
+let testUser: any = new user({
+  username: "alyei",
+  password: "password",
+  email: "andrej.resanovic@gmail.com"
+});
+
+user.findOne({ username: testUser.username }, (err: any, person: any) => {
+  if (err) return console.error(err);
+  if (!person) UserData.hashPwAndSave(testUser, params);
+  else {
+    return console.log("user exists");
+  }
+});
