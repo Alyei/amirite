@@ -6,14 +6,14 @@ import { Passport } from 'passport';
 
 export namespace UserManagement{
     export class Authentication{
-        private LocalStrategy: local.Strategy;
+        private SignupStrategy: local.Strategy;
         private User: models.User = new models.User();
         public passport: any;
 
         constructor(){
             this.setupSerialization();
-            this.setupLocStrat();
-            pass.use('local-signup', this.LocalStrategy)
+            this.SignupStrat();
+            pass.use('local-signup', this.SignupStrategy)
             this.passport = pass;
         }
 
@@ -29,8 +29,8 @@ export namespace UserManagement{
             })
         }
 
-        private setupLocStrat(): void {
-            this.LocalStrategy = new local.Strategy((username: string, password: string, done: any) => {
+        private SignupStrat(): void {
+            this.SignupStrategy = new local.Strategy((username: string, password: string, done: any) => {
                 process.nextTick(() => {
                     this.User.userModel.findOne({ 'local.userId' : username } , (err: any, user: any) => {
                         if(err) return done(err);

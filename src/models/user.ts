@@ -3,7 +3,7 @@ import * as scrypt from 'scrypt';
 import { config } from '../config/database';
 
 
-export namespace models{
+export namespace Models{
     export class User{
         private userSchema: mongo.Schema;
         private kdfParams: any;
@@ -23,8 +23,8 @@ export namespace models{
             this.userModel = mongo.model('User', this.userSchema);
 
             this.dbConfig = config.database.options;
-            this.signupUser = mongo.connect(this.dbConfig['url_readWrite']);
-            this.authUser = mongo.connect(this.dbConfig['url_read']);
+            /*this.signupUser = mongo.connect(this.dbConfig['url_readWrite']);
+            this.authUser = mongo.connect(this.dbConfig['url_read']);*/
         }
         
         private setupSchema(): void {
