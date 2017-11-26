@@ -1,27 +1,21 @@
-import * as express from "express";
-import * as server from "./src/server/server";
-import * as fs from "fs";
-import * as env from "dotenv";
-import * as mongo from "mongoose";
-import { UserManagement } from "./src/server/user_management";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express = require("express");
+const server = require("./src/server/server");
+const fs = require("fs");
+const env = require("dotenv");
+const user_management_1 = require("./src/server/user_management");
 env.config();
-let mongodb: any = mongo.connect("mongodb://localhost:27017/users", {
-  useMongoClient: true
-});
-let pKey: string = fs.readFileSync(process.env.tls_key as string).toString();
-let cert: string = fs.readFileSync(process.env.tls_cert as string).toString();
-let creds: object = {
-  key: pKey,
-  cert: cert
+let pKey = fs.readFileSync(process.env.tls_key).toString();
+let cert = fs.readFileSync(process.env.tls_cert).toString();
+let creds = {
+    key: pKey,
+    cert: cert
 };
-let pass: any = new UserManagement.Authentication();
-
+let pass = new user_management_1.UserManagement.Authentication();
 let serverano = new server.Server.Serverino(creds, pass.passport);
-
-let app: any = express();
+let app = express();
 serverano.StartListening();
-
 /*
 import * as scrypt from 'scrypt';
 import * as mongo from 'mongoose';
@@ -30,6 +24,12 @@ import { Schema } from 'mongoose';
 let params: scrypt.paramsObject = scrypt.paramsSync(0.00001, 1024,  0.3);
 
 let mongooo: Schema = new mongo.Schema();
+
+
+
+
+
+
 
 let s1: string = 'sklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsd';
 let wrong: string = 'falsepw';
@@ -95,3 +95,4 @@ user.findOne({ username: testUser.username }, (err: any, person: any) => {
     return console.log("user exists");
   }
 });*/
+//# sourceMappingURL=index.js.map

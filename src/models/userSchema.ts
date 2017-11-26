@@ -45,7 +45,7 @@ let userSchema = new mongoose.Schema({
   lastName: String
 });
 
-userSchema.methods.WriteStuff = function() {
+/*userSchema.methods.WriteStuff = function() {
   console.log("testerino");
-};
+};*/
 export { userSchema };

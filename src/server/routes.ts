@@ -10,7 +10,7 @@ export namespace ExpressRoutes {
    */
   export class Https {
     private app: any;
-    private pass?: any;
+    private passport?: any;
 
     /**
      * Sets up the routes.
@@ -19,7 +19,7 @@ export namespace ExpressRoutes {
      */
     constructor(app: any, pass?: any) {
       this.app = app;
-      this.pass = pass;
+      this.passport = pass;
       this.setRoutes();
     }
 
@@ -41,7 +41,7 @@ export namespace ExpressRoutes {
 
       this.app.post(
         "/signup",
-        this.pass.authenticate("local-signup", {
+        this.passport.authenticate("local-signup", {
           successRedirect: "/profile", // redirect to the secure profile section
           failureRedirect: "/signup", // redirect back to the signup page if there is an error
           failureFlash: false // allow flash messages  #IMPLEMENT

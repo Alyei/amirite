@@ -13,18 +13,18 @@ export namespace UserManagement {
 
     constructor() {
       this.User = userModel;
+      this.passport = new pass.Passport();
       this.setupSerialization();
       this.SignupStrat();
-      pass.use("local-signup", this.SignupStrategy);
-      this.passport = pass;
+      this.passport.use("local-signup", this.SignupStrategy);
     }
 
     private setupSerialization(): void {
-      pass.serializeUser((user: any, done: any) => {
+      this.passport.serializeUser((user: any, done: any) => {
         done(null, user.id);
       });
 
-      pass.deserializeUser((id: any, done: any) => {
+      this.passport.deserializeUser((id: any, done: any) => {
         this.User.findById(id, (err: any, user: any) => {
           done(err, user);
         });

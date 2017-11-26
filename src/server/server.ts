@@ -4,6 +4,10 @@ import * as dotenv from "dotenv";
 import { ExpressRoutes } from "./routes";
 import * as auth from "./user_management";
 import * as http from "http";
+import * as body from "body-parser";
+import * as cookie from "cookie-parser";
+import * as session from "express-session";
+import * as morgan from "morgan";
 
 /**
  * The amirite server.
@@ -26,11 +30,17 @@ export namespace Server {
      * Initializes the HTTPS server.
      * @param certificate Certificate object for HTTPS. `key`, `cert`
      */
-    constructor(certificate: object) {
+    constructor(certificate: object, pass: any) {
       this.certificate = certificate;
       this.httpsServer = https.createServer(this.certificate, this.app);
       this.env = dotenv.config();
-      this.passport = new auth.UserManagement.Authentication();
+      this.passport = pass;
+      this.app.use(this.passport.initialize());
+      this.app.use(this.passport.session());
+      this.app.use(morgan("dev"));
+      this.app.use(cookie());
+      this.app.use(session({ secret: "sessionsecret" }));
+      this.app.use(body());
     }
 
     /**
