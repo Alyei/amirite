@@ -1,5 +1,5 @@
 import * as mongoose from "mongoose";
-import { UserData } from "../server/helper";
+import { generateUserId } from "../server/helper";
 
 /*export class User {
   public schema: mongoose.Schema;
@@ -16,7 +16,7 @@ let userSchema = new mongoose.Schema({
     required: false,
     unique: true,
     match: /^[0-9a-z]{10}$/i,
-    default: UserData.generateUserId()
+    default: generateUserId()
   },
   username: {
     type: String,

@@ -3,7 +3,7 @@ import * as local from "passport-local";
 import * as scrypt from "scrypt";
 import { Passport } from "passport";
 import { model } from "../models/userSchema";
-import { UserData } from "../server/helper";
+import * as helper from "../server/helper";
 
 /**
  * Class for the various authentication Methods.
@@ -55,7 +55,7 @@ export class Authentication {
                 email: req.body.email
               });
 
-              UserData.hashPwAndSave(newUser);
+              helper.hashPwAndSave(newUser);
             }
           });
         });
@@ -74,16 +74,20 @@ export class Authentication {
             return done(
               null,
               false,
-              req.flash("loginMessage", "No user found.")
+              req.flash("loginMessage", "Username or password is wrong.")
             );
 
-          if (!user.validPassword(password))
+          //let isPwValid: Boolean = await helper.checkPassword(user.password, password)
+          if (!helper.checkPassword(user.password, password)) {
+            console.log("wrong pw");
             return done(
               null,
               false,
-              req.flash("loginMessage", "Wrong password.")
+              req.flash("loginMessage", "Username or password is wrong.")
             );
+          }
 
+          console.log("right pw");
           return done(null, user);
         });
       }

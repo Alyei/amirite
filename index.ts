@@ -22,38 +22,44 @@ let serverano = new server(creds, pass.passport);
 let app: any = express();
 serverano.StartListening();
 
-/*
-import * as scrypt from 'scrypt';
-import * as mongo from 'mongoose';
-import { Schema } from 'mongoose';
+/*import * as scrypt from "scrypt";
+import * as mongo from "mongoose";
+import { Schema } from "mongoose";
 
-let params: scrypt.paramsObject = scrypt.paramsSync(0.00001, 1024,  0.3);
+let params: scrypt.ParamsObject = scrypt.paramsSync(0.00001, 1024, 0.3);
 
 let mongooo: Schema = new mongo.Schema();
 
-let s1: string = 'sklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsdsklhfsakldjhf2io38rhgwelkdfjhedkfljhsadfkjsd';
-let wrong: string = 'falsepw';
-console.log('hashing pw');
-console.time('kdfSync');
+let s1: string = "test";
+let wrong: string = "falsepw";
+console.log("hashing pw");
+//console.time("kdfSync");
 let s2: any = scrypt.kdfSync(s1, params);
-console.log(s2.toString('hex'));
-console.timeEnd('kdfSync');
+console.log(s2);
+let hexString: string = s2.toString("hex");
+console.log(hexString);
+console.log(Buffer.from(hexString, "hex"));
+//console.timeEnd("kdfSync");
 
+console.log(Buffer.from(s2, "hex"));
 
 //(s1, scrypt.paramsSync(2, 1024,  0.5), 64, 'testo').toString('hex') test;
 
-console.log('verifying correct pw');
-console.time('correct');
-let correctResult: any = scrypt.verifyKdfSync(s2, s1);
-console.timeEnd('correct');
+console.log("verifying correct pw");
+console.time("correct");
+let correctResult: any = scrypt.verifyKdfSync(
+  Buffer.from(hexString, "hex"),
+  s1
+);
+console.timeEnd("correct");
 console.log(correctResult);
 console.log("");
-console.log('verifying wrong pw');
-console.time('wrong');
+console.log("verifying wrong pw");
+console.time("wrong");
 let wrongResult: any = scrypt.verifyKdfSync(s2, wrong);
-console.timeEnd('wrong');
+console.timeEnd("wrong");
 console.log(wrongResult);
-
+/*
 import { config } from "./src/config/database";
 import * as mongo from "mongoose";
 import * as test from "./src/models/userSchema";
