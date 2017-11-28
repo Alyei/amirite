@@ -1,9 +1,9 @@
-import * as express from "express";
-import * as server from "./src/server/server";
-import * as fs from "fs";
 import * as env from "dotenv";
+import * as express from "express";
+import { server } from "./src/server/server";
+import * as fs from "fs";
 import * as mongo from "mongoose";
-import { UserManagement } from "./src/server/user_management";
+import * as userauth from "./src/server/user_management";
 
 env.config();
 let mongodb: any = mongo.connect("mongodb://localhost:27017/users", {
@@ -15,9 +15,9 @@ let creds: object = {
   key: pKey,
   cert: cert
 };
-let pass: any = new UserManagement.Authentication();
+let pass: any = new userauth.Authentication();
 
-let serverano = new server.Server.Serverino(creds, pass.passport);
+let serverano = new server(creds, pass.passport);
 
 let app: any = express();
 serverano.StartListening();

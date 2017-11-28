@@ -26,8 +26,7 @@ let userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
-    minlength: 8
+    required: true
   },
   email: {
     type: String,
