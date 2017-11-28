@@ -48,4 +48,7 @@ let userSchema = new mongoose.Schema({
 /*userSchema.methods.WriteStuff = function() {
   console.log("testerino");
 };*/
-export { userSchema };
+
+let model: any = mongoose.model("user", userSchema);
+
+export { model };

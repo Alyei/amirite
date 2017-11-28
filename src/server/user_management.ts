@@ -2,17 +2,15 @@ import * as pass from "passport";
 import * as local from "passport-local";
 import * as scrypt from "scrypt";
 import { Passport } from "passport";
-import { userModel } from "../models/initialization";
+import { model } from "../models/userSchema";
 import { UserData } from "../server/helper";
 
 export namespace UserManagement {
   export class Authentication {
     private SignupStrategy: local.Strategy;
-    private User: any;
     public passport: any;
 
     constructor() {
-      this.User = userModel;
       this.passport = new pass.Passport();
       this.setupSerialization();
       this.SignupStrat();
@@ -25,7 +23,7 @@ export namespace UserManagement {
       });
 
       this.passport.deserializeUser((id: any, done: any) => {
-        this.User.findById(id, (err: any, user: any) => {
+        model.findById(id, (err: any, user: any) => {
           done(err, user);
         });
       });
@@ -36,24 +34,21 @@ export namespace UserManagement {
         { passReqToCallback: true },
         (req: any, username: string, password: string, done: any) => {
           process.nextTick(() => {
-            this.User.userModel.findOne(
-              { username: username },
-              (err: any, user: any) => {
-                if (err) return done(err);
+            model.findOne({ username: username }, (err: any, user: any) => {
+              if (err) return done(err);
 
-                if (user) {
-                  return done(null, false /*,flash*/); //Add flash message
-                } else {
-                  let newUser: string = new this.User({
-                    username: username,
-                    password: password
-                    //email: req.body.email
-                  });
+              if (user) {
+                return done(null, false /*,flash*/); //Add flash message
+              } else {
+                let newUser: string = new model({
+                  username: username,
+                  password: password
+                  //email: req.body.email
+                });
 
-                  UserData.hashPwAndSave(newUser);
-                }
+                UserData.hashPwAndSave(newUser);
               }
-            );
+            });
           });
         }
       );
