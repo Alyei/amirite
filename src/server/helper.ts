@@ -1,6 +1,6 @@
 import * as scrypt from "scrypt";
 import * as crypto from "crypto";
-import { verifyKdf } from "scrypt";
+import { verifyKdf, verifyKdfSync } from "scrypt";
 
 let params: scrypt.ParamsObject = scrypt.paramsSync(2);
 
@@ -25,9 +25,7 @@ let generateUserId = function(): string {
 
 let checkPassword = async function(password: string, kdf: string) {
   let isValid: Boolean = false;
-  //let userPw: any = model.password;
-
-  isValid = await verifyKdf(Buffer.from(password, "hex"), kdf);
+  isValid = await verifyKdfSync(Buffer.from(password, "hex"), kdf);
 
   return isValid;
 };

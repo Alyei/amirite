@@ -67,7 +67,7 @@ export class Authentication {
     this.LoginStrategy = new local.Strategy(
       { passReqToCallback: true },
       (req: any, username: string, password: string, done: any) => {
-        model.findOne({ username: username }, (err: any, user: any) => {
+        model.findOne({ username: username }, async (err: any, user: any) => {
           if (err) return done(err);
 
           if (!user)
@@ -77,8 +77,11 @@ export class Authentication {
               req.flash("loginMessage", "Username or password is wrong.")
             );
 
-          //let isPwValid: Boolean = await helper.checkPassword(user.password, password)
-          if (!helper.checkPassword(user.password, password)) {
+          let isPwValid: Boolean = await helper.checkPassword(
+            user.password,
+            password
+          );
+          if (!isPwValid) {
             console.log("wrong pw");
             return done(
               null,
