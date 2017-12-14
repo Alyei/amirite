@@ -2,7 +2,8 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 
 /**
- * Sets routes for the HTTPS server.
+ * HTTPS server's routing.
+ * @class
  */
 export class Https {
   private app: any;
@@ -10,6 +11,7 @@ export class Https {
 
   /**
    * Sets up the routes.
+   * @constructor
    * @param app Express server.
    * @param pass Passport object.
    */
@@ -21,8 +23,10 @@ export class Https {
 
   /**
    * Sets the express server's routes.
+   * @function
    */
   private setRoutes(): void {
+    //When the user visits '/' he should be sent .../public/index.html
     this.app.get("/", (req: any, res: any) => {
       res.sendFile(path.join(__dirname, "..", "..", "public", "index.html"));
     });
@@ -38,34 +42,35 @@ export class Https {
     this.app.post(
       "/signup",
       this.passport.authenticate("local-signup", {
-        successRedirect: "/profile", // redirect to the secure profile section
-        failureRedirect: "/signup", // redirect back to the signup page if there is an error
-        failureFlash: true // allow flash messages  #IMPLEMENT
+        successRedirect: "/profile", //Redirect to the secure profile section.
+        failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
+        failureFlash: true //Allow flash messages.
       })
     );
 
     this.app.post(
       "/login",
       this.passport.authenticate("local-login", {
-        successRedirect: "/profile", // redirect to the secure profile section
-        failureRedirect: "/login", // redirect back to the signup page if there is an error
-        failureFlash: true // allow flash messages  #IMPLEMENT
+        successRedirect: "/profile", //Redirect to the secure profile section.
+        failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
+        failureFlash: true //Allow flash messages.
       })
     );
   }
 }
 
 /**
- * Sets the redirect route for the HTTPS server,
- * to redirect from HTTP to HTTPS.
+ * Sets the http-to-https redirection routes.
+ * @class
  */
 export class Http {
   private app: any;
   private env: any;
 
   /**
-   * Adds the route for redirection. * `app.get('*', ...)`
+   * Adds the route for redirection.  `app.get('*', ...)`
    * @param app HTTPS express app that should redirect.
+   * @constructor
    */
   constructor(app: any) {
     this.env = dotenv.config();
@@ -75,6 +80,7 @@ export class Http {
 
   /**
    * Redirection route.
+   * @function
    */
   private httpRedirectRoute(): void {
     this.app.get("*", (req: any, res: any) => {

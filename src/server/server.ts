@@ -11,7 +11,8 @@ import * as morgan from "morgan";
 let flash: any = require("connect-flash");
 
 /**
- * Sets up the https server.
+ * Server setup.
+ * @class
  */
 export class server {
   private port: any = process.env.https_port || 1337;
@@ -25,7 +26,9 @@ export class server {
 
   /**
    * Initializes the HTTPS server.
-   * @param certificate Certificate object for HTTPS. `key`, `cert`
+   * @constructor
+   * @param certificate - Certificate object for HTTPS. `key`, `cert`
+   * @param pass - The passport.js object to be used.
    */
   constructor(certificate: object, pass: any) {
     this.env = dotenv.config();
@@ -51,7 +54,8 @@ export class server {
   }
 
   /**
-   * Starts the HTTPS server and the HTTP to HTTPS redirection.
+   * Starts the server.
+   * @function
    */
   StartListening(): void {
     let route: any = new ExpressRoutes.Https(this.app, this.passport);
@@ -63,6 +67,7 @@ export class server {
 
   /**
    * Method for the HTTP to HTTPS redirection.
+   * @function
    */
   private httpRedirect(): void {
     this.httpExpress = express();

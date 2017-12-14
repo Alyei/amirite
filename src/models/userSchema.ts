@@ -1,16 +1,11 @@
 import * as mongoose from "mongoose";
 import { generateUserId } from "../server/helper";
+import { Schema } from "inspector";
 
-/*export class User {
-  public schema: mongoose.Schema;
-
-  constructor() {
-    this.setupSchema();
-    //mongoose.model("user", this.schema);
-  }
-
-  private setupSchema(): void {*/
-let userSchema = new mongoose.Schema({
+/**
+ * The mongoose-schema of the userobject for the database.
+ */
+let userSchema: mongoose.Schema = new mongoose.Schema({
   userId: {
     type: String,
     required: false,
@@ -44,10 +39,9 @@ let userSchema = new mongoose.Schema({
   lastName: String
 });
 
-/*userSchema.methods.WriteStuff = function() {
-  console.log("testerino");
-};*/
-
 let model: any = mongoose.model("user", userSchema);
 
+/**
+ * @returns The usermodel.
+ */
 export { model };
