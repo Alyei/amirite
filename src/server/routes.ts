@@ -52,7 +52,7 @@ export class Https {
       "/login",
       this.passport.authenticate("local-login", {
         successRedirect: "/profile", //Redirect to the secure profile section.
-        failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
+        failureRedirect: "/login", //Redirect back to the signup page if there is an error.
         failureFlash: true //Allow flash messages.
       })
     );

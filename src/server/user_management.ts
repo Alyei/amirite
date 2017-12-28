@@ -95,13 +95,15 @@ export class Authentication {
         model.findOne({ username: username }, async (err: any, user: any) => {
           if (err) return done(err);
 
-          if (!user)
+          if (!user) {
             //If the user doesn't exist
+            console.log("User doesn't exist.");
             return done(
               null,
               false,
               req.flash("loginMessage", "Username or password is wrong.")
             );
+          }
 
           //Waits for the password check.
           let isPwValid: Boolean = await helper.checkPassword(

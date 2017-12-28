@@ -8,7 +8,9 @@ import * as body from "body-parser";
 import * as cookie from "cookie-parser";
 import * as session from "express-session";
 import * as morgan from "morgan";
+
 let flash: any = require("connect-flash");
+let MongoStore: any = require("connect-mongo")(session);
 
 /**
  * Server setup.
@@ -39,8 +41,12 @@ export class server {
     this.app.use(cookie());
     this.app.use(
       session({
-        secret: "sessionsecret", //probably change sessionsecret
+        secret: "AlternativeGraphicalCatdog", //probably change sessionsecret
         name: "test",
+        store: new MongoStore({
+          url: "mongodb://localhost:27017",
+          ttl: 14 * 24 * 60 * 60
+        }),
         proxy: true,
         resave: true,
         saveUninitialized: true

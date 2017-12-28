@@ -1,0 +1,25 @@
+.MainNavBar {
+  font-family: Roboto;
+  font-size: 150%;
+  border: none;
+  border-radius: 0;
+  margin: 0;
+  color: darkgray;
+}
+.Main_LogReg {
+  background: rgb(33, 33, 33);
+  font-family: Roboto;
+  border: none;
+  border-radius: 0;
+  color: darkgray;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.LogRegForm:hover > button,
+.Main_LogReg:hover {
+  background-color: whitesmoke;
+}
+.LogRegForm {
+  margin: 0;
+  padding: 0;
+}
