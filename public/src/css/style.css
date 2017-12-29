@@ -1,0 +1,25 @@
+.GroupStrip {
+  height: 100%;
+  font-family: Roboto;
+  background-color: red;
+}
+.MainGrid {
+  font-family: Roboto;
+  color: darkgray;
+}
+.MainGrid_Body {
+  background: url(https://osu.ppy.sh/images/backgrounds/page-000.png);
+  height: 100%;
+  text-align: center;
+}
+.MainGrid_Heading {
+  color: whitesmoke;
+  font-size: 400%;
+}
+.logoIMG {
+  margin-top: 15%;
+}
+@font-face {
+  font-family: Roboto;
+  src: "https://fonts.googleapis.com/css?family=Roboto:400,400i,700";
+}
