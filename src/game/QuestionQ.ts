@@ -46,7 +46,7 @@ export class QuestionQ {
         }
     }
 
-    public Endgame(): void {
+    public Endgame(): void { // wird callback
         for (let item of this._players) {
             this._send(item.Username
         }
