@@ -4,14 +4,17 @@ export class User {
     private icon:  number
   ) { }
 
-  public get Username(): string {
+  get Username(): string {
       return this.username;
   }
-  /*set Username(value: string) {
+  set Username(value: string) {
       this.username = value;
-  }*/
- public  get Icon(): number {
+  }
+  get Icon(): number {
       return this.icon;
+  }
+  set Icon(value: number) {
+      this.icon = value;
   }
 
   // toJSON is automatically used by JSON.stringify
@@ -46,7 +49,7 @@ export class User {
     return key === "" ? User.fromJSON(value) : value;
   }
 }
-//deschd
+
 // interface for JSON
 export interface UserJSON {
   username: string;
