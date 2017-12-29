@@ -82,7 +82,7 @@ export class QuestionQ {
         switch (json.type) {
             case "tip": {
                 // mb Tip.fromJSON(json)
-                let question: Question = this._questions.find(x => x.questionId == json.data.questionId);
+                let question: Question = this._questions.find(x => x.QuestionId == json.data.questionId);
                 let PlayerQuestionJSON: PlayerQuestionJSON = player.Questions.find(x => x.questionId == json.data.questionId);
                 let duration: number = (new Date()).getTime() - PlayerQuestionJSON.questionTime.getTime();
                 let points: number = 0;
@@ -90,7 +90,7 @@ export class QuestionQ {
                     if (json.data.answer == question.Answer) {
                         points = Math.floor(PlayerQuestionJSON.difficulty * PlayerQuestionJSON.timeLimit / (1 + duration));
                         player.Score += points
-                        this._send(player.Username, { "type": "feedback", "data": { "correct": true, "points": points, "message": "wrong answer" } });
+                        this._send(player.Username, { "type": "feedback", "data": { "correct": true, "points": points, "message": "correct answer" } });
                     } else {
                         this._send(player.Username, { "type": "feedback", "data": { "correct": false, "points": 0, "message": "wrong answer" } });
                     }

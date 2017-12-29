@@ -19,11 +19,8 @@ export class User {
 
   // toJSON is automatically used by JSON.stringify
   toJSON(): UserJSON {
-    // copy all fields from 'this' to an empty object and return in
-    return Object.assign({}, this, {
-      // convert fields that need converting
-      
-    });
+      // copy all fields from 'this' to an empty object and return in
+      return { "username": this.Username, "icon": this.Icon };
   }
 
   // fromJSON is used to convert an serialized version
