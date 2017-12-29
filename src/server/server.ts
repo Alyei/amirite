@@ -8,6 +8,7 @@ import * as body from "body-parser";
 import * as cookie from "cookie-parser";
 import * as session from "express-session";
 import * as morgan from "morgan";
+import { logger } from "../config/logging";
 
 let flash: any = require("connect-flash");
 let MongoStore: any = require("connect-mongo")(session);
@@ -66,8 +67,13 @@ export class server {
   StartListening(): void {
     let route: any = new ExpressRoutes.Https(this.app, this.passport);
     this.httpRedirect();
+
     this.httpsServer.listen(this.port, (req: any, res: any) => {
-      console.log(`Listening on port ${this.port}`);
+      logger.log(
+        "info",
+        "HTTPS server started listening on port %d.",
+        this.port
+      );
     });
   }
 
@@ -79,6 +85,8 @@ export class server {
     this.httpExpress = express();
     this.httpServer = http.createServer(this.httpExpress);
     let route: any = new ExpressRoutes.Http(this.httpExpress);
-    this.httpServer.listen(process.env.http_port);
+    this.httpServer.listen(process.env.http_port, (req: any, res: any) => {
+      logger.log("info", "HTTP redirect to HTTPS started listening.");
+    });
   }
 }

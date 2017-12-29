@@ -1,0 +1,26 @@
+{"level":"info","message":"HTTPS server started.","timestamp":"2017-12-29T19:38:03.531Z"}
+{"level":"info","message":"HTTPS server started.","timestamp":"2017-12-29T19:39:07.483Z"}
+{"level":"error","message":"HTTPS server started.","timestamp":"2017-12-29T19:39:14.256Z"}
+{"level":"info","message":"HTTPS server started listening on 443.","timestamp":"2017-12-29T19:39:48.974Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T19:39:58.087Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T19:53:39.967Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T19:55:22.797Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T19:56:03.373Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T19:57:34.850Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T19:57:34.853Z"}
+{"level":"info","message":"HTTP server started listening on port 80.","timestamp":"2017-12-29T19:57:56.784Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T19:57:56.786Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2017-12-29T19:58:16.878Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T19:58:16.880Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2017-12-29T20:00:41.011Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T20:00:41.014Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2017-12-29T20:00:55.303Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T20:00:55.306Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2017-12-29T20:04:20.612Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T20:04:20.615Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2017-12-29T20:05:24.614Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T20:05:24.617Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2017-12-29T20:15:48.147Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T20:15:48.148Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2017-12-29T20:16:47.670Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2017-12-29T20:16:47.671Z"}
