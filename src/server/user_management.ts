@@ -4,7 +4,7 @@ import * as scrypt from "scrypt";
 import { Passport } from "passport";
 import { model } from "../models/userSchema";
 import * as helper from "../server/helper";
-import { logger } from "../config/logging";
+import { logger } from "./logging";
 
 /**
  * Contains the various authentication/signup methods.

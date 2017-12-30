@@ -8,7 +8,7 @@ import * as body from "body-parser";
 import * as cookie from "cookie-parser";
 import * as session from "express-session";
 import * as morgan from "morgan";
-import { logger } from "../config/logging";
+import { logger } from "./logging";
 
 let flash: any = require("connect-flash");
 let MongoStore: any = require("connect-mongo")(session);
