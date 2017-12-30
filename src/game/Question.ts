@@ -1,3 +1,5 @@
+import { ArrayManager } from "./ArrayManager";
+
 export class Question {
     constructor(
         private questionId: string,
@@ -8,17 +10,25 @@ export class Question {
         private otherOptions: string[]
     ) { }
 
-    public GetPlayerQuestionJSON(): PlayerQuestionJSON {
-        let answers: string[] = this.otherOptions;
-        answers.push(this.answer);
-        return {
+    public GetPlayerQuestionJSON(): [PlayerQuestionJSON, string] {
+        let am: ArrayManager = new ArrayManager();
+        let answers: [string, string][] = [];
+        am.item = "A B C D".split(" ");
+        let letters: string[] = am.ShuffleArray();
+        answers.push([letters[0], this.answer]);
+        for (let i: number = 1; i < letters.length; i++) {
+            answers.push([letters[i], this.OtherOptions[i-1]]);
+        }
+
+        am.item = answers;
+        return [{
             "questionId": this.questionId,
             "difficulty": this.difficulty,
             "timeLimit": this.timeLimit,
             "question": this.question,
-            "answers": answers,
+            "answers": am.ShuffleArray(),
             "questionTime": new Date()
-        };
+        }, letters[0]];
     }
 
     public get QuestionId(): string {
@@ -47,6 +57,6 @@ export interface PlayerQuestionJSON {
     difficulty: number;
     timeLimit: number;
     question: string;
-    answers: string[];
+    answers: [string, string][];
     questionTime: Date;
 }
