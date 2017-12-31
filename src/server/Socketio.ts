@@ -21,7 +21,9 @@ export class io {
 
     this.QuestionQ.on("connection", (socket: SocketIO.Socket) => {
       socket.on("host game", (args: string) => {
+        //Initialize game
         let GameId: string = this.InitQQ(args, socket);
+        //Send back the new gameId (Probably only for testing purposes?)
         socket.emit("gameId", GameId);
       });
     });
