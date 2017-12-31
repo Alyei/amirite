@@ -9,6 +9,7 @@ import * as cookie from "cookie-parser";
 import * as session from "express-session";
 import * as morgan from "morgan";
 import { logger } from "./Logging";
+import { io } from "./Socketio";
 
 let flash: any = require("connect-flash");
 let MongoStore: any = require("connect-mongo")(session);
@@ -26,6 +27,7 @@ export class server {
   private httpServer: any;
   private env: any;
   private passport: any;
+  private socketIo: any;
 
   /**
    * Initializes the HTTPS server.
@@ -58,6 +60,7 @@ export class server {
     this.app.use(flash());
     this.app.use(body.json());
     this.app.use(body.urlencoded({ extended: true }));
+    this.socketIo = new io(this.app);
   }
 
   /**
