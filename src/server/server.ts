@@ -1,14 +1,14 @@
 import * as express from "express";
 import * as https from "https";
 import * as dotenv from "dotenv";
-import * as ExpressRoutes from "./routes";
-import * as auth from "./user_management";
+import * as ExpressRoutes from "./Routes";
+import * as auth from "./UserManagement";
 import * as http from "http";
 import * as body from "body-parser";
 import * as cookie from "cookie-parser";
 import * as session from "express-session";
 import * as morgan from "morgan";
-import { logger } from "./logging";
+import { logger } from "./Logging";
 
 let flash: any = require("connect-flash");
 let MongoStore: any = require("connect-mongo")(session);

@@ -48,6 +48,21 @@ let checkPassword = async function(dbHash: string, enteredPassword: string) {
   return isValid;
 };
 
+/**
+ * Generates a random, 6 character long, game id.
+ * @function
+ * @returns The game id.
+ */
+let generateGameId = function(): string {
+  return crypto
+    .randomBytes(Math.ceil(10 * 3 / 4))
+    .toString("base64")
+    .slice(0, 6)
+    .replace(/\+/g, "3")
+    .replace(/\//g, "x");
+};
+
 export { hashPwAndSave };
 export { generateUserId };
 export { checkPassword };
+export { generateGameId };

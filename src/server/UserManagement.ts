@@ -3,8 +3,8 @@ import * as local from "passport-local";
 import * as scrypt from "scrypt";
 import { Passport } from "passport";
 import { model } from "../models/userSchema";
-import * as helper from "../server/helper";
-import { logger } from "./logging";
+import * as helper from "../server/Helper";
+import { logger } from "./Logging";
 
 /**
  * Contains the various authentication/signup methods.
