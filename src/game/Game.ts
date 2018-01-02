@@ -10,14 +10,20 @@ interface IPlayerSocket {
 export class Game {
   readonly id: string;
   readonly players: IPlayerSocket[];
+  readonly owner: string;
+  public Socket: SocketIO.Namespace;
 
   /**
-   * Assigns a random ID to the game.
+   * Assigns a random ID to the game and sets the owner.
    * @constructor
+   * @param {string} username - The game's owner.
+   * @param {SocketIO.Namespace} socket - The gamemode's socket.
    */
-  constructor() {
+  constructor(username: string, socket: SocketIO.Namespace) {
     this.id = generateGameId();
     this.players = new Array<IPlayerSocket>();
+    this.owner = username;
+    this.Socket = socket;
   }
 
   /**

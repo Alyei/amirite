@@ -1,4 +1,3 @@
-import { IRunningGame } from "./IRunningGame";
 import { Game } from "./Game";
 import { logger } from "../server/Logging";
 
