@@ -2,23 +2,21 @@ import * as socketio from "socket.io";
 import { Server } from "http";
 import { generateGameId } from "./Helper";
 import { Game } from "../game/Game";
-import { RunningQuestionQ } from "../game/rg_questionq";
 
 export class io {
   public server: SocketIO.Server;
   public QuestionQ: SocketIO.Namespace;
-  public QQInSess: RunningQuestionQ;
+  public QQInSess: any;
 
   constructor(app: any) {
     this.server = socketio.listen(app);
+    //Setting up QuestionQ namespace
+    this.QuestionQ = this.server.of("/questionq");
     this.QuestionQConf();
   }
 
   //On connection wird der Socket übergeben => Socket+Username in array speichern
   private QuestionQConf(): void {
-    //Setting up QuestionQ namespace
-    this.QuestionQ = this.server.of("/questionq");
-
     this.QuestionQ.on("connection", (socket: SocketIO.Socket) => {
       socket.on("host game", (args: string) => {
         //Initialize game

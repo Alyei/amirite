@@ -2,14 +2,14 @@
 
 import { generateGameId } from "../server/helper";
 
-interface IPlayer {
+interface IPlayerSocket {
   username: string;
   socket: SocketIO.Socket;
 }
 
 export class Game {
   readonly id: string;
-  readonly players: IPlayer[];
+  readonly players: IPlayerSocket[];
 
   /**
    * Assigns a random ID to the game.
@@ -17,6 +17,7 @@ export class Game {
    */
   constructor() {
     this.id = generateGameId();
+    this.players = new Array<IPlayerSocket>();
   }
 
   /**
@@ -26,7 +27,7 @@ export class Game {
    * @param socket - The user's socket. Access the id through `socket.id`
    * @returns The new players array.
    */
-  public AddPlayer(username: string, socket: SocketIO.Socket): IPlayer[] {
+  public AddPlayer(username: string, socket: SocketIO.Socket): IPlayerSocket[] {
     this.players.push({ username: username, socket: socket });
     return this.players;
   }
