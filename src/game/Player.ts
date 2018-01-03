@@ -1,21 +1,21 @@
 import { PlayerQuestionJSON } from "./Question" ;
-import { User } from "./User";
 import { TipJSON } from "./Tip";
 
-export class Player extends User {
+export class Player {
     private _score: number;
     private _questions: [PlayerQuestionJSON, string][]
     private _tips: TipJSON[]
     private _finished: boolean;
 
     constructor(
-        username: string,
-        icon: number
+        private _username: string
     ) {
-        super(username, icon);
         this._questions = [];
         this._score = 0;
         this._finished = false;
+    }
+    get Username(): string {
+        return this._username;
     }
     public get Score(): number {
         return this._score;

@@ -1,4 +1,3 @@
-import { User } from "./User";
 import { Player } from "./Player";
 import { Question, PlayerQuestionJSON } from "./Question";
 import { TipJSON } from "./Tip";
@@ -19,7 +18,7 @@ export class QuestionQ {
     public constructor(
         private _send: (username: string, data: {}) => void,
         private _gameEnded: () => void,
-        users?: User[], questions?: Question[]
+        users?: { "username": string }[], questions?: Question[]
     ) {
         this._gamePhase = QuestionQGamePhase.Setup;
 
@@ -28,22 +27,28 @@ export class QuestionQ {
         this._players = [];
         if (users) {
             for (let user of users) {
-                this._players.push(new Player(user.Username, user.Icon));
+                this._players.push(new Player(user.username));
             }
         }
     }
 
     // returns wether it was successful
     // only while running
-    public AddUser(user: User): boolean {
+    public AddUser(user: { "username": string }): boolean {
         if (this._gamePhase != QuestionQGamePhase.Ended) {
-            this._players.push(new Player(user.Username, user.Icon));
+            this._players.push(new Player(user.username));
             return true;
         }
         return false;
     }
+    // if no player finished yet
     public AddQuestion(question: Question): boolean {
-        if (this._gamePhase != QuestionQGamePhase.Ended) {
+        let finished: boolean = false;
+        for (let p of this._players) {
+            if (p.Finished)
+                finished = true;
+        }
+        if (!finished) {
             this._questions.push(question);
             return true;
         }
@@ -58,7 +63,7 @@ export class QuestionQ {
         }
     }
 
-    public Endgame(): void { // wird callback
+    public Endgame(): void {
         //this._running = false;
         this._gamePhase = QuestionQGamePhase.Ended;
 
@@ -91,7 +96,7 @@ export class QuestionQ {
                 // L-> find a question you cannot find in player.questions
                 let nextQuestion: [PlayerQuestionJSON, string] = this._questions.find(x => player.Questions.find(y => y[0].questionId == x.QuestionId) == undefined).GetPlayerQuestionJSON();
                 // send nextQuestion to Username
-                this._send(player.Username, nextQuestion[0]);
+                this._send(player.Username, { "type": "QuestionQQuestion", "data": nextQuestion[0] });
                 // add question to the player's questions
                 player.Questions.push(nextQuestion);
             } else {
@@ -106,7 +111,7 @@ export class QuestionQ {
     public PlayerInput(username: string, json: { type: string, data: {} }): void {
         let player: Player = this._players.find(x => x.Username == username);
         switch (json.type) {
-            case "tip": {
+            case "QuestionQTip": {
                 // mb Tip.fromJSON(json)
                 // only while running
                 //if (this._running) {

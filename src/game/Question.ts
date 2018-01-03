@@ -14,7 +14,7 @@ export class Question {
         let am: ArrayManager = new ArrayManager();
         let answers: [string, string][] = [];
         am.item = "A B C D".split(" ");
-        let letters: string[] = am.ShuffleArray();
+        let letters: string[] = am.ShuffleArray() || [];
         answers.push([letters[0], this.answer]);
         for (let i: number = 1; i < letters.length; i++) {
             answers.push([letters[i], this.OtherOptions[i-1]]);
@@ -26,7 +26,7 @@ export class Question {
             "difficulty": this.difficulty,
             "timeLimit": this.timeLimit,
             "question": this.question,
-            "answers": am.ShuffleArray(),
+            "answers": am.ShuffleArray() || [],
             "questionTime": new Date()
         }, letters[0]];
     }
