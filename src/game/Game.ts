@@ -2,7 +2,7 @@
 
 import { generateGameId } from "../server/helper";
 
-interface IPlayerSocket {
+export interface IPlayerSocket {
   username: string;
   socket: SocketIO.Socket;
 }

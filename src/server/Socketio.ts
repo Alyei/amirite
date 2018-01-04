@@ -11,7 +11,7 @@ export class io {
   public Millionaire: SocketIO.Namespace;
   public Determination: SocketIO.Namespace;
   public TrivialPursuit: SocketIO.Namespace;
-  public GameHost: GameInit;
+  public InitGame: GameInit;
   public GameSessions: RunningGames;
 
   constructor(app: any) {
@@ -22,7 +22,7 @@ export class io {
     this.Determination = this.server.of("/determination");
     this.TrivialPursuit = this.server.of("/trivialpursuit");
     this.GameSessions = new RunningGames();
-    this.GameHost = new GameInit(
+    this.InitGame = new GameInit(
       this.QuestionQ,
       this.Millionaire,
       this.Determination,
@@ -30,37 +30,40 @@ export class io {
       this.GameSessions
     );
     this.QuestionQConf();
+    this.MillionaireConf();
   }
 
   //On connection wird der Socket übergeben => Socket+Username in array speichern
   private QuestionQConf(): void {
     this.QuestionQ.on("connection", (socket: SocketIO.Socket) => {
-      socket.on("host game", (args: string) => {
-        let gameId: string = this.GameHost.HostQuestionQ(socket, args);
+      socket.on("host game", (username: string) => {
+        let gameId: string = this.InitGame.HostQuestionQ(socket, username);
         logger.log(
           "info",
           "New QuestionQ session hosted. ID: %s, Owner: %s",
           gameId,
-          args
+          username
         );
       });
 
-      socket.on("close game", (args: string) => {});
+      socket.on("join game", (username: string) => {});
 
       //Placeholder
     });
   }
   private MillionaireConf(): void {
     this.Millionaire.on("connection", (socket: SocketIO.Socket) => {
-      socket.on("host game", (args: string) => {
-        let gameId: string = this.GameHost.HostMillionaire(socket, args);
+      socket.on("host game", (username: string) => {
+        let gameId: string = this.InitGame.HostMillionaire(socket, username);
         logger.log(
           "info",
           "New Millionaire session hosted. ID: %s, Owner: %s",
           gameId,
-          args
+          username
         );
       });
     });
+
+    //place
   }
 }
