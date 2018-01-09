@@ -78,7 +78,7 @@ export default class NavBar extends React.Component {
           <Navbar.Toggle />
         </Navbar.Header>
         <Navbar.Collapse className="navbar-collapse">
-          {this.state.prelogin === true ? this.MainNavElements() : this.PostLoginNavElements()};
+          {this.state.prelogin === true ? this.MainNavElements() : this.PostLoginNavElements()}
         </Navbar.Collapse>
       </Navbar>
     );
@@ -87,6 +87,8 @@ export default class NavBar extends React.Component {
         defTab={this.state.defTab}
         showModal={this.state.showModal}
         overlayClose={this.OverlayClose}
-      /></div>;
+      />
+      {this.props.children}
+      </div>;
   }
 }
