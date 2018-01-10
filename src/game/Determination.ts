@@ -28,7 +28,8 @@ export class Determination {
     private _gamePhase: DeterminationGamePhase;
 
     public constructor(
-        private _send: (username: string, msgType: MessageType, data: {}) => void,
+        private _gameId: string,
+        private _send: (gameId: string, username: string, msgType: MessageType, data: {}) => void,
         private _gameEnded: () => void,
         users?: User[], questions?: Question[]
     ) {
@@ -87,8 +88,8 @@ export class Determination {
         this._gamePhase = DeterminationGamePhase.Running;
         for (let player of this._players) {
             if (player.State == PlayerState.Launch) {
-                this.QuestionPlayer(player);
                 player.State = PlayerState.Playing;
+                this.QuestionPlayer(player);
             }
         }
     }
@@ -125,7 +126,7 @@ export class Determination {
                 let nextQuestion: [PlayerQuestionJSON, string] = this._questions.find(x => player.Questions.find(y => y[0].questionId == x[0].questionId) == undefined);
                 nextQuestion[0].questionTime = new Date(); // change only for this player!!!
                 // send nextQuestion to Username
-                this._send(player.Username, MessageType.Question, {
+                this._send(this._gameId, player.Username, MessageType.Question, {
                     "type": "DeterminationQuestion", data: {
                         "questionId": nextQuestion[0].questionId,
                         "question": nextQuestion[0].question,
@@ -157,11 +158,11 @@ export class Determination {
                     if (tip.Answer == PlayerQuestionTuple[1]) {
                         if (tip.Correct) { //score
                             points = Math.floor(PlayerQuestionTuple[0].difficulty * PlayerQuestionTuple[0].timeLimit / (1 + duration));
-                            player.Score += points
-                            this._send(player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(true, player.Score, "correct answer"));
+                            player.Score += points;
+                            this._send(this._gameId, player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(true, player.Score, "correct answer"));
                         }
                         else { //wrong
-                            this._send(player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(false, player.Score, "wrong answer"));
+                            this._send(this._gameId, player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(false, player.Score, "wrong answer"));
                         }
                             player.Tips.push({
                                 "questionId": tip.QuestionId,
@@ -172,17 +173,21 @@ export class Determination {
                             this.QuestionPlayer(player);
                     }
                     else {
-                        if (!tip.Correct) { //next option
+                        if (!tip.Correct) { //next option + little score
+                            points = Math.floor(PlayerQuestionTuple[0].difficulty * PlayerQuestionTuple[0].timeLimit / (1 + duration) / 10);
+                            player.Score += points;
+                            this._send(this._gameId, player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(true, player.Score, "wrong option"));
+
                             let nextOptioni: number = PlayerQuestionTuple[0].answers.findIndex(x => x[0] == tip.Answer) + 1;
                             if (nextOptioni < PlayerQuestionTuple[0].answers.length) {
                                 let nextOption: [string, string] = PlayerQuestionTuple[0].answers[nextOptioni];
-                                this._send(player.Username, MessageType.NextOption, { "option": nextOption });
+                                this._send(this._gameId, player.Username, MessageType.NextOption, { "option": nextOption });
                             } else {
-                                this._send(player.Username, MessageType.Error, new PlayerInputError("no further options", { "answerId": tip.Answer, "nextIndex": nextOptioni }));
+                                this._send(this._gameId, player.Username, MessageType.Error, new PlayerInputError("no further options", { "answerId": tip.Answer, "nextIndex": nextOptioni }));
                             }
                         }
                         else { //wrong
-                            this._send(player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(false, player.Score, "wrong answer"));
+                            this._send(this._gameId, player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(false, player.Score, "wrong answer"));
                             player.Tips.push({
                                 "questionId": tip.QuestionId,
                                 "answer": [tip.Answer, PlayerQuestionTuple[0].answers.find(x => x[0] == tip.Answer)[1]],
@@ -193,7 +198,7 @@ export class Determination {
                         }
                     }
                 } else {
-                    this._send(player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(false, player.Score, "too slow"));
+                    this._send(this._gameId, player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(false, player.Score, "too slow"));
                     player.Tips.push({
                         "questionId": tip.QuestionId,
                         "answer": [tip.Answer, PlayerQuestionTuple[0].answers.find(x => x[0] == tip.Answer)[1]],
@@ -203,10 +208,10 @@ export class Determination {
                     this.QuestionPlayer(player);
                 }
             } else {
-                this._send(player.Username, MessageType.Error, new PlayerInputError("You already gave a tip for this question", { "QuestionId": tip.QuestionId }));
+                this._send(this._gameId, player.Username, MessageType.Error, new PlayerInputError("You already gave a tip for this question", { "QuestionId": tip.QuestionId }));
             }
         } else {
-            this._send(player.Username, MessageType.Error, new PlayerInputError("You are not allowed to give a tip", { "GamePhase": this._gamePhase, "PlayerState": player.State }));
+            this._send(this._gameId, player.Username, MessageType.Error, new PlayerInputError("You are not allowed to give a tip", { "GamePhase": this._gamePhase, "PlayerState": player.State }));
         }
     }
 }
