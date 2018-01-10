@@ -1,4 +1,4 @@
-import { Game } from "./Game";
+import { IGame } from "./modes/IGame";
 import { logger } from "../server/Logging";
 
 //Interface probably unnecessary
@@ -7,31 +7,30 @@ import { logger } from "../server/Logging";
  * @class
  */
 export class RunningGames {
-  readonly QuestionQ: Game[];
-  readonly Millionaire: Game[];
-  readonly Determination: Game[];
-  readonly TrivialPursuit: Game[];
+  readonly Sessions: IGame[];
 
   /**
    * Initializes all Game arrays.
    * @constructor
    */
   constructor() {
-    this.QuestionQ = new Array<Game>();
-    this.Millionaire = new Array<Game>();
-    this.Determination = new Array<Game>();
-    this.TrivialPursuit = new Array<Game>();
+    this.Sessions = new Array<IGame>();
   }
 
   /**
    * Adds a running game to the specified gamemode-array.
    * @function
-   * @param {string} mode - The case sensitive gamemode. `questionq, millionaire, determination, trivialpursuit`
-   * @param {Game} game - The game that should be added to the list of running games.
+   * @param {IGame} game - The game that should be added to the list of running games.
    * @returns The updated list for the specified gamemode.
    */
-  public addRunningGame(mode: string, game: Game): Game[] {
-    switch (mode) {
+  public addRunningGame(game: IGame): IGame[] {
+    this.Sessions.push(game);
+    return this.Sessions;
+  }
+}
+
+//in case this is needed
+/*switch (mode) {
       case "questionq":
         this.QuestionQ.push(game);
         logger.log("info", "Added running Question Q.");
@@ -55,6 +54,4 @@ export class RunningGames {
       //Possibly extend on this (Error usage/Own errors)
       default:
         throw new Error("Invalid gametype");
-    }
-  }
-}
+  }*/

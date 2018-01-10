@@ -1,14 +1,11 @@
 //This is to be put in the /src/game folder
 
-import { generateGameId } from "../server/helper";
+import { generateGameId } from "../../server/helper";
+import { IGame, IPlayerSocket } from "./IGame";
 
-export interface IPlayerSocket {
-  username: string;
-  socket: SocketIO.Socket;
-}
-
-export class Game {
+export class Determination implements IGame {
   readonly id: string;
+  readonly gamemode: string;
   readonly players: IPlayerSocket[];
   readonly owner: string;
   public Socket: SocketIO.Namespace;
@@ -21,6 +18,7 @@ export class Game {
    */
   constructor(username: string, socket: SocketIO.Namespace) {
     this.id = generateGameId();
+    this.gamemode = "Determination";
     this.players = new Array<IPlayerSocket>();
     this.owner = username;
     this.Socket = socket;
