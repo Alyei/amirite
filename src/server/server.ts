@@ -8,8 +8,9 @@ import * as body from "body-parser";
 import * as cookie from "cookie-parser";
 import * as session from "express-session";
 import * as morgan from "morgan";
-import { logger } from "./Logging";
+import { logger } from "./logging";
 import { io } from "./Socketio";
+import * as ejs from "ejs";
 
 let flash: any = require("connect-flash");
 let MongoStore: any = require("connect-mongo")(session);
@@ -60,7 +61,8 @@ export class server {
     this.app.use(flash());
     this.app.use(body.json());
     this.app.use(body.urlencoded({ extended: true }));
-    this.socketIo = new io(this.app);
+    this.socketIo = new io(this.httpsServer);
+    this.app.set("view engine", "ejs");
   }
 
   /**

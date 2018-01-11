@@ -28,15 +28,34 @@ export class Https {
   private setRoutes(): void {
     //When the user visits '/' he should be sent .../public/index.html
     this.app.get("/", (req: any, res: any) => {
-      res.sendFile(path.join(__dirname, "..", "..", "public", "index.html"));
+      res.render(path.join(__dirname, "..", "..", "public", "index.ejs"));
     });
 
     this.app.get("/login", (req: any, res: any) => {
-      res.sendFile(path.join(__dirname, "..", "..", "public", "login.html"));
+      res.render(path.join(__dirname, "..", "..", "public", "login.ejs"), {
+        message: req.flash("login")
+      });
     });
 
     this.app.get("/signup", (req: any, res: any) => {
-      res.sendFile(path.join(__dirname, "..", "..", "public", "signup.html"));
+      res.render(path.join(__dirname, "..", "..", "public", "signup.ejs"), {
+        message: req.flash("signup")
+      });
+    });
+
+    this.app.get("/profile", (req: any, res: any) => {
+      res.render(path.join(__dirname, "..", "..", "public", "profile.ejs"), {
+        user: req.user
+      });
+    });
+
+    this.app.get("/logout", function(req: any, res: any) {
+      req.logout();
+      res.redirect("/");
+    });
+
+    this.app.get("/socket", (req: any, res: any) => {
+      res.render(path.join(__dirname, "..", "..", "public", "socket.ejs"));
     });
 
     this.app.post(

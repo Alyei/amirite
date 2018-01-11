@@ -16,7 +16,7 @@ export class io {
 
   constructor(app: any) {
     this.server = socketio.listen(app);
-    //Setting up QuestionQ namespace
+    //Setting up namespaces
     this.QuestionQ = this.server.of("/questionq");
     this.Millionaire = this.server.of("/millionaire");
     this.Determination = this.server.of("/determination");
@@ -35,18 +35,17 @@ export class io {
 
   //On connection wird der Socket übergeben => Socket+Username in array speichern
   private QuestionQConf(): void {
-    this.QuestionQ.on("connection", (socket: SocketIO.Socket) => {
-      socket.on("host game", (username: string) => {
-        let gameId: string = this.InitGame.HostQuestionQ(socket, username);
-        logger.log(
-          "info",
-          "New QuestionQ session hosted. ID: %s, Owner: %s",
-          gameId,
-          username
-        );
+    this.QuestionQ.on("connection", (playerSocket: SocketIO.Socket) => {
+      logger.log("info", "New user connected: %s", playerSocket.client.id);
+      playerSocket.join("test room");
+      playerSocket.on("host game", (username: string) => {
+        let gameId: string = this.InitGame.HostGame(playerSocket, {
+          mode: "questionq",
+          owner: "alyei" //change to username
+        });
       });
 
-      socket.on("join game", (username: string) => {});
+      playerSocket.on("join game", (username: string) => {});
 
       //Placeholder
     });
@@ -54,7 +53,10 @@ export class io {
   private MillionaireConf(): void {
     this.Millionaire.on("connection", (socket: SocketIO.Socket) => {
       socket.on("host game", (username: string) => {
-        let gameId: string = this.InitGame.HostMillionaire(socket, username);
+        let gameId: string = this.InitGame.HostGame(socket, {
+          mode: "millionaire",
+          owner: "alyei" //change
+        });
         logger.log(
           "info",
           "New Millionaire session hosted. ID: %s, Owner: %s",

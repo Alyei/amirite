@@ -25,6 +25,14 @@ export class RunningGames {
    */
   public addRunningGame(game: IGame): IGame[] {
     this.Sessions.push(game);
+
+    logger.log(
+      "info",
+      "New QuestionQ session hosted. ID: %s, Owner: %s",
+      game.id,
+      game.owner,
+      game.gamemode
+    );
     return this.Sessions;
   }
 }
