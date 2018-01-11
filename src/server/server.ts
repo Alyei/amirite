@@ -1,14 +1,18 @@
 import * as express from "express";
 import * as https from "https";
 import * as dotenv from "dotenv";
-import * as ExpressRoutes from "./routes";
-import * as auth from "./user_management";
+import * as ExpressRoutes from "./Routes";
+import * as auth from "./UserManagement";
 import * as http from "http";
 import * as body from "body-parser";
 import * as cookie from "cookie-parser";
 import * as session from "express-session";
 import * as morgan from "morgan";
+import { logger } from "./Logging";
+import { io } from "./Socketio";
+
 let flash: any = require("connect-flash");
+let MongoStore: any = require("connect-mongo")(session);
 
 /**
  * Server setup.
@@ -23,6 +27,7 @@ export class server {
   private httpServer: any;
   private env: any;
   private passport: any;
+  private socketIo: any;
 
   /**
    * Initializes the HTTPS server.
@@ -39,8 +44,12 @@ export class server {
     this.app.use(cookie());
     this.app.use(
       session({
-        secret: "sessionsecret", //probably change sessionsecret
+        secret: "AlternativeGraphicalCatdog", //probably change sessionsecret
         name: "test",
+        store: new MongoStore({
+          url: "mongodb://localhost:27017",
+          ttl: 14 * 24 * 60 * 60
+        }),
         proxy: true,
         resave: true,
         saveUninitialized: true
@@ -51,6 +60,7 @@ export class server {
     this.app.use(flash());
     this.app.use(body.json());
     this.app.use(body.urlencoded({ extended: true }));
+    this.socketIo = new io(this.app);
   }
 
   /**
@@ -60,8 +70,13 @@ export class server {
   StartListening(): void {
     let route: any = new ExpressRoutes.Https(this.app, this.passport);
     this.httpRedirect();
+
     this.httpsServer.listen(this.port, (req: any, res: any) => {
-      console.log(`Listening on port ${this.port}`);
+      logger.log(
+        "info",
+        "HTTPS server started listening on port %d.",
+        this.port
+      );
     });
   }
 
@@ -73,6 +88,8 @@ export class server {
     this.httpExpress = express();
     this.httpServer = http.createServer(this.httpExpress);
     let route: any = new ExpressRoutes.Http(this.httpExpress);
-    this.httpServer.listen(process.env.http_port);
+    this.httpServer.listen(process.env.http_port, (req: any, res: any) => {
+      logger.log("info", "HTTP redirect to HTTPS started listening.");
+    });
   }
 }

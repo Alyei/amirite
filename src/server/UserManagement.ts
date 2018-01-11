@@ -3,7 +3,8 @@ import * as local from "passport-local";
 import * as scrypt from "scrypt";
 import { Passport } from "passport";
 import { model } from "../models/userSchema";
-import * as helper from "../server/helper";
+import * as helper from "../server/Helper";
+import { logger } from "./Logging";
 
 /**
  * Contains the various authentication/signup methods.
@@ -21,8 +22,11 @@ export class Authentication {
   constructor() {
     this.passport = new pass.Passport();
     this.setupSerialization();
+    logger.log("silly", "Setting up serialization");
     this.SignupStrat();
+    logger.log("silly", "Setting up signup strategy");
     this.loginStrat();
+    logger.log("silly", "Setting up login strategy");
     this.passport.use("local-signup", this.SignupStrategy);
     this.passport.use("local-login", this.LoginStrategy);
   }
@@ -60,6 +64,7 @@ export class Authentication {
             if (err) return done(err);
 
             if (user) {
+              logger.log("silly", "Submitted username already exists");
               return done(
                 null,
                 false,
@@ -72,7 +77,16 @@ export class Authentication {
                 email: req.body.email
               });
 
+              logger.log("silly", "Creating new user: %s", username);
+
               helper.hashPwAndSave(newUser);
+
+              logger.log(
+                "silly",
+                "%s: Hashed password and saved in database.",
+                username
+              );
+
               req.flash(
                 "signupSuccessful",
                 "The account was created successfully."
@@ -95,13 +109,15 @@ export class Authentication {
         model.findOne({ username: username }, async (err: any, user: any) => {
           if (err) return done(err);
 
-          if (!user)
+          if (!user) {
             //If the user doesn't exist
+            console.log("User doesn't exist.");
             return done(
               null,
               false,
               req.flash("loginMessage", "Username or password is wrong.")
             );
+          }
 
           //Waits for the password check.
           let isPwValid: Boolean = await helper.checkPassword(
