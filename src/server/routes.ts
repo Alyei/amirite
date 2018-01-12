@@ -33,19 +33,17 @@ export class Https {
     this.app.get("/", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "index.ejs"));
     });
-
+/*
     this.app.get("/login", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "login.ejs"), {
         message: req.flash("login")
       });
     });
-
-    this.app.get("/signup", (req: any, res: any) => {
-      res.render(path.join(__dirname, "..", "..", "public", "signup.ejs"), {
-        message: req.flash("signup")
-      });
+*/
+    this.app.get("/api/signup", (req: any, res: any) => {
+      res.render("signup")
     });
-
+/*
     this.app.get("/profile", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "profile.ejs"), {
         user: req.user
@@ -66,13 +64,12 @@ export class Https {
     });
 
     this.app.post(
-      "/signup",
+      "/api/signup",
       this.passport.authenticate("local-signup", {
         successRedirect: "/profile", //Redirect to the secure profile section.
         failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
         failureFlash: true //Allow flash messages.
-      })
-    );
+      });*/
 
     this.app.post("/api/signup", (req: any, res: any) => {
       console.log("THIS COMING IN");
@@ -82,13 +79,13 @@ export class Https {
       res.send("successful");
     });
     /*this.passport.authenticate("local-signup", {
-        successRedirect: "/profile", //Redirect to the secure profile section.
-        failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
-        failureFlash: true //Allow flash messages.
+      successRedirect: "/profile", //Redirect to the secure profile section.
+      failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
+      failureFlash: true //Allow flash messages.
       });*/
 
     this.app.post(
-      "/login",
+      "/api/login",
       this.passport.authenticate("local-login", {
         successRedirect: "/profile", //Redirect to the secure profile section.
         failureRedirect: "/login", //Redirect back to the signup page if there is an error.
@@ -106,6 +103,17 @@ export class Https {
           //implement statuscode
           res.send("failed");
         });
+    });
+
+    this.app.post("/test", (req: any, res: any) => {
+      console.log(req.body.data);
+
+      res.send("test");
+    });
+    this.app.post("/api/test", (req: any, res: any) => {
+      console.log(req.body.data + "API");
+
+      res.send("test");
     });
 
     this.app.post("/test", (req: any, res: any) => {
@@ -144,6 +152,7 @@ export class Http {
    * Redirection route.
    * @function
    */
+  
   private httpRedirectRoute(): void {
     this.app.get("*", (req: any, res: any) => {
       res.redirect("https://localhost:" + 443 + req.url);

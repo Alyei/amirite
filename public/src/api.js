@@ -1,13 +1,34 @@
 import React from "react";
-import openSocket from "socket.io-client";
+import io from "socket.io-client";
 import {Redirect} from "react-router";
 
-export const socket = openSocket('https://localhost:443');
 
-export function startGame(username) {
-    socket.emit('host game', username);
-    socket.on('get game',(gameid) => {<Redirect to='/game/${gameid}'/>})
-    //socket.on('question',(questionJson) );
+export const socket = io.connect('https://localhost:443/questionq');
 
-
+export function closeSocket() {
+    socket.off();
+    socket.close();
 }
+/*
+function startGame(username) {
+    console.log("sending host game");
+    //socket.off('gameid');
+}
+function sendAnswer(questionId, answer) {
+    console.log("sending Answer");
+
+    //socket.off('feedback');
+}
+
+export function sendTimeout(questionId, username) {
+    socket.emit('timeout', {questionId, username});
+    socket.on('feedback', function(feedback) {
+        return feedback;
+    });
+    socket.off('feedback');
+}
+
+function redirectHost(gameid){
+    return (<Redirect to='/game/${gameid}'/>)
+}
+*/

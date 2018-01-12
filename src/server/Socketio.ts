@@ -55,7 +55,6 @@ export class io {
       playerSocket.join("test room");
 
       playerSocket.on("host game", (username: string) => {
-        console.log("received event host game");
         const args: iGeneralHostArguments = {
           gameId: generateGameId(),
           gamemode: GModels.Gamemode.QuestionQ,
@@ -66,12 +65,6 @@ export class io {
           args,
           this.QuestionQ
         );
-        /*let gameId: string = this.InitGame.HostGame(playerSocket, {
-          mode: "questionq",
-          owner: "alyei" //change to username
-        });*/
-
-        //start game here
 
         playerSocket.emit("gameid", args.gameId);
       });
