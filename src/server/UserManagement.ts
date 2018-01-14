@@ -1,6 +1,6 @@
 import * as pass from "passport";
 import * as local from "passport-local";
-import * as scrypt from "scrypt";
+import * as bcrypt from "bcrypt";
 import { Passport } from "passport";
 import { model } from "../models/userSchema";
 import * as helper from "../server/Helper";
@@ -120,22 +120,23 @@ export class Authentication {
           }
 
           //Waits for the password check.
-          let isPwValid: Boolean = await helper.checkPassword(
-            user.password,
-            password
-          );
-
-          if (!isPwValid) {
-            console.log("wrong pw");
-            return done(
-              null,
-              false,
-              req.flash("loginMessage", "Username or password is wrong.")
-            );
-          }
-
-          console.log("right pw"); //debugging
-          return done(null, user);
+          bcrypt.compare(password, user.password, (err: any, same: boolean) => {
+            if (same) {
+              logger.log("info", "User %s logged in.", user.username);
+              return done(null, user);
+            } else {
+              logger.log(
+                "info",
+                "User %s entered a wrong password.",
+                user.username
+              );
+              return done(
+                null,
+                false,
+                req.flash("loginMessage", "Username or password is wrong.")
+              );
+            }
+          });
         });
       }
     );
