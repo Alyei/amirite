@@ -12,6 +12,7 @@ export class io {
   public Millionaire: SocketIO.Namespace;
   public Determination: SocketIO.Namespace;
   public TrivialPursuit: SocketIO.Namespace;
+  public Duel: SocketIO.Namespace;
   public InitGame: GameInit;
   public GameSessions: RunningGames;
 
@@ -22,12 +23,14 @@ export class io {
     this.Millionaire = this.server.of("/millionaire");
     this.Determination = this.server.of("/determination");
     this.TrivialPursuit = this.server.of("/trivialpursuit");
+    this.Duel = this.server.of("/duel");
     this.GameSessions = new RunningGames();
     this.InitGame = new GameInit(
       this.QuestionQ,
       this.Millionaire,
       this.Determination,
       this.TrivialPursuit,
+      this.Duel,
       this.GameSessions
     );
     this.QuestionQConf();
@@ -46,10 +49,18 @@ export class io {
           owner: "alyei" //change to username
         });
 
+        //start game here
+
         playerSocket.emit("gameid", gameId);
       });
 
-      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {});
+      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+        for (let item of this.GameSessions.Sessions) {
+          if (item.id == opt.gameId) {
+            item.AddPlayer(opt.username, playerSocket);
+          }
+        }
+      });
 
       playerSocket.on("tip", (msg: object) => {});
 
@@ -57,9 +68,9 @@ export class io {
     });
   }
   private MillionaireConf(): void {
-    this.Millionaire.on("connection", (socket: SocketIO.Socket) => {
-      socket.on("host game", (username: string) => {
-        let gameId: string = this.InitGame.HostGame(socket, {
+    this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
+      playerSocket.on("host game", (username: string) => {
+        let gameId: string = this.InitGame.HostGame(playerSocket, {
           mode: "millionaire",
           owner: "alyei" //change
         });
@@ -69,6 +80,14 @@ export class io {
           gameId,
           username
         );
+      });
+
+      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+        for (let item of this.GameSessions.Sessions) {
+          if (item.id == opt.gameId) {
+            item.AddPlayer(opt.username, playerSocket);
+          }
+        }
       });
     });
 

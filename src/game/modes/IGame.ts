@@ -3,7 +3,9 @@ export interface IGame {
   gamemode: string;
   owner: string;
   players: IPlayerSocket[];
-  Socket: SocketIO.Namespace;
+  socket: SocketIO.Namespace;
+
+  AddPlayer(username: string, socket: SocketIO.Socket): IPlayerSocket[];
 }
 
 export interface IPlayerSocket {

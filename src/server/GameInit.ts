@@ -14,6 +14,7 @@ export class GameInit {
   private Millionaire: SocketIO.Namespace;
   private Determination: SocketIO.Namespace;
   private TrivialPursuit: SocketIO.Namespace;
+  private Duel: SocketIO.Namespace;
   private RunningSessions: RunningGames;
 
   /**
@@ -23,6 +24,7 @@ export class GameInit {
    * @param {SocketIO.Namespace} Millionaire - The Millionaire-namespace.
    * @param {SocketIO.Namespace} Determination - The Determination-namespace.
    * @param {SocketIO.Namespace} TrivialPursuit - The TrivialPursuit-namespace.
+   * @param {SocketIO.Namespace} Duel - The Duel-namespace.
    * @param {RunningGames} GameSessions - The RunningGames instance.
    */
   constructor(
@@ -30,12 +32,14 @@ export class GameInit {
     Millionaire: SocketIO.Namespace,
     Determination: SocketIO.Namespace,
     TrivialPursuit: SocketIO.Namespace,
+    Duel: SocketIO.Namespace,
     GameSessions: RunningGames
   ) {
     this.QuestionQ = QuestionQ;
     this.Millionaire = Millionaire;
     this.Determination = Determination;
     this.TrivialPursuit = TrivialPursuit;
+    this.Duel = Duel;
     this.RunningSessions = GameSessions;
   }
 

@@ -1,3 +1,5 @@
+import { IPlayerSocket } from "../game/modes/IGame";
 export interface IJoinGame {
-  options: { gameId: string; username: string };
+  gameId: string;
+  username: string;
 }

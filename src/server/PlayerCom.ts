@@ -22,15 +22,21 @@ export class PlayerCommunication {
    * @param {string} gamemode - The case sensitive gamemode. `questionq, millionaire, determination, trivialpursuit`
    * @param {string} id - The game's id the player is in.
    * @param {string} username - The player's case sensitive username.
+   * @param {string} event - The event to be sent to the client.
    * @param {string} msg - The message to be sent.
    * @public
    */
-  public SendToPlayer(id: string, username: string, msg: string): void {
+  public SendToPlayer(
+    id: string,
+    username: string,
+    event: string,
+    msg: string
+  ): void {
     for (let item of this.RunningGames.Sessions) {
       if (item.id === id) {
         for (let player of item.players) {
           if (player.username === username) {
-            player.socket.emit("message", JSON.stringify(msg));
+            player.socket.emit(event, JSON.stringify(msg));
           } else {
             throw new Error("Player " + username + " could not be found.");
           }
@@ -44,13 +50,14 @@ export class PlayerCommunication {
   /**
    * Sends a message to the everyone in the room.
    * @function@param {string} id - The game's id the player is in.
+   * @param {string} event - The event to be sent to the client.
    * @param {string} msg - The message to be sent.
    * @public
    */
-  public SendToRoom(id: string, msg: string): void {
+  public SendToRoom(id: string, event: string, msg: string): void {
     for (let item of this.RunningGames.Sessions) {
       if (item.id === id) {
-        item.Socket.to(id).emit("roomcast", JSON.stringify(msg));
+        item.socket.to(id).emit(event, JSON.stringify(msg));
       } else {
         throw new Error(
           "PlayerCom.ts - SendToRoom: Game with the id " +

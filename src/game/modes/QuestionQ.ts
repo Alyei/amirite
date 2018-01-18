@@ -8,7 +8,7 @@ export class QuestionQ implements IGame {
   readonly gamemode: string;
   readonly players: IPlayerSocket[];
   readonly owner: string;
-  public Socket: SocketIO.Namespace;
+  public socket: SocketIO.Namespace;
 
   /**
    * Assigns a random ID to the game and sets the owner.
@@ -21,7 +21,7 @@ export class QuestionQ implements IGame {
     this.gamemode = "questionq";
     this.players = new Array<IPlayerSocket>();
     this.owner = owner;
-    this.Socket = socket;
+    this.socket = socket;
   }
 
   /**
