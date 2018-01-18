@@ -4,6 +4,7 @@ import { generateGameId } from "./Helper";
 import { GameInit } from "./GameInit";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "./Logging";
+import * as IEvents from "../models/IEvents";
 
 export class io {
   public server: SocketIO.Server;
@@ -38,14 +39,19 @@ export class io {
     this.QuestionQ.on("connection", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
       playerSocket.join("test room");
+
       playerSocket.on("host game", (username: string) => {
         let gameId: string = this.InitGame.HostGame(playerSocket, {
           mode: "questionq",
           owner: "alyei" //change to username
         });
+
+        playerSocket.emit("gameid", gameId);
       });
 
-      playerSocket.on("join game", (username: string) => {});
+      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {});
+
+      playerSocket.on("tip", (msg: object) => {});
 
       //Placeholder
     });
