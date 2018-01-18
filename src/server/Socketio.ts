@@ -35,6 +35,9 @@ export class io {
     );
     this.QuestionQConf();
     this.MillionaireConf();
+    this.DuelConf();
+    this.DeterminationConf();
+    this.TrivialPursuitConf();
   }
 
   //On connection wird der Socket übergeben => Socket+Username in array speichern
@@ -89,8 +92,119 @@ export class io {
           }
         }
       });
+
+      playerSocket.on("tip", (arg: any) => {
+        //on tip
+      });
+
+      playerSocket.on("joker", (arg: any) => {
+        //joker
+      });
+
+      playerSocket.on("clue", (arg: any) => {
+        //clue
+      });
     });
 
     //place
+  }
+
+  private DuelConf(): void {
+    this.Duel.on("connection", (playerSocket: SocketIO.Socket) => {
+      playerSocket.on("host game", (username: string) => {
+        let gameId: string = this.InitGame.HostGame(playerSocket, {
+          mode: "duel",
+          owner: "alyei" //change
+        });
+        logger.log(
+          "info",
+          "New Duel session hosted. ID: %s, Owner: %s",
+          gameId,
+          username
+        );
+      });
+
+      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+        for (let item of this.GameSessions.Sessions) {
+          if (item.id == opt.gameId) {
+            item.AddPlayer(opt.username, playerSocket);
+          }
+        }
+      });
+
+      playerSocket.on("tip", (arg: any) => {
+        //on tip
+      });
+
+      playerSocket.on("category", (arg: any) => {
+        //category
+      });
+
+      playerSocket.on("difficulty", (arg: any) => {
+        //difficulty
+      });
+    });
+  }
+
+  private DeterminationConf(): void {
+    this.Determination.on("connection", (playerSocket: SocketIO.Socket) => {
+      playerSocket.on("host game", (username: string) => {
+        let gameId: string = this.InitGame.HostGame(playerSocket, {
+          mode: "determination",
+          owner: "alyei" //change
+        });
+        logger.log(
+          "info",
+          "New Determination session hosted. ID: %s, Owner: %s",
+          gameId,
+          username
+        );
+      });
+
+      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+        for (let item of this.GameSessions.Sessions) {
+          if (item.id == opt.gameId) {
+            item.AddPlayer(opt.username, playerSocket);
+          }
+        }
+      });
+
+      playerSocket.on("tip", (arg: any) => {
+        //on tip
+      });
+    });
+  }
+
+  private TrivialPursuitConf(): void {
+    this.TrivialPursuit.on("connection", (playerSocket: SocketIO.Socket) => {
+      playerSocket.on("host game", (username: string) => {
+        let gameId: string = this.InitGame.HostGame(playerSocket, {
+          mode: "trivial pursuit",
+          owner: "alyei" //change
+        });
+        logger.log(
+          "info",
+          "New Trivial Pursuit session hosted. ID: %s, Owner: %s",
+          gameId,
+          username
+        );
+      });
+
+      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+        for (let item of this.GameSessions.Sessions) {
+          if (item.id == opt.gameId) {
+            item.AddPlayer(opt.username, playerSocket);
+          }
+        }
+      });
+
+      playerSocket.on("tip", (arg: any) => {
+        //on tip
+      });
+
+      playerSocket.on("category", (arg: any) => {
+        //category
+      });
+    });
   }
 }
