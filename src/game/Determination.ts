@@ -4,6 +4,7 @@ import { TipJSON } from "./Tip";
 import { ArrayManager } from "./ArrayManager";
 import { PlayerInputError } from "./PlayerInputError";
 import { QuestionQTipFeedback } from "./QuestionQTipFeedback";
+import { logger } from "../server/logging";
 
 enum DeterminationGamePhase {
     Setup = 0,
@@ -54,6 +55,11 @@ export class Determination {
     // returns whether a change was necessary
     public DisqualifyUser(username: string): boolean {
         let player: Player = this._players.find(x => x.Username == username);
+        if (!player) {
+            logger.info("could not find player '" + username + "'");
+            return;
+        }
+
         if (player.State == PlayerState.Disqualified)
             return false;
         player.State = PlayerState.Disqualified;
@@ -124,6 +130,11 @@ export class Determination {
                 // this._questions.find(x => player.Questions.find(y => y[0].questionId == x[0].questionId) == undefined
                 // L-> find a question you cannot find in player.questions
                 let nextQuestion: [PlayerQuestionJSON, string] = this._questions.find(x => player.Questions.find(y => y[0].questionId == x[0].questionId) == undefined);
+                if (!nextQuestion) {
+                    logger.info("could not find next question in '" + this._questions.toString() + "''" + player.Questions.toString() + "'");
+                    return;
+                }
+
                 nextQuestion[0].questionTime = new Date(); // change only for this player!!!
                 // send nextQuestion to Username
                 this._send(this._gameId, player.Username, MessageType.Question, {
@@ -149,9 +160,19 @@ export class Determination {
 
     public PlayerGivesTip(username: string, tip: PlayerTip): void {
         let player: Player = this._players.find(x => x.Username == username);
+        if (!player) {
+            logger.info("could not find player '" + username + "'");
+            return;
+        }
+
         if (this._gamePhase == DeterminationGamePhase.Running && player.State == PlayerState.Playing) {
             if (!player.Tips.find(x => x.questionId == tip.QuestionId)) {
                 let PlayerQuestionTuple: [PlayerQuestionJSON, string] = player.Questions.find(x => x[0].questionId == tip.QuestionId);
+                if (!PlayerQuestionTuple) {
+                    this._send(this._gameId, player.Username, MessageType.Error, "You were not asked this question >:c");
+                    return;
+                }
+
                 let duration: number = (new Date()).getTime() - PlayerQuestionTuple[0].questionTime.getTime();
                 let points: number = 0;
                 if (duration < PlayerQuestionTuple[0].timeLimit) {
@@ -173,18 +194,18 @@ export class Determination {
                             this.QuestionPlayer(player);
                     }
                     else {
-                        if (!tip.Correct) { //next option + little score
+                        if (!tip.Correct) { //check for multiple tries (determinationPLayer)  next option + little score
                             points = Math.floor(PlayerQuestionTuple[0].difficulty * PlayerQuestionTuple[0].timeLimit / (1 + duration) / 10);
                             player.Score += points;
                             this._send(this._gameId, player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(true, player.Score, "wrong option"));
 
-                            let nextOptioni: number = PlayerQuestionTuple[0].answers.findIndex(x => x[0] == tip.Answer) + 1;
-                            if (nextOptioni < PlayerQuestionTuple[0].answers.length) {
-                                let nextOption: [string, string] = PlayerQuestionTuple[0].answers[nextOptioni];
-                                this._send(this._gameId, player.Username, MessageType.NextOption, { "option": nextOption });
-                            } else {
+                            let nextOptioni: number = PlayerQuestionTuple[0].answers.findIndex(x => x[0] == tip.Answer);
+                            if (!nextOptioni) {
                                 this._send(this._gameId, player.Username, MessageType.Error, new PlayerInputError("no further options", { "answerId": tip.Answer, "nextIndex": nextOptioni }));
+                                return;
                             }
+                            let nextOption: [string, string] = PlayerQuestionTuple[0].answers[nextOptioni];
+                            this._send(this._gameId, player.Username, MessageType.NextOption, { "option": nextOption });
                         }
                         else { //wrong
                             this._send(this._gameId, player.Username, MessageType.TipFeedback, new QuestionQTipFeedback(false, player.Score, "wrong answer"));

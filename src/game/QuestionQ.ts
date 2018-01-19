@@ -4,6 +4,7 @@ import { TipJSON } from "./Tip";
 import { ArrayManager } from "./ArrayManager";
 import { QuestionQTipFeedback } from "./QuestionQTipFeedback";
 import { PlayerInputError } from "./PlayerInputError";
+import { logger } from "../server/logging";
 
 export enum QuestionQGamePhase {
     Setup = 0,
@@ -18,7 +19,7 @@ export enum MessageType {
 }
 
 export interface User {
-    Username: string;
+    username: string;
 }
 
 export class QuestionQ {
@@ -39,7 +40,7 @@ export class QuestionQ {
         this._players = [];
         if (users) {
             for (let user of users) {
-                this._players.push(new Player(user.Username));
+                this._players.push(new Player(user.username));
             }
         }
     }
@@ -47,6 +48,11 @@ export class QuestionQ {
     // returns whether a change was necessary
     public DisqualifyUser(username: string): boolean {
         let player: Player = this._players.find(x => x.Username == username);
+        if (!player) {
+            logger.info("could not find player '" + username + "'");
+            return;
+        }
+
         if (player.State == PlayerState.Disqualified)
             return false;
         player.State = PlayerState.Disqualified;
@@ -57,7 +63,7 @@ export class QuestionQ {
     // only while running
     public AddUser(user: User): boolean {
         if (this._gamePhase != QuestionQGamePhase.Ended) {
-            this._players.push(new Player(user.Username));
+            this._players.push(new Player(user.username));
             return true;
         }
         return false;
@@ -117,6 +123,11 @@ export class QuestionQ {
                 // this._questions.find(x => player.Questions.find(y => y[0].questionId == x.QuestionId) == undefined)
                 // L-> find a question you cannot find in player.questions
                 let nextQuestion: [PlayerQuestionJSON, string] = this._questions.find(x => player.Questions.find(y => y[0].questionId == x.QuestionId) == undefined).GetPlayerQuestionJSON();
+                if (!nextQuestion) {
+                    logger.info("could not find next question in '" + this._questions.toString() + "''" + player.Questions.toString() + "'");
+                    return;
+                }
+
                 // send nextQuestion to Username
                 this._send(this._gameId, player.Username, MessageType.Question, nextQuestion[0]);
                 // add question to the player's questions
@@ -133,9 +144,18 @@ export class QuestionQ {
     public PlayerGivesTip(username: string, tip: PlayerTip): void {
         let player: Player = this._players.find(x => x.Username == username);
         // only while running and if the player is ingame
+        if (!player) {
+            logger.info("could not find player '" + username + "'");
+            return;
+        }
         if (this._gamePhase == QuestionQGamePhase.Running && player.State == PlayerState.Playing) {
             if (!player.Tips.find(x => x.questionId == tip.QuestionId)) {
                 let PlayerQuestionTuple: [PlayerQuestionJSON, string] = player.Questions.find(x => x[0].questionId == tip.QuestionId);
+                if (!PlayerQuestionTuple) {
+                    this._send(this._gameId, player.Username, MessageType.Error, "You were not asked this question >:c");
+                    return;
+                }
+
                 let duration: number = (new Date()).getTime() - PlayerQuestionTuple[0].questionTime.getTime();
                 let points: number = 0;
                 if (duration < PlayerQuestionTuple[0].timeLimit) {
