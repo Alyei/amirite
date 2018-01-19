@@ -49,6 +49,11 @@ export class QuestionQ {
     // returns whether a change was necessary
     public DisqualifyUser(username: string): boolean {
         let player: Player = this._players.find(x => x[0].Username == username)[0];
+        if (!player) {
+            logger.info("could not find player '" + username + "'");
+            return;
+        }
+
         if (player.State == PlayerState.Disqualified)
             return false;
         player.State = PlayerState.Disqualified;
@@ -87,6 +92,7 @@ export class QuestionQ {
             this._usedQuestions.push(question);
             return question;
         }
+        logger.info("could not pick next question for difficulty '" + difficulty + "'");
         //
         return null;
     }
