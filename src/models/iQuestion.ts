@@ -1,4 +1,4 @@
-export interface QuestionQQuestion {
+export interface Question {
   quetionid: string;
   difficulty: number;
   timeLimit: number;

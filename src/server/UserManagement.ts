@@ -2,7 +2,7 @@ import * as pass from "passport";
 import * as local from "passport-local";
 import * as bcrypt from "bcrypt";
 import { Passport } from "passport";
-import { model } from "../models/userSchema";
+import { UserModel } from "../models/Schemas";
 import * as helper from "../server/Helper";
 import { logger } from "./Logging";
 
@@ -43,7 +43,7 @@ export class Authentication {
 
     //How to get user.
     this.passport.deserializeUser((id: any, done: any) => {
-      model.findById(id, (err: any, user: any) => {
+      UserModel.findById(id, (err: any, user: any) => {
         done(err, user);
       });
     });
@@ -59,7 +59,7 @@ export class Authentication {
       (req: any, username: string, password: string, done: any) => {
         process.nextTick(() => {
           //So everything is there - copied from guide
-          model.findOne({ username: username }, (err: any, user: any) => {
+          UserModel.findOne({ username: username }, (err: any, user: any) => {
             //Looks for the model with the username in the database.
             if (err) return done(err);
 
@@ -71,7 +71,7 @@ export class Authentication {
                 req.flash("signupMessage", "Username already taken")
               );
             } else {
-              let newUser: any = new model({
+              let newUser: any = new UserModel({
                 username: username,
                 password: password,
                 email: req.body.email
@@ -106,38 +106,45 @@ export class Authentication {
     this.LoginStrategy = new local.Strategy(
       { passReqToCallback: true },
       (req: any, username: string, password: string, done: any) => {
-        model.findOne({ username: username }, async (err: any, user: any) => {
-          if (err) return done(err);
+        UserModel.findOne(
+          { username: username },
+          async (err: any, user: any) => {
+            if (err) return done(err);
 
-          if (!user) {
-            //If the user doesn't exist
-            console.log("User doesn't exist.");
-            return done(
-              null,
-              false,
-              req.flash("loginMessage", "Username or password is wrong.")
-            );
-          }
-
-          //Waits for the password check.
-          bcrypt.compare(password, user.password, (err: any, same: boolean) => {
-            if (same) {
-              logger.log("info", "User %s logged in.", user.username);
-              return done(null, user);
-            } else {
-              logger.log(
-                "info",
-                "User %s entered a wrong password.",
-                user.username
-              );
+            if (!user) {
+              //If the user doesn't exist
+              console.log("User doesn't exist.");
               return done(
                 null,
                 false,
                 req.flash("loginMessage", "Username or password is wrong.")
               );
             }
-          });
-        });
+
+            //Waits for the password check.
+            bcrypt.compare(
+              password,
+              user.password,
+              (err: any, same: boolean) => {
+                if (same) {
+                  logger.log("info", "User %s logged in.", user.username);
+                  return done(null, user);
+                } else {
+                  logger.log(
+                    "info",
+                    "User %s entered a wrong password.",
+                    user.username
+                  );
+                  return done(
+                    null,
+                    false,
+                    req.flash("loginMessage", "Username or password is wrong.")
+                  );
+                }
+              }
+            );
+          }
+        );
       }
     );
   }
