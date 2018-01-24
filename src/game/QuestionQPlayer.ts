@@ -1,5 +1,4 @@
-import { PlayerQuestionJSON } from "./Question" ;
-import { TipJSON } from "./Tip";
+import { iQuestionQQuestion, iQuestionQTipData, iQuestionQPlayerData } from "../models/GameModels" ;
 
 export enum PlayerState {
     Launch = 0,
@@ -9,10 +8,10 @@ export enum PlayerState {
     Disqualified,
 }
 
-export class Player {
+export class QuestionQPlayer {
     private _score: number;
-    private _questions: [PlayerQuestionJSON, string][]
-    private _tips: TipJSON[]
+    private _questions: [iQuestionQQuestion, string][]
+    private _tips: iQuestionQTipData[]
     private _state: PlayerState;
 
     constructor(
@@ -22,6 +21,17 @@ export class Player {
         this._score = 0;
         this._state = PlayerState.Launch;
     }
+
+    public GetPlayerData(): iQuestionQPlayerData {
+        return {
+            "username": this.Username,
+            "score": this.Score,
+            "state": this.State,
+            "questions": this.Questions,
+            "tips": this.Tips
+        }
+    }
+
     get Username(): string {
         return this._username;
     }
@@ -37,16 +47,16 @@ export class Player {
     public set State(value: PlayerState) {
         this._state = value;
     }
-    public get Questions(): [PlayerQuestionJSON, string][] {
+    public get Questions(): [iQuestionQQuestion, string][] {
         return this._questions;
     }
-    public set Questions(value: [PlayerQuestionJSON, string][]) {
+    public set Questions(value: [iQuestionQQuestion, string][]) {
         this._questions = value;
     }
-    public get Tips(): TipJSON[] {
+    public get Tips(): iQuestionQTipData[] {
         return this._tips;
     }
-    public set Tips(value: TipJSON[]) {
+    public set Tips(value: iQuestionQTipData[]) {
         this._tips = value;
     }
 }
