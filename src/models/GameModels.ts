@@ -8,41 +8,59 @@ export interface iGeneralQuestion {
     timeLimit:      number;
     difficulty:     number;
 }
+
 export interface iGeneralPlayerInputError {
     message:    string;
     data:       any;
 }
+
 export interface iGeneralHostArguments {
     gameId:         string;
     gamemode:       Gamemode;
-    send:           (gameId: string, username: string, msgType: MessageType, data: {}) => void;
     usernames:      string[];
-    questions:      string[];
+    questionIds:    string[];
 }
 
 export enum Gamemode {
     QuestionQ = 0,
+    Determination,
 }
-// every interface except the HostArguments has its own entry here (similar inter.. from different gamemodes use the same entry)
+
+export enum PlayerState {
+    Launch = 0,
+    Playing,
+    Paused,
+    Finished,
+    Disqualified,
+}
+
+// every possible message has its own entry here
 export enum MessageType {
-    Error = 0,
-    Question,
-    TipFeedback,
-    PlayerData,
-    GameData,
+    PlayerInputError = 0,
+    QuestionQQuestion,
+    QuestionQTipFeedback,
+    QuestionQPlayerData,
+    QuestionQTip,
+    QuestionQGameData,
+    QuestionQHostArguments,
+    DeterminationPlayerData,
+    DeterminationQuestion,
+    DeterminationTip,
+    DeterminationOption,
+    DeterminationTipFeedback, //...
+}
+export enum GameAction {
+    Start = 0,
+    Stop,
+    Pause,
+    Save,
+    Load,
 }
 //#endregion
 
 //#region QuestionQ
 export interface iQuestionQHostArguments {
-    //#region overwritten by iGeneralHostArguments
-    send?:          (username: string, msgType: MessageType, data: {}) => void;
-    gameEnded?:     () => void;
-    usernames?:     string[];
-    questions?:     string[];
-    logInfo?:       (toLog: string) => void;
-    logSilly?:      (toLog: string) => void;
-    //#endregion
+    
 }
 export interface iQuestionQGameData {
     gameId:     string;
@@ -65,6 +83,7 @@ export interface iQuestionQTipFeedback {
     questionId: string;
     correct:    boolean;
     duration:   number;
+    // time correction
     points:     number;
     score:      number;
     message:    string;
@@ -75,10 +94,64 @@ export interface iQuestionQPlayerData {
     score:      number;
     questions:  [iQuestionQQuestion, string][];
     tips:       iQuestionQTipData[];
+    // time correction
 }
 export interface iQuestionQTipData {
     tip:        iQuestionQTip;
     feedback:   iQuestionQTipFeedback;
+}
+//#endregion
+
+//#region Determination
+export interface iDeterminationHostArguments {
+    
+}
+export interface iDeterminationGameData {
+    gameId:     string;
+    players:    iDeterminationPlayerData[];
+}
+export interface iDeterminationTip {
+    questionId: string;
+    answerId:   string;
+    correct:    boolean;
+}
+export interface iDeterminationQuestion {
+    questionId:     string;
+    question:       string;
+    pictureId?:     string;
+    timeLimit:      number;
+    difficulty:     number;
+    questionTime:   Date;
+}
+export interface iDeterminationQuestionData {
+    question:   iDeterminationQuestion;
+    options:    { [id: string]: string };
+    correct:    string;
+}
+export interface iDeterminationOption {
+    questionId: string;
+    option:     [string, string];
+}
+export interface iDeterminationTipFeedback {
+    tip:        iDeterminationTip;
+    correct:    boolean;
+    duration:   number;
+    // time correction
+    points:     number;
+    score:      number;
+    message:    string;
+}
+export interface iDeterminationTipData {
+    tip:        iDeterminationTip;
+    feedback:   iDeterminationTipFeedback;
+}
+export interface iDeterminationPlayerData {
+    username:   string;
+    state:      number;
+    score:      number;
+    // current question
+    questions:  iDeterminationQuestionData[];
+    tips:       iDeterminationTipData[];
 }
 //#endregion
 
@@ -137,32 +210,6 @@ export interface iDuelQuestion {
 }
 export interface iDuelTipFeedback {
     questionId: string;
-    correct:    boolean;
-    score:      number;
-    message:    string;
-}
-
-export interface iDetermination {
-}
-export interface iDeterminationTip {
-    questionId: string;
-    answerId:   string;
-    correct:    boolean;
-}
-export interface iDeterminationQuestion {
-    questionId:     string;
-    question:       string;
-    firstOption:    [string, string];
-    timeLimit:      number;
-    difficulty:     number;
-}
-export interface iDeterminationNextOption {
-    questionId: string;
-    nextOption: [string, string];
-}
-export interface iDeterminationTipFeedback {
-    questionId: string;
-    answerId:   string;
     correct:    boolean;
     score:      number;
     message:    string;
