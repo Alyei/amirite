@@ -8,10 +8,6 @@ enum DeterminationGamePhase {
     Ended,
 }
 
-export interface User {
-    Username: string;
-}
-
 export class DeterminationCore {
     readonly Gamemode: Gamemode.Determination;
     private _players: iDeterminationPlayerData[];
@@ -154,7 +150,7 @@ export class DeterminationCore {
         if (this._send && this._gameEnded && this._players && this._questions) {
             this._gamePhase = DeterminationGamePhase.Running;
             for (let player of this._players) {
-                if (player.state = PlayerState.Launch) {
+                if (player.state == PlayerState.Launch) {
                     player.state = PlayerState.Playing;
                     this.QuestionPlayer(player);
                 }

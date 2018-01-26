@@ -7,10 +7,6 @@ export enum QuestionQGamePhase {
     Ended,
 }
 
-/*export interface User {
-    username: string;
-}*/
-
 export class QuestionQCore {
     readonly Gamemode: Gamemode = Gamemode.QuestionQ;
     private _players: iQuestionQPlayerData[];
@@ -155,7 +151,7 @@ export class QuestionQCore {
         if (this._send && this._gameEnded && this._players && this._questions) {
             this._gamePhase = QuestionQGamePhase.Running;
             for (let player of this._players) {
-                if (player.state = PlayerState.Launch) {
+                if (player.state == PlayerState.Launch) {
                     player.state = PlayerState.Playing;
                     this.QuestionPlayer(player);
                 }
