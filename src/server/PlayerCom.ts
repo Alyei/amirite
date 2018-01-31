@@ -1,5 +1,6 @@
 import { IGame, IPlayerSocket } from "../game/modes/IGame";
 import { RunningGames } from "../game/RunningGames";
+import * as GModels from "../models/GameModels";
 
 /**
  * Handles the Server-Player communication.
@@ -29,14 +30,14 @@ export class PlayerCommunication {
   public SendToPlayer(
     id: string,
     username: string,
-    event: string,
+    event: GModels.MessageType,
     msg: string
   ): void {
     for (let item of this.RunningGames.Sessions) {
       if (item.id === id) {
         for (let player of item.players) {
           if (player.username === username) {
-            player.socket.emit(event, JSON.stringify(msg));
+            player.socket.emit(event.toString(), JSON.stringify(msg));
           } else {
             throw new Error("Player " + username + " could not be found.");
           }
@@ -54,10 +55,10 @@ export class PlayerCommunication {
    * @param {string} msg - The message to be sent.
    * @public
    */
-  public SendToRoom(id: string, event: string, msg: string): void {
+  public SendToRoom(id: string, event: GModels.MessageType, msg: string): void {
     for (let item of this.RunningGames.Sessions) {
       if (item.id === id) {
-        item.socket.to(id).emit(event, JSON.stringify(msg));
+        item.socket.to(id).emit(event.toString(), JSON.stringify(msg));
       } else {
         throw new Error(
           "PlayerCom.ts - SendToRoom: Game with the id " +

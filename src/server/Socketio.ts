@@ -5,6 +5,10 @@ import { GameInit } from "./GameInit";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "./Logging";
 import * as IEvents from "../models/IEvents";
+import { GameFactory } from "../game/GameFactory";
+import { PlayerCommunication } from "./PlayerCom";
+import { iGeneralHostArguments } from "../models/GameModels";
+import * as GModels from "../models/GameModels";
 
 export class io {
   public server: SocketIO.Server;
@@ -15,6 +19,8 @@ export class io {
   public Duel: SocketIO.Namespace;
   public InitGame: GameInit;
   public GameSessions: RunningGames;
+  public GameFactory: GameFactory;
+  public PlayerComm: PlayerCommunication;
 
   constructor(app: any) {
     this.server = socketio.listen(app);
@@ -24,7 +30,10 @@ export class io {
     this.Determination = this.server.of("/determination");
     this.TrivialPursuit = this.server.of("/trivialpursuit");
     this.Duel = this.server.of("/duel");
+    this.GameFactory = new GameFactory();
+
     this.GameSessions = new RunningGames();
+    this.PlayerComm = new PlayerCommunication(this.GameSessions);
     this.InitGame = new GameInit(
       this.QuestionQ,
       this.Millionaire,
@@ -47,6 +56,15 @@ export class io {
       playerSocket.join("test room");
 
       playerSocket.on("host game", (username: string) => {
+        const args: iGeneralHostArguments = {
+          gameId: generateGameId(),
+          gamemode: GModels.Gamemode.QuestionQ,
+          usernames: [],
+          questionIds: ["1", "2", "3", "4"]
+        };
+        this.GameFactory.CreateGame(args, this.PlayerComm.SendToPlayer, () => {
+          console.log("missing");
+        });
         let gameId: string = this.InitGame.HostGame(playerSocket, {
           mode: "questionq",
           owner: "alyei" //change to username
