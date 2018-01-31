@@ -1,22 +1,22 @@
 ﻿export class ArrayManager {
     public constructor(
-        public item?: any[]
+        public collection?: any[]
     ) { }
 
     public ShuffleArray(): any[] { // assuming that any[] works
-        if (this.item) {
+        if (this.collection) {
             let shuffled: any[] = [];
 
             let index: number;
-            while (this.item.length > 0) {
-                index = Math.floor(Math.random() * this.item.length);
-                shuffled.push(this.item[index]);
-                this.item.splice(index, 1)
+            while (this.collection.length > 0) {
+                index = Math.floor(Math.random() * this.collection.length);
+                shuffled.push(this.collection[index]);
+                this.collection.splice(index, 1)
             }
 
-            this.item = shuffled;
+            this.collection = shuffled;
             return shuffled;
         }
-        return null;
+        return [];
     }
 }
