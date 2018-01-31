@@ -3,7 +3,7 @@ import React from "react";
 import QuestionBox from "../components/QuestionBox";
 import AnswerBox from "../components/AnswerBox";
 
-export default class QuestionQ extends React.Component {
+export default class Determination extends React.Component {
     constructor() {
         super();
         this.state = {
@@ -11,11 +11,11 @@ export default class QuestionQ extends React.Component {
             questiontext: "",
             answers: [],
             picture: null,
-            currAnswer: 0,
         }
     }
-    handleCurrAnswAdd() {
-        this.setState({currAnswer: this.state.currAnswer+1});        
+
+    handleAnswerClick() {
+        
     }
 
     newQuestion() {
@@ -28,16 +28,11 @@ export default class QuestionQ extends React.Component {
     nextAnswer() {
         return(
             <div>
-            <AnswerBox text={this.state.answers[this.state.currAnswer]} />
+                answers.forEach(answer => {
+                    <AnswerBox text={answer} />
+                });
             </div>
         );
-    }
-
-    handleNoClick() {
-        
-    }
-    handleYesClick() {
-
     }
 
     render() {
@@ -45,7 +40,6 @@ export default class QuestionQ extends React.Component {
             <div>
             <newQuestion/>
             <nextAnswer/>
-            <handleCurrAnswAdd/>
             </div>
         )
     }

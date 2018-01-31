@@ -4,10 +4,15 @@ import { Grid, Row, Col } from "react-bootstrap";
 import GroupStrip from "../components/GroupStrip.js";
 import NavBar from "../components/NavBar.js";
 
+import "../../css/style.css";
+
 export default class Main extends React.Component {
     constructor() {
       super();
       this.GridLay = this.GridLay.bind(this);
+      this.state = {
+        testi: {test: "abc"}
+      }
     }
   
     GridLay() {

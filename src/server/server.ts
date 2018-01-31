@@ -12,6 +12,7 @@ import { logger } from "./logging";
 import { io } from "./Socketio";
 import * as ejs from "ejs";
 import { Editor } from "./QuestionEditor";
+import * as cors from "cors";
 
 let flash: any = require("connect-flash");
 let MongoStore: any = require("connect-mongo")(session);
@@ -31,6 +32,7 @@ export class server {
   private passport: any;
   private socketIo: any;
   private QuestionEditor: any;
+  private cors: any = require("cors");
 
   /**
    * Initializes the HTTPS server.
@@ -44,6 +46,32 @@ export class server {
     this.httpsServer = https.createServer(this.certificate, this.app);
     this.passport = pass;
     this.QuestionEditor = new Editor();
+    this.app.use(function(req: any, res: any, next: any) {
+      // Website you wish to allow to connect
+      res.setHeader(
+        "Access-Control-Allow-Origin",
+        "http://localhost/api/signup"
+      );
+
+      // Request methods you wish to allow
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, PATCH, DELETE"
+      );
+
+      // Request headers you wish to allow
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "X-Requested-With,content-type"
+      );
+
+      // Set to true if you need the website to include cookies in the requests sent
+      // to the API (e.g. in case you use sessions)
+      res.setHeader("Access-Control-Allow-Credentials", true);
+
+      // Pass to next layer of middleware
+      next();
+    });
     this.app.use(morgan("dev"));
     this.app.use(cookie());
     this.app.use(

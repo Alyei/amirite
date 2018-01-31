@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, ButtonGroup, Navbar, Nav, NavItem } from "react-bootstrap";
+import { Button, Navbar, Nav, NavItem } from "react-bootstrap";
 
 import "../../css/navigation.css";
 

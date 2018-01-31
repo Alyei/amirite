@@ -36,9 +36,8 @@ let Question: mongoose.Schema = new mongoose.Schema({
   id: {
     type: String,
     required: true,
-    unique: true,
-    match: /^[0-9a-z]{10}$/i,
-    default: generateId()
+    unique: true
+    //match: /^[0-9a-z]{10}$/i
   },
   difficulty: {
     type: Number,
@@ -56,10 +55,12 @@ let Question: mongoose.Schema = new mongoose.Schema({
     type: String,
     required: true
   },
-  otherOptions: {
-    type: Array,
-    required: true
-  },
+  otherOptions: [
+    {
+      type: [String],
+      required: true
+    }
+  ],
   explanation: {
     type: String,
     required: true
