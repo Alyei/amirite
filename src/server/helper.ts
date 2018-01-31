@@ -2,6 +2,7 @@ import * as bcrypt from "bcrypt";
 import * as crypto from "crypto";
 import { Mongoose } from "mongoose";
 import { logger } from "./logging";
+import * as iQuestion from "../models/iQuestion";
 
 /**
  * Hashes the model's password and saves it to the database.
@@ -25,11 +26,11 @@ let hashPwAndSave = function(model: any): void {
 };
 
 /**
- * Generates a random, 10 character long, user id.
+ * Generates a random, 10 character long, id.
  * @function
- * @returns The user id.
+ * @returns The id.
  */
-let generateUserId = function(): string {
+let generateId = function(): string {
   return crypto
     .randomBytes(Math.ceil(10 * 3 / 4))
     .toString("base64")
@@ -52,6 +53,4 @@ let generateGameId = function(): string {
     .replace(/\//g, "x");
 };
 
-export { hashPwAndSave };
-export { generateUserId };
-export { generateGameId };
+export { hashPwAndSave, generateId, generateGameId };
