@@ -43,6 +43,7 @@ export class GameFactory {
           "New QuestionQ game: %s hosted.",
           generalArguments.owner
         );
+        break;
       }
       /*case Gamemode.Determination: {
         return new DeterminationGame(
@@ -54,7 +55,7 @@ export class GameFactory {
       }*/
       default:
         throw new Error(
-          Gamemode.QuestionQ + " SPACE " + generalArguments.gamemode
+          Gamemode[Gamemode.QuestionQ] + " SPACE " + Gamemode[generalArguments.gamemode]
         );
     }
   }
