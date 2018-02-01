@@ -83,7 +83,7 @@ export class MillionaireCore {
         // game ended
         return false;
     }
-
+/*
     public GetPlayerData(): iMillionairePlayer[] {
         return this._players;
     }
@@ -91,21 +91,40 @@ export class MillionaireCore {
         return this._players.filter(x => x.state == PlayerState.Launch);
     }
 
-    public UseFiftyFiftyJoker(username: string, ): boolean {
-        
+    public UseFiftyFiftyJoker(username: string): boolean {
+        // only while running
+        if (this._gamePhase == MillionaireGamePhase.Running && this._currentPlayer && this._currentPlayer.currentQuestion) {
+            // only if it is the players turn
+            if (username == this._currentPlayer.username) {
     }
 
-    public UseAudienceJoker(username: string, ): boolean {
-        
+    public UseAudienceJoker(username: string): boolean {
+        // only while running
+        if (this._gamePhase == MillionaireGamePhase.Running && this._currentPlayer && this._currentPlayer.currentQuestion) {
+            // only if it is the players turn
+            if (username == this._currentPlayer.username) {
+                // only if the player has this joker
+                if (this._currentPlayer.jokers)
+                for (let player of this._players) {
+                    if (player.username != username)
+                        this._send(player.username, MessageType.)
+                }
     }
 
     public UseCallJoker(username: string, ): boolean {
-        
+        // only while running
+        if (this._gamePhase == MillionaireGamePhase.Running && this._currentPlayer && this._currentPlayer.currentQuestion) {
+            // only if it is the players turn
+            if (username == this._currentPlayer.username) {
     }
 
     public PlayerGivesClue(username: string, tip: iMillionairePlayerClue): void {
-
-    }
+        // only while running
+        if (this._gamePhase == MillionaireGamePhase.Running && this._currentPlayer && this._currentPlayer.currentQuestion) {
+            // only if the joker is active
+            if (this._currentPlayer.currentQuestion) {
+                // only the player did not give a tip for this question before
+    }*/
 
     //returns the json that is sent to a player + the key for the correct answer
     public GetMillionaireQuestion(question: iGeneralQuestion): iMillionaireQuestionData {
@@ -171,7 +190,7 @@ export class MillionaireCore {
                 return false;
             }
             // TYPESCRIPT SOLLTE VERSTEHEN
-            if (![PlayerState.Launch, PlayerState.Paused].find(x => player.state == x)) {
+            else if (![PlayerState.Launch, PlayerState.Paused].find(x => player.state == x)) {
                 // player not in a launchable state
                 return false;
             }

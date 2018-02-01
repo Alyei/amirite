@@ -60,8 +60,9 @@ export enum MessageType {
     MillionaireQuestion,
     MillionaireTip,
     MillionaireTipFeedback,
-    MillionaireJokerRequest,
-    MillionaireJokerResponse,
+    MillionaireAudienceJokerRequest,
+    MillionaireAudienceJokerResponse,
+    MillionaireAudienceJokerClue,
     MillionairePassRequest,
     MillinairePassResponse, //...
 }
@@ -196,10 +197,6 @@ export interface iMillionairePlayer {
     questionData:       iMillionaireQuestionData[];
     karmaScore:         number;
 }
-export interface iMillionairePlayerClue {
-    questionId: string;
-    answerId:   string;
-}
 export interface iMillionaireQuestion {
     questionId: string;
     question:   string;
@@ -208,13 +205,27 @@ export interface iMillionaireQuestion {
     difficulty: number;
 }
 export interface iMillionaireQuestionData {
-    question:           iMillionaireQuestion;
-    correctAnswer:      string;
-    tip?:               iMillionaireTip;
-    jokerResponses?:    iMillionaireJokerResponse[];
-    feedback?:          iMillionaireTipFeedback;
+    question:               iMillionaireQuestion;
+    correctAnswer:          string;
+    tip?:                   iMillionaireTip;
+    audienceJokerData?:     iMillionaireAudienceJokerData; // mehrere?
+    fiftyFiftyJokerData?:   iMillionaireFiftyFiftyJokerData; // mehrere?
+    feedback?:              iMillionaireTipFeedback;
 }
-export interface iMillionaireJokerRequest {
+export interface iMillionaireAudienceJokerData {
+    // username, clue
+    playerClues:        { [id: string]: iMillionaireAudienceJokerPlayerClue };
+}
+// sent to inform about AudienceJoker
+export interface iMillionaireAudienceJokerActive {
+
+}
+// sent from audience and to the player
+export interface iMillionaireAudienceJokerPlayerClue {
+    questionId: string;
+    answerId:   string;
+}
+/*export interface iMillionaireJokerRequest {
     questionId: string;
     jokerId:    JokerType;
     arguments:  string[];
@@ -224,7 +235,7 @@ export interface iMillionaireJokerResponse {
     questionId: string;
     jokerId:    JokerType;
     answerId:   string;
-}
+}*/
 export interface iMillionaireTipFeedback {
     questionId: string;
     correct:    boolean;
