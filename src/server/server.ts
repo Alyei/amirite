@@ -8,8 +8,10 @@ import * as body from "body-parser";
 import * as cookie from "cookie-parser";
 import * as session from "express-session";
 import * as morgan from "morgan";
-import { logger } from "./Logging";
+import { logger } from "./logging";
 import { io } from "./Socketio";
+import * as ejs from "ejs";
+import { Editor } from "./QuestionEditor";
 
 let flash: any = require("connect-flash");
 let MongoStore: any = require("connect-mongo")(session);
@@ -28,6 +30,7 @@ export class server {
   private env: any;
   private passport: any;
   private socketIo: any;
+  private QuestionEditor: any;
 
   /**
    * Initializes the HTTPS server.
@@ -40,6 +43,7 @@ export class server {
     this.certificate = certificate;
     this.httpsServer = https.createServer(this.certificate, this.app);
     this.passport = pass;
+    this.QuestionEditor = new Editor();
     this.app.use(morgan("dev"));
     this.app.use(cookie());
     this.app.use(
@@ -60,7 +64,8 @@ export class server {
     this.app.use(flash());
     this.app.use(body.json());
     this.app.use(body.urlencoded({ extended: true }));
-    this.socketIo = new io(this.app);
+    this.socketIo = new io(this.httpsServer);
+    this.app.set("view engine", "ejs");
   }
 
   /**
@@ -68,7 +73,11 @@ export class server {
    * @function
    */
   StartListening(): void {
-    let route: any = new ExpressRoutes.Https(this.app, this.passport);
+    let route: any = new ExpressRoutes.Https(
+      this.app,
+      this.passport,
+      this.QuestionEditor
+    );
     this.httpRedirect();
 
     this.httpsServer.listen(this.port, (req: any, res: any) => {

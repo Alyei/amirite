@@ -3,10 +3,11 @@ import * as express from "express";
 import { server } from "./src/server/server";
 import * as fs from "fs";
 import * as mongo from "mongoose";
-import * as userauth from "./src/server/user_management";
+import * as userauth from "./src/server/usermanagement";
 
 env.config();
-let mongodb: any = mongo.connect("mongodb://localhost:27017/users", {
+require("mongoose").Promise = require("bluebird");
+const mongodb: any = mongo.connect("mongodb://localhost:27017/amirite", {
   useMongoClient: true
 });
 let pKey: string = fs.readFileSync(process.env.tls_key as string).toString();

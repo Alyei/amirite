@@ -1,4 +1,4 @@
-import { IGame } from "./modes/IGame";
+import { iGame } from "./iGame";
 import { logger } from "../server/Logging";
 
 //Interface probably unnecessary
@@ -7,14 +7,14 @@ import { logger } from "../server/Logging";
  * @class
  */
 export class RunningGames {
-  readonly Sessions: IGame[];
+  readonly Sessions: iGame[];
 
   /**
    * Initializes all Game arrays.
    * @constructor
    */
   constructor() {
-    this.Sessions = new Array<IGame>();
+    this.Sessions = new Array<iGame>();
   }
 
   /**
@@ -23,8 +23,16 @@ export class RunningGames {
    * @param {IGame} game - The game that should be added to the list of running games.
    * @returns The updated list for the specified gamemode.
    */
-  public addRunningGame(game: IGame): IGame[] {
+  public addRunningGame(game: iGame): iGame[] {
     this.Sessions.push(game);
+
+    logger.log(
+      "info",
+      "New QuestionQ session hosted. ID: %s, Owner: %s",
+
+      game.owner,
+      game.gamemode
+    );
     return this.Sessions;
   }
 }

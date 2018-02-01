@@ -1,5 +1,6 @@
 import * as path from "path";
 import * as dotenv from "dotenv";
+import { Editor } from "./QuestionEditor";
 
 /**
  * HTTPS server's routing.
@@ -7,7 +8,8 @@ import * as dotenv from "dotenv";
  */
 export class Https {
   private app: any;
-  private passport?: any;
+  private passport: any;
+  private questEdit: Editor;
 
   /**
    * Sets up the routes.
@@ -15,9 +17,10 @@ export class Https {
    * @param app Express server.
    * @param pass Passport object.
    */
-  constructor(app: any, pass?: any) {
+  constructor(app: any, pass: any, questEdit: Editor) {
     this.app = app;
     this.passport = pass;
+    this.questEdit = questEdit;
     this.setRoutes();
   }
 
@@ -28,15 +31,38 @@ export class Https {
   private setRoutes(): void {
     //When the user visits '/' he should be sent .../public/index.html
     this.app.get("/", (req: any, res: any) => {
-      res.sendFile(path.join(__dirname, "..", "..", "public", "index.html"));
+      res.render(path.join(__dirname, "..", "..", "public", "index.ejs"));
     });
 
     this.app.get("/login", (req: any, res: any) => {
-      res.sendFile(path.join(__dirname, "..", "..", "public", "login.html"));
+      res.render(path.join(__dirname, "..", "..", "public", "login.ejs"), {
+        message: req.flash("login")
+      });
     });
 
     this.app.get("/signup", (req: any, res: any) => {
-      res.sendFile(path.join(__dirname, "..", "..", "public", "signup.html"));
+      res.render(path.join(__dirname, "..", "..", "public", "signup.ejs"), {
+        message: req.flash("signup")
+      });
+    });
+
+    this.app.get("/profile", (req: any, res: any) => {
+      res.render(path.join(__dirname, "..", "..", "public", "profile.ejs"), {
+        user: req.user
+      });
+    });
+
+    this.app.get("/logout", function(req: any, res: any) {
+      req.logout();
+      res.redirect("/");
+    });
+
+    this.app.get("/socket", (req: any, res: any) => {
+      res.render(path.join(__dirname, "..", "..", "public", "socket.ejs"));
+    });
+
+    this.app.get("/question", (req: any, res: any) => {
+      res.render(path.join(__dirname, "..", "..", "public", "question.ejs"));
     });
 
     this.app.post(
@@ -56,6 +82,12 @@ export class Https {
         failureFlash: true //Allow flash messages.
       })
     );
+
+    this.app.post("/question", (req: any, res: any) => {
+      console.log(req.body.data);
+
+      this.questEdit.SaveQuestion(JSON.parse(req.body.data));
+    });
   }
 }
 

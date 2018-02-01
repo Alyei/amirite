@@ -1,9 +1,8 @@
-import * as scrypt from "scrypt";
+import * as bcrypt from "bcrypt";
 import * as crypto from "crypto";
-import { verifyKdf, verifyKdfSync } from "scrypt";
 import { Mongoose } from "mongoose";
-
-let params: scrypt.ParamsObject = scrypt.paramsSync(2);
+import { logger } from "./logging";
+import * as iQuestion from "../models/iQuestion";
 
 /**
  * Hashes the model's password and saves it to the database.
@@ -11,41 +10,33 @@ let params: scrypt.ParamsObject = scrypt.paramsSync(2);
  * @param {any} model - The usermodel that should be saved.
  */
 let hashPwAndSave = function(model: any): void {
-  scrypt.kdf(model.password, params, (err: any, hash: any) => {
+  bcrypt.hash(model.password, 8, (err: any, hash: any) => {
     model.password = hash.toString("hex");
     model.save((err: any, user: any) => {
-      if (err) return console.error(err);
-      console.log(`Saved user ${model.username}`);
+      if (err) {
+        logger.log(
+          "info",
+          "Password for user %s could not be saved.",
+          model.username
+        );
+        return console.error(err);
+      }
     });
   });
 };
 
 /**
- * Generates a random, 10 character long, user id.
+ * Generates a random, 10 character long, id.
  * @function
- * @returns The user id.
+ * @returns The id.
  */
-let generateUserId = function(): string {
+let generateId = function(): string {
   return crypto
     .randomBytes(Math.ceil(10 * 3 / 4))
     .toString("base64")
     .slice(0, 10)
     .replace(/\+/g, "3")
     .replace(/\//g, "x");
-};
-
-/**
- * Compares a given string and compares it to the hashed password in the database.
- * @function
- * @param {string} dbHash - The hash saved in the database.
- * @param {string} enteredPassword - The string you want to compare to the saved hash.
- * @returns True or False.
- */
-let checkPassword = async function(dbHash: string, enteredPassword: string) {
-  let isValid: Boolean = false;
-  isValid = await verifyKdfSync(Buffer.from(dbHash, "hex"), enteredPassword);
-
-  return isValid;
 };
 
 /**
@@ -62,7 +53,4 @@ let generateGameId = function(): string {
     .replace(/\//g, "x");
 };
 
-export { hashPwAndSave };
-export { generateUserId };
-export { checkPassword };
-export { generateGameId };
+export { hashPwAndSave, generateId, generateGameId };

@@ -1,0 +1,22 @@
+{
+  "name": "amiriteweb",
+  "description": null,
+  "version": "0.0.114",
+  "dependencies": {
+    "react": "^16.2.0",
+    "react-bootstrap": "^0.31.5",
+    "react-dom": "^16.2.0",
+    "react-router-dom": "^4.2.2",
+    "react-scripts": "^1.0.17",
+    "react-sticky": "6.0.1",
+    "react-visibility-sensor": "3.4.0",
+    "socket.io-client": "^2.0.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "proxy": "http://localhost:443"
+}
