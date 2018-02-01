@@ -13,10 +13,15 @@ import { logger } from "../server/logging";
 
 // game modes
 import { QuestionQCore } from "./QuestionQCore";
-import { iGame } from "./iGame";
+import { iGame, IPlayerSocket } from "./iGame";
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
+  public id: string;
+  public gamemode: string;
+  public owner: string;
+  public players: IPlayerSocket[];
+  public socket: SocketIO.Namespace;
 
   //_send function to send JSONs to a specific player
   //_gameEnded function to be executed, when the game ended
@@ -31,22 +36,34 @@ export class QuestionQGame implements iGame {
       data: {}
     ) => void,
     public GameEnded: () => void,
+    public namespace: SocketIO.Namespace,
     private _gameCoreArguments?: iQuestionQHostArguments
   ) {
+    this.socket = namespace;
     this.GameCore = new QuestionQCore(
       this.LogInfo,
       this.LogSilly,
       this.SendToUser,
       this.SendGameData,
-      this.LoadQuestions(),
-      this.GeneralArguments.usernames,
+      [
+        {
+          questionId: "1",
+          question: "hi",
+          pictureId: "123",
+          answer: "hi",
+          otherOptions: ["1", "2", "3", "4"],
+          timeLimit: 21,
+          difficulty: 4
+        }
+      ],
+      this.players,
       this._gameCoreArguments
-    );
+    ); //this.LoadQuestions(), instead of object array
   }
 
-  private LoadQuestions(): iGeneralQuestion[] {
-    //get from mongodb with this.GeneralArguments.questionIds;
-  }
+  // private LoadQuestions(): iGeneralQuestion[] {
+  //get from mongodb with this.GeneralArguments.questionIds;
+  // }
 
   public PerformAction(actionArguments: any): any {
     if ("gameAction" in actionArguments)
@@ -100,7 +117,15 @@ export class QuestionQGame implements iGame {
     return [this.GameCore.Gamemode, JSON.stringify(gameData)];
   }
 
-  public AddUser(username: string): boolean {
+  /**
+   * Adds a user with their corresponding socket to the game's players array.
+   * @function
+   * @param username - The user's username.
+   * @param socket - The user's socket. Access the id through `socket.id`
+   * @returns The new players array.
+   */
+  public AddPlayer(username: string, socket: SocketIO.Socket): boolean {
+    this.players.push({ username: username, socket: socket });
     return this.GameCore.AddUser(username);
   }
 
@@ -109,7 +134,8 @@ export class QuestionQGame implements iGame {
   }
 
   private LogInfo(toLog: string) {
-    logger.LogInfo(
+    logger.log(
+      "info",
       new Date().toString() +
         " - Game: " +
         this.GeneralArguments.gameId +
@@ -119,7 +145,8 @@ export class QuestionQGame implements iGame {
   }
 
   private LogSilly(toLog: string) {
-    logger.LogSilly(
+    logger.log(
+      "silly",
       new Date().toString() +
         " - Game: " +
         this.GeneralArguments.gameId +

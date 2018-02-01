@@ -1,4 +1,4 @@
-import { IGame, IPlayerSocket } from "../game/modes/IGame";
+import { iGame, IPlayerSocket } from "../game/iGame";
 import { RunningGames } from "../game/RunningGames";
 import * as GModels from "../models/GameModels";
 
@@ -31,7 +31,7 @@ export class PlayerCommunication {
     id: string,
     username: string,
     event: GModels.MessageType,
-    msg: string
+    msg: object
   ): void {
     for (let item of this.RunningGames.Sessions) {
       if (item.id === id) {
@@ -55,7 +55,7 @@ export class PlayerCommunication {
    * @param {string} msg - The message to be sent.
    * @public
    */
-  public SendToRoom(id: string, event: GModels.MessageType, msg: string): void {
+  public SendToRoom(id: string, event: GModels.MessageType, msg: object): void {
     for (let item of this.RunningGames.Sessions) {
       if (item.id === id) {
         item.socket.to(id).emit(event.toString(), JSON.stringify(msg));

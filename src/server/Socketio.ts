@@ -1,7 +1,6 @@
 import * as socketio from "socket.io";
 import { Server } from "http";
 import { generateGameId } from "./Helper";
-import { GameInit } from "./GameInit";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "./Logging";
 import * as IEvents from "../models/IEvents";
@@ -17,7 +16,6 @@ export class io {
   public Determination: SocketIO.Namespace;
   public TrivialPursuit: SocketIO.Namespace;
   public Duel: SocketIO.Namespace;
-  public InitGame: GameInit;
   public GameSessions: RunningGames;
   public GameFactory: GameFactory;
   public PlayerComm: PlayerCommunication;
@@ -30,23 +28,24 @@ export class io {
     this.Determination = this.server.of("/determination");
     this.TrivialPursuit = this.server.of("/trivialpursuit");
     this.Duel = this.server.of("/duel");
-    this.GameFactory = new GameFactory();
 
     this.GameSessions = new RunningGames();
+    this.GameFactory = new GameFactory(this.GameSessions);
     this.PlayerComm = new PlayerCommunication(this.GameSessions);
-    this.InitGame = new GameInit(
-      this.QuestionQ,
-      this.Millionaire,
-      this.Determination,
-      this.TrivialPursuit,
-      this.Duel,
-      this.GameSessions
-    );
+    //   this.InitGame = new GameInit(
+    //     this.QuestionQ,
+    //     this.Millionaire,
+    //     this.Determination,
+    //     this.TrivialPursuit,
+    //     this.Duel,
+    //     this.GameSessions
+    //   );
     this.QuestionQConf();
-    this.MillionaireConf();
-    this.DuelConf();
-    this.DeterminationConf();
-    this.TrivialPursuitConf();
+    //   this.MillionaireConf();
+    //   this.DuelConf();
+    //   this.DeterminationConf();
+    //   this.TrivialPursuitConf();
+    // }
   }
 
   //On connection wird der Socket übergeben => Socket+Username in array speichern
@@ -56,23 +55,29 @@ export class io {
       playerSocket.join("test room");
 
       playerSocket.on("host game", (username: string) => {
+        console.log("received event host game");
         const args: iGeneralHostArguments = {
           gameId: generateGameId(),
           gamemode: GModels.Gamemode.QuestionQ,
-          usernames: [],
+          owner: username,
           questionIds: ["1", "2", "3", "4"]
         };
-        this.GameFactory.CreateGame(args, this.PlayerComm.SendToPlayer, () => {
-          console.log("missing");
-        });
-        let gameId: string = this.InitGame.HostGame(playerSocket, {
+        this.GameFactory.CreateGame(
+          args,
+          this.PlayerComm.SendToPlayer,
+          () => {
+            console.log("missing");
+          },
+          this.QuestionQ
+        );
+        /*let gameId: string = this.InitGame.HostGame(playerSocket, {
           mode: "questionq",
           owner: "alyei" //change to username
-        });
+        });*/
 
         //start game here
 
-        playerSocket.emit("gameid", gameId);
+        playerSocket.emit("gameid", args.gameId);
       });
 
       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
@@ -88,141 +93,141 @@ export class io {
       //Placeholder
     });
   }
-  private MillionaireConf(): void {
-    this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
-      playerSocket.on("host game", (username: string) => {
-        let gameId: string = this.InitGame.HostGame(playerSocket, {
-          mode: "millionaire",
-          owner: "alyei" //change
-        });
-        logger.log(
-          "info",
-          "New Millionaire session hosted. ID: %s, Owner: %s",
-          gameId,
-          username
-        );
-      });
+  //   private MillionaireConf(): void {
+  //     this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
+  //       playerSocket.on("host game", (username: string) => {
+  //         let gameId: string = this.InitGame.HostGame(playerSocket, {
+  //           mode: "millionaire",
+  //           owner: "alyei" //change
+  //         });
+  //         logger.log(
+  //           "info",
+  //           "New Millionaire session hosted. ID: %s, Owner: %s",
+  //           gameId,
+  //           username
+  //         );
+  //       });
 
-      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
-        for (let item of this.GameSessions.Sessions) {
-          if (item.id == opt.gameId) {
-            item.AddPlayer(opt.username, playerSocket);
-          }
-        }
-      });
+  //       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+  //         for (let item of this.GameSessions.Sessions) {
+  //           if (item.id == opt.gameId) {
+  //             item.AddPlayer(opt.username, playerSocket);
+  //           }
+  //         }
+  //       });
 
-      playerSocket.on("tip", (arg: any) => {
-        //on tip
-      });
+  //       playerSocket.on("tip", (arg: any) => {
+  //         //on tip
+  //       });
 
-      playerSocket.on("joker", (arg: any) => {
-        //joker
-      });
+  //       playerSocket.on("joker", (arg: any) => {
+  //         //joker
+  //       });
 
-      playerSocket.on("clue", (arg: any) => {
-        //clue
-      });
-    });
+  //       playerSocket.on("clue", (arg: any) => {
+  //         //clue
+  //       });
+  //     });
 
-    //place
-  }
+  //     //place
+  //   }
 
-  private DuelConf(): void {
-    this.Duel.on("connection", (playerSocket: SocketIO.Socket) => {
-      playerSocket.on("host game", (username: string) => {
-        let gameId: string = this.InitGame.HostGame(playerSocket, {
-          mode: "duel",
-          owner: "alyei" //change
-        });
-        logger.log(
-          "info",
-          "New Duel session hosted. ID: %s, Owner: %s",
-          gameId,
-          username
-        );
-      });
+  //   private DuelConf(): void {
+  //     this.Duel.on("connection", (playerSocket: SocketIO.Socket) => {
+  //       playerSocket.on("host game", (username: string) => {
+  //         let gameId: string = this.InitGame.HostGame(playerSocket, {
+  //           mode: "duel",
+  //           owner: "alyei" //change
+  //         });
+  //         logger.log(
+  //           "info",
+  //           "New Duel session hosted. ID: %s, Owner: %s",
+  //           gameId,
+  //           username
+  //         );
+  //       });
 
-      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
-        for (let item of this.GameSessions.Sessions) {
-          if (item.id == opt.gameId) {
-            item.AddPlayer(opt.username, playerSocket);
-          }
-        }
-      });
+  //       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+  //         for (let item of this.GameSessions.Sessions) {
+  //           if (item.id == opt.gameId) {
+  //             item.AddPlayer(opt.username, playerSocket);
+  //           }
+  //         }
+  //       });
 
-      playerSocket.on("tip", (arg: any) => {
-        //on tip
-      });
+  //       playerSocket.on("tip", (arg: any) => {
+  //         //on tip
+  //       });
 
-      playerSocket.on("category", (arg: any) => {
-        //category
-      });
+  //       playerSocket.on("category", (arg: any) => {
+  //         //category
+  //       });
 
-      playerSocket.on("difficulty", (arg: any) => {
-        //difficulty
-      });
-    });
-  }
+  //       playerSocket.on("difficulty", (arg: any) => {
+  //         //difficulty
+  //       });
+  //     });
+  //   }
 
-  private DeterminationConf(): void {
-    this.Determination.on("connection", (playerSocket: SocketIO.Socket) => {
-      playerSocket.on("host game", (username: string) => {
-        let gameId: string = this.InitGame.HostGame(playerSocket, {
-          mode: "determination",
-          owner: "alyei" //change
-        });
-        logger.log(
-          "info",
-          "New Determination session hosted. ID: %s, Owner: %s",
-          gameId,
-          username
-        );
-      });
+  //   private DeterminationConf(): void {
+  //     this.Determination.on("connection", (playerSocket: SocketIO.Socket) => {
+  //       playerSocket.on("host game", (username: string) => {
+  //         let gameId: string = this.InitGame.HostGame(playerSocket, {
+  //           mode: "determination",
+  //           owner: "alyei" //change
+  //         });
+  //         logger.log(
+  //           "info",
+  //           "New Determination session hosted. ID: %s, Owner: %s",
+  //           gameId,
+  //           username
+  //         );
+  //       });
 
-      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
-        for (let item of this.GameSessions.Sessions) {
-          if (item.id == opt.gameId) {
-            item.AddPlayer(opt.username, playerSocket);
-          }
-        }
-      });
+  //       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+  //         for (let item of this.GameSessions.Sessions) {
+  //           if (item.id == opt.gameId) {
+  //             item.AddPlayer(opt.username, playerSocket);
+  //           }
+  //         }
+  //       });
 
-      playerSocket.on("tip", (arg: any) => {
-        //on tip
-      });
-    });
-  }
+  //       playerSocket.on("tip", (arg: any) => {
+  //         //on tip
+  //       });
+  //     });
+  //   }
 
-  private TrivialPursuitConf(): void {
-    this.TrivialPursuit.on("connection", (playerSocket: SocketIO.Socket) => {
-      playerSocket.on("host game", (username: string) => {
-        let gameId: string = this.InitGame.HostGame(playerSocket, {
-          mode: "trivial pursuit",
-          owner: "alyei" //change
-        });
-        logger.log(
-          "info",
-          "New Trivial Pursuit session hosted. ID: %s, Owner: %s",
-          gameId,
-          username
-        );
-      });
+  //   private TrivialPursuitConf(): void {
+  //     this.TrivialPursuit.on("connection", (playerSocket: SocketIO.Socket) => {
+  //       playerSocket.on("host game", (username: string) => {
+  //         let gameId: string = this.InitGame.HostGame(playerSocket, {
+  //           mode: "trivial pursuit",
+  //           owner: "alyei" //change
+  //         });
+  //         logger.log(
+  //           "info",
+  //           "New Trivial Pursuit session hosted. ID: %s, Owner: %s",
+  //           gameId,
+  //           username
+  //         );
+  //       });
 
-      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
-        for (let item of this.GameSessions.Sessions) {
-          if (item.id == opt.gameId) {
-            item.AddPlayer(opt.username, playerSocket);
-          }
-        }
-      });
+  //       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+  //         for (let item of this.GameSessions.Sessions) {
+  //           if (item.id == opt.gameId) {
+  //             item.AddPlayer(opt.username, playerSocket);
+  //           }
+  //         }
+  //       });
 
-      playerSocket.on("tip", (arg: any) => {
-        //on tip
-      });
+  //       playerSocket.on("tip", (arg: any) => {
+  //         //on tip
+  //       });
 
-      playerSocket.on("category", (arg: any) => {
-        //category
-      });
-    });
-  }
+  //       playerSocket.on("category", (arg: any) => {
+  //         //category
+  //       });
+  //     });
+  //   }
 }
