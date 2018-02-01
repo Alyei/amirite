@@ -83,7 +83,7 @@ export class QuestionQGame implements iGame {
           //pictureId: question.pictureId
         });
       });;
-    }
+    }// go git merge and love yaself
 
     return result;
   }
