@@ -7,44 +7,34 @@ import {
   iGeneralQuestion,
   iGeneralPlayerInputError,
   iQuestionQTip,
-  GameAction
+  GameAction,
+  PlayerRole
 } from "../models/GameModels";
 import { logger } from "../server/logging";
 import { QuestionModel } from "../models/Schemas";
 
 // game modes
 import { QuestionQCore } from "./QuestionQCore";
-import { iGame, IPlayerSocket } from "./iGame";
+import { iGame } from "./iGame";
+import { PlayerBase } from "./PlayerBase";
+import { Socket } from "net";
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
-  public id: string;
-  public gamemode: string;
-  public owner: string;
-  public players: IPlayerSocket[];
-  public socket: SocketIO.Namespace;
 
   //_send function to send JSONs to a specific player
   //_gameEnded function to be executed, when the game ended
   //users list of usernames UNIQUE
   //questions list of questions UNIQUE
   public constructor(
-    readonly GeneralArguments: iGeneralHostArguments,
-    public Send: (
-      gameId: string,
-      username: string,
-      msgType: MessageType,
-      data: {}
-    ) => void,
-    public GameEnded: () => void,
-    public namespace: SocketIO.Namespace,
-    private _gameCoreArguments?: iQuestionQHostArguments
+    readonly GeneralArguments:    iGeneralHostArguments,
+    public namespace:             SocketIO.Namespace,
+    private _gameCoreArguments?:  iQuestionQHostArguments
   ) {
-    this.socket = namespace;
+
     this.GameCore = new QuestionQCore(
       this.LogInfo,
       this.LogSilly,
-      this.SendToUser,
       this.SendGameData,
       /*[
         {
@@ -58,7 +48,7 @@ export class QuestionQGame implements iGame {
         }
       ]*/
       this.LoadQuestions(),
-      this.players,
+      [],
       this._gameCoreArguments
     ); //this.LoadQuestions(), instead of object array
   }
@@ -88,6 +78,7 @@ export class QuestionQGame implements iGame {
     return result;
   }
 
+  /*
   public PerformAction(actionArguments: any): any {
     if ("gameAction" in actionArguments)
       switch (actionArguments.gameAction) {
@@ -106,12 +97,14 @@ export class QuestionQGame implements iGame {
       }
     return { message: "invalid parameter", actionArguments };
   }
+  */
 
   public ProcessUserInput(
     username: string,
-    msgType: MessageType,
+    messageType: string /*msgType: MessageType*/,
     data: string
   ): void {
+    const msgType: MessageType = (<any>MessageType)[messageType];
     switch (msgType) {
       case MessageType.QuestionQTip: {
         // try & catch !!!
@@ -125,7 +118,7 @@ export class QuestionQGame implements iGame {
           data: { username: username, msgType: msgType }
         };
         this.LogInfo(JSON.stringify(errorMessage));
-        this.SendToUser(username, MessageType.PlayerInputError, errorMessage);
+        //this.SendToUser(username, MessageType.PlayerInputError, errorMessage);
         break;
       }
     }
@@ -147,13 +140,13 @@ export class QuestionQGame implements iGame {
    * @param socket - The user's socket. Access the id through `socket.id`
    * @returns The new players array.
    */
-  public AddPlayer(username: string, socket: SocketIO.Socket): boolean {
-    this.players.push({ username: username, socket: socket });
-    return this.GameCore.AddUser(username);
+  public AddPlayer(username: string, socket: SocketIO.Socket, roles?: PlayerRole[]): boolean {
+    return this.GameCore.AddUser(new PlayerBase(username, socket, roles));
   }
 
   public AddQuestion(question: iGeneralQuestion): boolean {
-    return this.GameCore.AddQuestion(question);
+    //return this.GameCore.AddQuestion(question);
+    return false;
   }
 
   private LogInfo(toLog: string) {
@@ -178,15 +171,19 @@ export class QuestionQGame implements iGame {
     );
   }
 
-  private SendToUser(username: string, msgType: MessageType, data: {}): void {
-    this.Send(this.GeneralArguments.gameId, username, msgType, data);
+  /*
+  private SendToRoom(messageType: MessageType, data: {}): void {
+    this.namespace.to(this.GeneralArguments.gameId).emit(MessageType[messageType], JSON.stringify(data))
   }
-
+  */
+  // end (add save to DB)
   private SendGameData(): void {
     const gameData = JSON.parse(this.GetGameData()[1]);
-    for (let player of gameData.players) {
-      this.SendToUser(player.username, MessageType.QuestionQGameData, gameData);
+
+    const players: PlayerBase[] = this.GameCore.Players;
+    for (let player of players) {
+      player.Inform(MessageType.QuestionQGameData, gameData);
     }
-    this.GameEnded();
+    //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }
 }

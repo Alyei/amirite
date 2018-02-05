@@ -7,6 +7,7 @@ export interface iGeneralQuestion {
   otherOptions: string[];
   timeLimit: number;
   difficulty: number;
+  explanation?: string;
 }
 
 export interface iGeneralPlayerInputError {
@@ -24,7 +25,7 @@ export interface iGeneralHostArguments {
 export enum Gamemode {
   QuestionQ = 0,
   Determination,
-  Millionaire
+  Millionaire,
 }
 
 export enum PlayerState {
@@ -32,14 +33,20 @@ export enum PlayerState {
   Playing,
   Paused,
   Finished,
-  Disqualified
+  Disqualified,
+}
+
+export enum PlayerRole {
+  Host = 0,
+  Mod,
+  Player,
 }
 
 export enum JokerType {
   Dummy = 0,
   FiftyFifty,
   Audience,
-  Call
+  Call,
 }
 
 // every possible message has its own entry here
@@ -105,7 +112,8 @@ export interface iQuestionQTipFeedback {
 }
 export interface iQuestionQPlayerData {
   username: string;
-  state: number;
+  roles: PlayerRole[];
+  state: PlayerState;
   score: number;
   questions: [iQuestionQQuestion, string][];
   tips: iQuestionQTipData[];

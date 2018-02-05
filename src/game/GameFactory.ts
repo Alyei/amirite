@@ -32,8 +32,6 @@ export class GameFactory {
       case Gamemode.QuestionQ: {
         const newGame: QuestionQGame = new QuestionQGame(
           generalArguments,
-          send,
-          gameEnded,
           namespaceSocket,
           gameArguments
         );

@@ -82,7 +82,7 @@ export class io {
 
       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
         for (let item of this.GameSessions.Sessions) {
-          if (item.id == opt.gameId) {
+          if (item.GameArguments.gameId == opt.gameId) {
             item.AddPlayer(opt.username, playerSocket);
           }
         }

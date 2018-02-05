@@ -5,11 +5,6 @@ import {
   iGeneralQuestion
 } from "../models/GameModels";
 
-export interface IPlayerSocket {
-  username: string;
-  socket: SocketIO.Socket;
-}
-
 export interface iGame {
   //-id: string;
   //-gamemode: string;
@@ -17,14 +12,15 @@ export interface iGame {
   //-players: IPlayerSocket[];
   //-socket: SocketIO.Namespace;
 
-  //players
-  //
+  //(+)players
   GetGameData: () => [Gamemode, string];
   ProcessUserInput: (
     username: string,
-    msgType: MessageType,
-    data: {}
-  ) => void;
-  PerformAction: (actionArguments: any) => any;
+    msgType: string,
+    data: string
+  ) => any;
+  //(-)PerformAction: (actionArguments: any) => any;
   AddPlayer: (username: string, socket: SocketIO.Socket) => any;
+  namespace: SocketIO.Namespace;
+  readonly GeneralArguments: iGeneralHostArguments;
 }
