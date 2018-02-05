@@ -19,6 +19,7 @@ import { QuestionQCore } from "./QuestionQCore";
 import { iGame } from "./iGame";
 import { PlayerBase } from "./PlayerBase";
 import { Socket } from "net";
+<<<<<<< HEAD
 =======
 import { iGame, IPlayerSocket } from "./iGame";
 import {
@@ -26,6 +27,9 @@ import {
   QuestionCouldNotBeAddedError
 } from "../server/Errors";
 >>>>>>> 5ca87c38b72a3009ae48b2987a89e4ffb3d7a853
+=======
+import { Tryharder } from "./Tryharder";
+>>>>>>> gs_errorhandling
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
@@ -200,8 +204,18 @@ export class QuestionQGame implements iGame {
     const gameData = JSON.parse(this.GetGameData()[1]);
 
     const players: PlayerBase[] = this.GameCore.Players;
+    const th: Tryharder = new Tryharder();
     for (let player of players) {
-      player.Inform(MessageType.QuestionQGameData, gameData);
+      if (
+        !th.Tryhard(
+          () => { return player.Inform(MessageType.QuestionQGameData, gameData); },
+          3000, // delay
+          3 // tries
+        )
+      ) {
+        this.GameCore.DisqualifyPlayer(player);
+        return;
+      }
     }
     //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }
