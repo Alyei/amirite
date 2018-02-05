@@ -5,22 +5,35 @@ import { logger } from "./logging";
 import { generateId } from "./helper";
 
 export class Editor {
-  public SaveQuestion(questiondata: Question): void {
-    const newQuestion: any = new QuestionModel({
-      id: generateId(),
-      difficulty: questiondata.difficulty,
-      timeLimit: questiondata.timeLimit,
-      question: questiondata.question,
-      answer: questiondata.answer,
-      otherOptions: questiondata.otherOptions,
-      explanation: questiondata.explanation
-    });
+  /**
+   * Saves the question to the database.
+   * @param questiondata - The JSON containing the question data.
+   */
+  public SaveQuestion(questiondata: Question): Promise<any> {
+    return new Promise((resolve: any, reject: any) => {
+      const newQuestion: any = new QuestionModel({
+        id: generateId(),
+        difficulty: questiondata.difficulty,
+        timeLimit: questiondata.timeLimit,
+        question: questiondata.question,
+        answer: questiondata.answer,
+        otherOptions: questiondata.otherOptions,
+        explanation: questiondata.explanation
+      });
 
-    newQuestion.save((err: any, q: any) => {
-      if (err) {
-        logger.log("error", require("util").inspect(err));
-        return err;
-      }
+      newQuestion.save((err: any, q: any) => {
+        if (err) {
+          logger.log("error", require("util").inspect(err));
+          return reject(err);
+        }
+        logger.log(
+          "info",
+          "New question (%s) has been added to the database.",
+          newQuestion.id
+        );
+
+        return resolve();
+      });
     });
   }
 }

@@ -10,24 +10,27 @@ import * as iQuestion from "../models/iQuestion";
  * @param {any} model - The usermodel that should be saved.
  */
 let hashPwAndSave = function(model: any): void {
-  bcrypt.hash(model.password, 8, (err: any, hash: any) => {
-    model.password = hash.toString("hex");
-    model.save((err: any, user: any) => {
-      if (err) {
-        logger.log(
-          "info",
-          "Password for user %s could not be saved.",
-          model.username
-        );
-        return console.error(err);
-      }
+  try {
+    bcrypt.hash(model.password, 8, (err: any, hash: any) => {
+      model.password = hash.toString("hex");
+      model.save((err: any, user: any) => {
+        if (err) {
+          logger.log(
+            "info",
+            "Password for user %s could not be saved.",
+            model.username
+          );
+          return console.error(err);
+        }
+      });
     });
-  });
+  } catch (err) {
+    logger.log("error", err);
+  }
 };
 
 /**
  * Generates a random, 10 character long, id.
- * @function
  * @returns The id.
  */
 let generateId = function(): string {
@@ -41,7 +44,6 @@ let generateId = function(): string {
 
 /**
  * Generates a random, 6 character long, game id.
- * @function
  * @returns The game id.
  */
 let generateGameId = function(): string {

@@ -1,6 +1,7 @@
 import { iGame, IPlayerSocket } from "../game/iGame";
 import { RunningGames } from "../game/RunningGames";
 import * as GModels from "../models/GameModels";
+import { PlayerNotFoundError, GameNotFoundError } from "./Errors";
 
 /**
  * Handles the Server-Player communication.
@@ -39,11 +40,11 @@ export class PlayerCommunication {
           if (player.username === username) {
             player.socket.emit(event.toString(), JSON.stringify(msg));
           } else {
-            throw new Error("Player " + username + " could not be found.");
+            throw new PlayerNotFoundError(username);
           }
         }
       } else {
-        throw new Error("Game with the id " + id + " could not be found.");
+        throw new GameNotFoundError(id);
       }
     }
   }
@@ -60,11 +61,7 @@ export class PlayerCommunication {
       if (item.GeneralArguments.gameId === id) {
         item.socket.to(id).emit(event.toString(), JSON.stringify(msg));
       } else {
-        throw new Error(
-          "PlayerCom.ts - SendToRoom: Game with the id " +
-            id +
-            " could not be found."
-        );
+        throw new PlayerNotFoundError("id");
       }
     }
   }

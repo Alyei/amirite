@@ -36,8 +36,8 @@ let Question: mongoose.Schema = new mongoose.Schema({
   id: {
     type: String,
     required: true,
-    unique: true
-    //match: /^[0-9a-z]{10}$/i
+    unique: true,
+    match: /^[0-9a-z]{10}$/i
   },
   difficulty: {
     type: Number,

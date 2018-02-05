@@ -97,7 +97,15 @@ export class Https {
     );
 
     this.app.post("/question", (req: any, res: any) => {
-      this.questEdit.SaveQuestion(JSON.parse(req.body.data));
+      this.questEdit
+        .SaveQuestion(JSON.parse(req.body.data))
+        .then((prom: any) => {
+          res.send("successful");
+        })
+        .catch((err: any) => {
+          //implement statuscode
+          res.send("failed");
+        });
     });
 
     this.app.post("/test", (req: any, res: any) => {

@@ -61,20 +61,18 @@ export class io {
           owner: username,
           questionIds: ["1", "2", "3", "4"]
         };
-        this.GameFactory.CreateGame(
-          args,
-          this.PlayerComm.SendToPlayer,
-          () => {
-            console.log("missing");
-          },
-          this.QuestionQ
-        );
-        /*let gameId: string = this.InitGame.HostGame(playerSocket, {
-          mode: "questionq",
-          owner: "alyei" //change to username
-        });*/
-
-        //start game here
+        try {
+          this.GameFactory.CreateGame(
+            args,
+            this.PlayerComm.SendToPlayer,
+            () => {
+              console.log("missing EndGame()");
+            },
+            this.QuestionQ
+          );
+        } catch (e) {
+          logger.log("error", e.message);
+        }
 
         playerSocket.emit("gameid", args.gameId);
       });

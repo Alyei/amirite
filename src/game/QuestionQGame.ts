@@ -14,6 +14,10 @@ import { logger } from "../server/logging";
 // game modes
 import { QuestionQCore } from "./QuestionQCore";
 import { iGame, IPlayerSocket } from "./iGame";
+import {
+  PlayerCouldNotBeAddedError,
+  QuestionCouldNotBeAddedError
+} from "../server/Errors";
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
@@ -122,8 +126,13 @@ export class QuestionQGame implements iGame {
    * @returns The new players array.
    */
   public AddPlayer(username: string, socket: SocketIO.Socket): boolean {
-    this.players.push({ username: username, socket: socket });
-    return this.GameCore.AddUser(username);
+    try {
+      this.players.push({ username: username, socket: socket });
+    } catch (e) {
+      throw new PlayerCouldNotBeAddedError(username);
+    } finally {
+      return this.GameCore.AddUser(username);
+    }
   }
 
   public AddQuestion(question: iGeneralQuestion): boolean {
