@@ -1,8 +1,9 @@
 export interface Question {
-  quetionid: string;
+  id: string;
   difficulty: number;
   timeLimit: number;
   question: string;
   answer: string;
   otherOptions: string[];
+  explanation: string;
 }

@@ -2,21 +2,23 @@ import { Question } from "../models/iQuestion";
 import * as mongo from "mongoose";
 import { QuestionModel } from "../models/Schemas";
 import { logger } from "./logging";
+import { generateId } from "./helper";
 
 export class Editor {
   public SaveQuestion(questiondata: Question): void {
-    console.log("This is the JSON: \r\n");
-    console.log(questiondata);
     const newQuestion: any = new QuestionModel({
+      id: generateId(),
       difficulty: questiondata.difficulty,
       timeLimit: questiondata.timeLimit,
       question: questiondata.question,
       answer: questiondata.answer,
-      otherOptions: questiondata.otherOptions
+      otherOptions: questiondata.otherOptions,
+      explanation: questiondata.explanation
     });
+
     newQuestion.save((err: any, q: any) => {
       if (err) {
-        logger.log("info", "Question could not be saved: %s", q.question);
+        logger.log("error", require("util").inspect(err));
         return err;
       }
     });

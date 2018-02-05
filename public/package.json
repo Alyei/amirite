@@ -1,6 +1,6 @@
 {
   "name": "amiriteweb",
-  "description": null,
+  "description": "",
   "version": "0.0.114",
   "dependencies": {
     "react": "^16.2.0",
@@ -18,5 +18,9 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
-  "proxy": "http://localhost:443"
+  "proxy": {
+    "/api": {
+      "target": "https://localhost:443"
+    }
+  }
 }

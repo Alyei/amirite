@@ -74,6 +74,19 @@ export class Https {
       })
     );
 
+    this.app.post("/api/signup", (req: any, res: any) => {
+      console.log("THIS COMING IN");
+      console.log(req.body);
+      console.log("_______________________________________");
+      console.log(req.body.data);
+      res.send("successful");
+    });
+    /*this.passport.authenticate("local-signup", {
+        successRedirect: "/profile", //Redirect to the secure profile section.
+        failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
+        failureFlash: true //Allow flash messages.
+      });*/
+
     this.app.post(
       "/login",
       this.passport.authenticate("local-login", {
@@ -84,9 +97,18 @@ export class Https {
     );
 
     this.app.post("/question", (req: any, res: any) => {
+      this.questEdit.SaveQuestion(JSON.parse(req.body.data));
+    });
+
+    this.app.post("/test", (req: any, res: any) => {
       console.log(req.body.data);
 
-      this.questEdit.SaveQuestion(JSON.parse(req.body.data));
+      res.send("test");
+    });
+    this.app.post("/api/test", (req: any, res: any) => {
+      console.log(req.body.data + "API");
+
+      res.send("test");
     });
   }
 }
@@ -116,7 +138,7 @@ export class Http {
    */
   private httpRedirectRoute(): void {
     this.app.get("*", (req: any, res: any) => {
-      res.redirect("https://localhost:" + process.env.https_port + req.url);
+      res.redirect("https://localhost:" + 443 + req.url);
     });
   }
 }

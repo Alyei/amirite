@@ -7,12 +7,33 @@ export default class Form extends React.Component {
     this.state = {
       username: "",
       password: "",
-      repassword:"",
-      email: ""
+      repassword: "",
+      email: "",
+      testi: "abc"
     };
     this.handleValueChange = this.handleValueChange.bind(this);
+    this.onSubmit = this.handleFormSubmit.bind(this);
   }
 
+  handleFormSubmit(event) {
+    event.preventDefault();
+    fetch("https://localhost/api/signup", {
+      method: "POST",
+      body: JSON.stringify({
+        username: "thisName",
+        email: "thismail@react.com",
+        password: "password"
+      })
+    })
+      .then(res => {
+        console.log(res);
+        if (res.status === 200) return res.json();
+        else return { status: res.status };
+      })
+      .then(responseJson => {
+        console.log(responseJson.test, responseJson.status);
+      });
+  }
   handleValueChange(event) {
     this.setState({ [event.target.name]: event.target.value });
   }
@@ -20,7 +41,7 @@ export default class Form extends React.Component {
   render() {
     if (this.props.formType === "register") {
       return (
-        <form action="/signup" method="post">
+        <form action="/api/signup" onSubmit={this.onSubmit}>
           <FormGroup id="formControlsUsername">
             <label>Username</label>
             <FormControl
@@ -51,7 +72,7 @@ export default class Form extends React.Component {
               placeholder="Enter Password"
             />
             <FormControl
-              value={this.state.password}
+              value={this.state.repassword}
               name="repassword"
               onChange={this.handleValueChange}
               type="password"
@@ -63,7 +84,7 @@ export default class Form extends React.Component {
       );
     } else if (this.props.formType === "login") {
       return (
-        <form action="/login" method="post">
+        <form action="/api/login" method="post">
           <FormGroup id="formControlsUsername">
             <label>Username</label>
             <FormControl
