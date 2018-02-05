@@ -18,13 +18,6 @@ export class GameFactory {
   }
   public CreateGame(
     generalArguments: iGeneralHostArguments,
-    send: (
-      gameId: string,
-      username: string,
-      msgType: MessageType,
-      data: {}
-    ) => void,
-    gameEnded: () => void,
     namespaceSocket: SocketIO.Namespace,
     gameArguments?: iQuestionQHostArguments | iDeterminationHostArguments
   ) {

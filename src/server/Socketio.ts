@@ -64,10 +64,6 @@ export class io {
         };
         this.GameFactory.CreateGame(
           args,
-          this.PlayerComm.SendToPlayer,
-          () => {
-            console.log("missing");
-          },
           this.QuestionQ
         );
         /*let gameId: string = this.InitGame.HostGame(playerSocket, {
@@ -82,7 +78,7 @@ export class io {
 
       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
         for (let item of this.GameSessions.Sessions) {
-          if (item.GameArguments.gameId == opt.gameId) {
+          if (item.GeneralArguments.gameId == opt.gameId) {
             item.AddPlayer(opt.username, playerSocket);
           }
         }

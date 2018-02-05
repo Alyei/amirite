@@ -28,10 +28,9 @@ export class RunningGames {
 
     logger.log(
       "info",
-      "New QuestionQ session hosted. ID: %s, Owner: %s",
+      "New QuestionQ session hosted. (%s)",
 
-      game.owner,
-      game.gamemode
+      JSON.stringify(game.GeneralArguments)
     );
     return this.Sessions;
   }
