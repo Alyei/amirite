@@ -11,16 +11,19 @@ export interface IPlayerSocket {
 }
 
 export interface iGame {
-  id: string;
-  gamemode: string;
-  owner: string;
-  players: IPlayerSocket[];
-  socket: SocketIO.Namespace;
+  //-id: string;
+  //-gamemode: string;
+  //-owner: string;
+  //-players: IPlayerSocket[];
+  //-socket: SocketIO.Namespace;
+
+  //players
+  //
   GetGameData: () => [Gamemode, string];
   ProcessUserInput: (
     username: string,
     msgType: MessageType,
-    data: string
+    data: {}
   ) => void;
   PerformAction: (actionArguments: any) => any;
   AddPlayer: (username: string, socket: SocketIO.Socket) => any;
