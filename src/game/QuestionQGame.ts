@@ -18,6 +18,7 @@ import { QuestionQCore } from "./QuestionQCore";
 import { iGame } from "./iGame";
 import { PlayerBase } from "./PlayerBase";
 import { Socket } from "net";
+import { Tryharder } from "./Tryharder";
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
@@ -181,8 +182,18 @@ export class QuestionQGame implements iGame {
     const gameData = JSON.parse(this.GetGameData()[1]);
 
     const players: PlayerBase[] = this.GameCore.Players;
+    const th: Tryharder = new Tryharder();
     for (let player of players) {
-      player.Inform(MessageType.QuestionQGameData, gameData);
+      if (
+        !th.Tryhard(
+          () => { return player.Inform(MessageType.QuestionQGameData, gameData); },
+          3000, // delay
+          3 // tries
+        )
+      ) {
+        this.GameCore.DisqualifyPlayer(player);
+        return;
+      }
     }
     //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }

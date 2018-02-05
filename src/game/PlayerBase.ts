@@ -1,4 +1,5 @@
 import { PlayerState, PlayerRole, MessageType } from "../models/GameModels";
+import { logger } from "../server/logging";
 
 export interface iPlayerBaseArguments {
     username: string;
@@ -23,8 +24,14 @@ export class PlayerBase {
             this.state = PlayerState.Launch;
     }
 
-    public Inform(messageType: MessageType, data: {}): void {
-        this.socket.emit(MessageType[messageType]/*.toLowerCase()*/, JSON.stringify(data));
+    public Inform(messageType: MessageType, data: {}): boolean {
+        try {
+            this.socket.emit(MessageType[messageType]/*.toLowerCase()*/, JSON.stringify(data));
+            return true;
+        } catch (err) {
+            logger.log("info", err.message);
+            return false;
+        }
     }
 
     public GetArguments(): iPlayerBaseArguments {

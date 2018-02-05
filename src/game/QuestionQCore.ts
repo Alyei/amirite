@@ -14,6 +14,7 @@ import {
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
+import { Tryharder } from "./Tryharder";
 
 export enum QuestionQGamePhase {
   Setup = 0,
@@ -111,6 +112,11 @@ export class QuestionQCore {
     player.state = PlayerState.Disqualified;
     this.CheckForEnd();
     return true;
+  }
+
+  public DisqualifyPlayer(player: PlayerBase): void {
+    player.state = PlayerState.Disqualified;
+    this.CheckForEnd();
   }
 
   // returns wether it was successful
@@ -220,17 +226,33 @@ export class QuestionQCore {
           string
         ] = this.GetQuestionQQuestion(nextQuestionBase);
 
+        // timer
         // send nextQuestion to Username
-        player.Inform(
-          MessageType.QuestionQQuestion,
-          nextQuestion[0]
-        );
+        const th: Tryharder = new Tryharder();
+        if (
+          !th.Tryhard(
+            () => { return player.Inform(MessageType.QuestionQQuestion, nextQuestion[0]); },
+            3000, // delay
+            3 // tries
+          )
+        ) {
+          this.DisqualifyPlayer(player);
+          return;
+        }
+
         // add question to the player's questions
         player.questions.push(nextQuestion);
       } else {
         // finished
         player.state = PlayerState.Finished;
-        player.Inform(MessageType.QuestionQPlayerData, player);
+        const th: Tryharder = new Tryharder();
+        if (
+          !th.Tryhard(
+            () => { return player.Inform(MessageType.QuestionQPlayerData, player); },
+            3000, // delay
+            3 // tries
+          )
+        ) {}
 
         this.CheckForEnd();
       }
@@ -239,7 +261,7 @@ export class QuestionQCore {
 
   // to be called whenever a player gives a tip
   public PlayerGivesTip(username: string, tip: iQuestionQTip): void {
-    let player: QuestionQPlayer | undefined = this._players.find(
+    const player: QuestionQPlayer | undefined = this._players.find(
       x => x.username == username
     );
     if (!player) {
@@ -254,17 +276,21 @@ export class QuestionQCore {
     ) {
       // only the player did not give a tip for this question before
       if (!player.tips.find(x => x.tip.questionId == tip.questionId)) {
-        const PlayerQuestionTuple:
-          | [iQuestionQQuestion, string]
-          | undefined = player.questions.find(
+        const PlayerQuestionTuple: [iQuestionQQuestion, string] | undefined = player.questions.find(
           x => x[0].questionId == tip.questionId
         );
         // if the player has not been asked this question
         if (!PlayerQuestionTuple) {
-          player.Inform(
-            MessageType.PlayerInputError,
-            "You were not asked this question >:c"
-          );
+          const th: Tryharder = new Tryharder();
+          if (
+            !th.Tryhard(
+              () => { return player.Inform(MessageType.PlayerInputError, "You were not asked this question >:c"); },
+              3000, // delay
+              3 // tries
+            )
+          ) {
+            this.DisqualifyPlayer(player);
+          }
           return;
         }
 
@@ -307,7 +333,18 @@ export class QuestionQCore {
           feedback.score = player.score;
           feedback.message = "too slow";
         }
-        player.Inform(MessageType.QuestionQTipFeedback, feedback);
+
+        const th: Tryharder = new Tryharder();
+        if (
+          !th.Tryhard(
+            () => { return player.Inform(MessageType.QuestionQTipFeedback, feedback); },
+            3000, // delay
+            3 // tries
+          )
+        ) {
+          this.DisqualifyPlayer(player);
+          return;
+        }
 
         //add to playertipdata
         this.QuestionPlayer(player);
@@ -316,14 +353,35 @@ export class QuestionQCore {
           message: "You already gave a tip for this question",
           data: { QuestionId: tip.questionId }
         };
-        player.Inform(MessageType.PlayerInputError, message);
+        
+        const th: Tryharder = new Tryharder();
+        if (
+          !th.Tryhard(
+            () => { return player.Inform(MessageType.PlayerInputError, message); },
+            3000, // delay
+            3 // tries
+          )
+        ) {
+          this.DisqualifyPlayer(player);
+          return;
+        }
       }
     } else {
       const message: iGeneralPlayerInputError = {
         message: "You are not allowed to give a tip",
         data: { GamePhase: this._gamePhase, PlayerState: player.state }
       };
-      player.Inform(MessageType.PlayerInputError, message);
+      const th: Tryharder = new Tryharder();
+      if (
+        !th.Tryhard(
+          () => { return player.Inform(MessageType.PlayerInputError, message); },
+          3000, // delay
+          3 // tries
+        )
+      ) {
+        this.DisqualifyPlayer(player);
+        return;
+      }
     }
   }
 }
