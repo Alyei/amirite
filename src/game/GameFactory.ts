@@ -50,13 +50,7 @@ export class GameFactory {
         );
       }*/
       default:
-<<<<<<< HEAD
-        throw new Error(
-          Gamemode[Gamemode.QuestionQ] + " SPACE " + Gamemode[generalArguments.gamemode]
-        );
-=======
         throw new GameCreationError("Invalid gamemode passed.");
->>>>>>> 5ca87c38b72a3009ae48b2987a89e4ffb3d7a853
     }
   }
 }

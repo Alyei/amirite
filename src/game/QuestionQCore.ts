@@ -1,10 +1,7 @@
 import { ArrayManager } from "./ArrayManager";
 import {
   iQuestionQQuestion,
-<<<<<<< HEAD
   PlayerRole,
-=======
->>>>>>> 378419becf9a9e2fefc853ec315dae443cf02ebf
   PlayerState,
   iQuestionQTip,
   iQuestionQTipFeedback,
