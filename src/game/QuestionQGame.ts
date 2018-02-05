@@ -15,9 +15,17 @@ import { QuestionModel } from "../models/Schemas";
 
 // game modes
 import { QuestionQCore } from "./QuestionQCore";
+<<<<<<< HEAD
 import { iGame } from "./iGame";
 import { PlayerBase } from "./PlayerBase";
 import { Socket } from "net";
+=======
+import { iGame, IPlayerSocket } from "./iGame";
+import {
+  PlayerCouldNotBeAddedError,
+  QuestionCouldNotBeAddedError
+} from "../server/Errors";
+>>>>>>> 5ca87c38b72a3009ae48b2987a89e4ffb3d7a853
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
@@ -140,8 +148,19 @@ export class QuestionQGame implements iGame {
    * @param socket - The user's socket. Access the id through `socket.id`
    * @returns The new players array.
    */
+<<<<<<< HEAD
   public AddPlayer(username: string, socket: SocketIO.Socket, roles?: PlayerRole[]): boolean {
     return this.GameCore.AddUser(new PlayerBase(username, socket, roles));
+=======
+  public AddPlayer(username: string, socket: SocketIO.Socket): boolean {
+    try {
+      this.players.push({ username: username, socket: socket });
+    } catch (e) {
+      throw new PlayerCouldNotBeAddedError(username);
+    } finally {
+      return this.GameCore.AddUser(username);
+    }
+>>>>>>> 5ca87c38b72a3009ae48b2987a89e4ffb3d7a853
   }
 
   public AddQuestion(question: iGeneralQuestion): boolean {

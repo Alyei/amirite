@@ -1,5 +1,10 @@
 import { iGame } from "./iGame";
 import { logger } from "../server/Logging";
+import {
+  GameNotFoundError,
+  GameCouldNotBeAddedError,
+  LoggingFailedError
+} from "../server/Errors";
 
 //Interface probably unnecessary
 /**
@@ -11,7 +16,6 @@ export class RunningGames {
 
   /**
    * Initializes all Game arrays.
-   * @constructor
    */
   constructor() {
     this.Sessions = new Array<iGame>();
@@ -19,19 +23,28 @@ export class RunningGames {
 
   /**
    * Adds a running game to the specified gamemode-array.
-   * @function
    * @param {IGame} game - The game that should be added to the list of running games.
    * @returns The updated list for the specified gamemode.
    */
   public addRunningGame(game: iGame): iGame[] {
-    this.Sessions.push(game);
+    try {
+      this.Sessions.push(game);
+    } catch (err) {
+      console.error(err);
+      throw new GameCouldNotBeAddedError(game.GeneralArguments.gameId);
+    }
 
-    logger.log(
-      "info",
-      "New QuestionQ session hosted. (%s)",
+    try {
+      logger.log(
+        "info",
+        "New QuestionQ session hosted. ID: %s, Owner: %s",
 
-      JSON.stringify(game.GeneralArguments)
-    );
+        game.GeneralArguments.owner,
+        game.GeneralArguments.gamemode
+      );
+    } catch (err) {
+      throw new LoggingFailedError(err);
+    }
     return this.Sessions;
   }
 }

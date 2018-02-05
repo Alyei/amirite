@@ -79,7 +79,7 @@ export class server {
         secret: "AlternativeGraphicalCatdog", //probably change sessionsecret
         name: "test",
         store: new MongoStore({
-          url: "mongodb://localhost:27017",
+          url: "mongodb://localhost:27017/amirite",
           ttl: 14 * 24 * 60 * 60
         }),
         proxy: true,
@@ -108,13 +108,21 @@ export class server {
     );
     this.httpRedirect();
 
-    this.httpsServer.listen(this.port, (req: any, res: any) => {
+    try {
+      this.httpsServer.listen(this.port, (req: any, res: any) => {
+        logger.log(
+          "info",
+          "HTTPS server started listening on port %d.",
+          this.port
+        );
+      });
+    } catch (e) {
       logger.log(
-        "info",
-        "HTTPS server started listening on port %d.",
-        this.port
+        "error",
+        "Stopping program execution - server could not start listening: " + e
       );
-    });
+      process.exit(-1);
+    }
   }
 
   /**

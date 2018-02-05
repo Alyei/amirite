@@ -10,6 +10,7 @@ import { QuestionQGame } from "./QuestionQGame";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "../server/logging";
 import { generateGameId } from "../server/helper";
+import { GameCreationError } from "../server/Errors";
 
 export class GameFactory {
   public Sessions: RunningGames;
@@ -28,12 +29,16 @@ export class GameFactory {
           namespaceSocket,
           gameArguments
         );
-        this.Sessions.addRunningGame(newGame);
-        logger.log(
-          "info",
-          "New QuestionQ game: %s hosted.",
-          generalArguments.owner
-        );
+        try {
+          this.Sessions.addRunningGame(newGame);
+          logger.log(
+            "info",
+            "New QuestionQ game: %s hosted.",
+            generalArguments.owner
+          );
+        } catch (e) {
+          logger.log("error", e.message);
+        }
         break;
       }
       /*case Gamemode.Determination: {
@@ -45,9 +50,13 @@ export class GameFactory {
         );
       }*/
       default:
+<<<<<<< HEAD
         throw new Error(
           Gamemode[Gamemode.QuestionQ] + " SPACE " + Gamemode[generalArguments.gamemode]
         );
+=======
+        throw new GameCreationError("Invalid gamemode passed.");
+>>>>>>> 5ca87c38b72a3009ae48b2987a89e4ffb3d7a853
     }
   }
 }
