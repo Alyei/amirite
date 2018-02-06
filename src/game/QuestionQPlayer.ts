@@ -15,4 +15,9 @@ export class QuestionQPlayer extends PlayerBase implements iQuestionQPlayerData 
         this.questions = [];
         this.tips = [];
     }
+
+    get LatestQuestion(): [iQuestionQQuestion, string] | undefined {
+        if (this.questions.length > 0)
+            return this.questions[this.questions.length - 1];
+    }
 }

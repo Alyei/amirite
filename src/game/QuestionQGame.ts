@@ -157,8 +157,7 @@ export class QuestionQGame implements iGame {
   private LogInfo(toLog: string) {
     logger.log(
       "info",
-      new Date().toString() +
-        " - Game: " +
+        "Game: " +
         this.GeneralArguments.gameId +
         " - " +
         toLog
@@ -168,8 +167,7 @@ export class QuestionQGame implements iGame {
   private LogSilly(toLog: string) {
     logger.log(
       "silly",
-      new Date().toString() +
-        " - Game: " +
+        "Game: " +
         this.GeneralArguments.gameId +
         " - " +
         toLog
