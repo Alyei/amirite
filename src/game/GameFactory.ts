@@ -19,13 +19,6 @@ export class GameFactory {
   }
   public CreateGame(
     generalArguments: iGeneralHostArguments,
-    send: (
-      gameId: string,
-      username: string,
-      msgType: MessageType,
-      data: {}
-    ) => void,
-    gameEnded: () => void,
     namespaceSocket: SocketIO.Namespace,
     gameArguments?: iQuestionQHostArguments | iDeterminationHostArguments
   ) {
@@ -33,8 +26,6 @@ export class GameFactory {
       case Gamemode.QuestionQ: {
         const newGame: QuestionQGame = new QuestionQGame(
           generalArguments,
-          send,
-          gameEnded,
           namespaceSocket,
           gameArguments
         );

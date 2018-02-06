@@ -7,6 +7,7 @@ export interface iGeneralQuestion {
   otherOptions: string[];
   timeLimit: number;
   difficulty: number;
+  explanation?: string;
 }
 
 export interface iPlayerAction {
@@ -31,7 +32,7 @@ export interface iGeneralHostArguments {
 export enum Gamemode {
   QuestionQ = 0,
   Determination,
-  Millionaire
+  Millionaire,
 }
 
 export enum PlayerState {
@@ -39,38 +40,45 @@ export enum PlayerState {
   Playing,
   Paused,
   Finished,
-  Disqualified
+  Disqualified,
+}
+
+export enum PlayerRole {
+  Host = 0,
+  Mod,
+  Player,
 }
 
 export enum JokerType {
   Dummy = 0,
   FiftyFifty,
   Audience,
-  Call
+  Call,
 }
 
 // every possible message has its own entry here
 export enum MessageType {
-  PlayerInputError = 0,
-  QuestionQQuestion,
-  QuestionQTipFeedback,
-  QuestionQPlayerData,
-  QuestionQTip,
-  QuestionQGameData,
-  QuestionQHostArguments,
-  DeterminationPlayerData,
-  DeterminationQuestion,
-  DeterminationTip,
-  DeterminationOption,
-  DeterminationTipFeedback,
-  MillionaireSpectateData,
-  MillionaireQuestion,
-  MillionaireTip,
-  MillionaireTipFeedback,
-  MillionaireJokerRequest,
-  MillionaireJokerResponse,
-  MillionairePassRequest,
-  MillinairePassResponse //...
+    PlayerInputError = 0,
+    QuestionQQuestion,
+    QuestionQTipFeedback,
+    QuestionQPlayerData,
+    QuestionQTip,
+    QuestionQGameData,
+    QuestionQHostArguments,
+    DeterminationPlayerData,
+    DeterminationQuestion,
+    DeterminationTip,
+    DeterminationOption,
+    DeterminationTipFeedback,
+    MillionaireSpectateData,
+    MillionaireQuestion,
+    MillionaireTip,
+    MillionaireTipFeedback,
+    MillionaireAudienceJokerRequest,
+    MillionaireAudienceJokerResponse,
+    MillionaireAudienceJokerClue,
+    MillionairePassRequest,
+    MillinairePassResponse, //...
 }
 export enum GameAction {
   Start = 0,
@@ -111,7 +119,8 @@ export interface iQuestionQTipFeedback {
 }
 export interface iQuestionQPlayerData {
   username: string;
-  state: number;
+  roles: PlayerRole[];
+  state: PlayerState;
   score: number;
   questions: [iQuestionQQuestion, string][];
   tips: iQuestionQTipData[];
@@ -199,10 +208,6 @@ export interface iMillionairePlayer {
   questionData: iMillionaireQuestionData[];
   karmaScore: number;
 }
-export interface iMillionairePlayerClue {
-  questionId: string;
-  answerId: string;
-}
 export interface iMillionaireQuestion {
   questionId: string;
   question: string;
@@ -211,23 +216,37 @@ export interface iMillionaireQuestion {
   difficulty: number;
 }
 export interface iMillionaireQuestionData {
-  question: iMillionaireQuestion;
-  correctAnswer: string;
-  tip?: iMillionaireTip;
-  jokerResponses?: iMillionaireJokerResponse[];
-  feedback?: iMillionaireTipFeedback;
+    question:               iMillionaireQuestion;
+    correctAnswer:          string;
+    tip?:                   iMillionaireTip;
+    audienceJokerData?:     iMillionaireAudienceJokerData; // mehrere?
+    //fiftyFiftyJokerData?:   iMillionaireFiftyFiftyJokerData; // mehrere?
+    feedback?:              iMillionaireTipFeedback;
 }
-export interface iMillionaireJokerRequest {
-  questionId: string;
-  jokerId: JokerType;
-  arguments: string[];
+export interface iMillionaireAudienceJokerData {
+    // username, clue
+    playerClues:        { [id: string]: iMillionaireAudienceJokerPlayerClue };
+}
+// sent to inform about AudienceJoker
+export interface iMillionaireAudienceJokerActive {
+
+}
+// sent from audience and to the player
+export interface iMillionaireAudienceJokerPlayerClue {
+    questionId: string;
+    answerId:   string;
+}
+/*export interface iMillionaireJokerRequest {
+    questionId: string;
+    jokerId:    JokerType;
+    arguments:  string[];
 }
 // for every joker
 export interface iMillionaireJokerResponse {
-  questionId: string;
-  jokerId: JokerType;
-  answerId: string;
-}
+    questionId: string;
+    jokerId:    JokerType;
+    answerId:   string;
+}*/
 export interface iMillionaireTipFeedback {
   questionId: string;
   correct: boolean;

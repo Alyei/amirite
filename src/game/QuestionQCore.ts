@@ -1,6 +1,7 @@
 import { ArrayManager } from "./ArrayManager";
 import {
   iQuestionQQuestion,
+  PlayerRole,
   PlayerState,
   iQuestionQTip,
   iQuestionQTipFeedback,
@@ -11,7 +12,9 @@ import {
   iQuestionQPlayerData,
   Gamemode
 } from "../models/GameModels";
-import { IPlayerSocket } from "./iGame";
+import { PlayerBase } from "./PlayerBase";
+import { QuestionQPlayer } from "./QuestionQPlayer";
+import { Tryharder } from "./Tryharder";
 
 export enum QuestionQGamePhase {
   Setup = 0,
@@ -21,13 +24,15 @@ export enum QuestionQGamePhase {
 
 export class QuestionQCore {
   readonly Gamemode: Gamemode = Gamemode.QuestionQ;
-  private _players: iQuestionQPlayerData[];
+  private _players: QuestionQPlayer[];
   private _questions: iGeneralQuestion[];
   private _gamePhase: QuestionQGamePhase;
-  private _send: (username: string, msgType: MessageType, data: {}) => void;
-  private _gameEnded: () => void;
   private _logSilly?: (toLog: string) => void;
   private _logInfo?: (toLog: string) => void;
+
+  get Players(): QuestionQPlayer[] {
+    return this._players;
+  }
 
   //constructor of QuestionQCore
   //_send function to send JSONs to a specific player
@@ -37,18 +42,15 @@ export class QuestionQCore {
   public constructor(
     logInfo: (toLog: string) => void,
     logSilly: (toLog: string) => void,
-    send: (username: string, msgType: MessageType, data: {}) => void,
-    gameEnded: () => void,
+    private _gameEnded: () => void,
     questions: iGeneralQuestion[],
-    usernames: IPlayerSocket[],
+    players?: PlayerBase[],
     gameArguments?: iQuestionQHostArguments
   ) {
     this._gamePhase = QuestionQGamePhase.Setup;
 
     this._logInfo = logInfo;
     this._logSilly = logSilly;
-    this._send = send;
-    this._gameEnded = gameEnded;
 
     this._questions = [];
     if (questions) {
@@ -57,15 +59,9 @@ export class QuestionQCore {
     }
 
     this._players = [];
-    if (usernames) {
-      for (let user of usernames) {
-        this._players.push({
-          username: user.username,
-          state: PlayerState.Launch,
-          score: 0,
-          questions: [],
-          tips: []
-        });
+    if (players) {
+      for (let player of players) {
+        this._players.push(new QuestionQPlayer(player.GetArguments()));
       }
     }
   }
@@ -118,55 +114,50 @@ export class QuestionQCore {
     return true;
   }
 
+  public DisqualifyPlayer(player: PlayerBase): void {
+    player.state = PlayerState.Disqualified;
+    this.CheckForEnd();
+  }
+
   // returns wether it was successful
   // - only before the game has ended
   // - only new users
-  public AddUser(username: string): boolean {
+  public AddUser(player: PlayerBase): boolean {
     if (this._gamePhase == QuestionQGamePhase.Setup) {
-      this._players.push({
-        username: username,
-        state: PlayerState.Launch,
-        score: 0,
-        questions: [],
-        tips: []
-      });
+      this._players.push(new QuestionQPlayer(player.GetArguments()));
       return true;
     }
     if (this._gamePhase == QuestionQGamePhase.Running) {
-      let newPlayer: iQuestionQPlayerData = {
-        username: username,
-        state: PlayerState.Playing,
-        score: 0,
-        questions: [],
-        tips: []
-      };
+      let newPlayer: QuestionQPlayer = new QuestionQPlayer(player.GetArguments());
       this._players.push(newPlayer);
-      this.QuestionPlayer(newPlayer);
+      if (newPlayer.state == PlayerState.Launch)
+        this.QuestionPlayer(newPlayer);
       return true;
     }
     return false;
   }
 
+  /*
   // returns wether it was successful
   // - if no player finished yet
   // - only new questions
   public AddQuestion(question: iGeneralQuestion): boolean {
     let finished: boolean = false;
     for (let p of this._players) {
-      if (p.state != PlayerState.Finished) finished = true;
+      if (p.state != PlayerTag.Finished) finished = true;
     }
     if (!finished) {
       this._questions.push(question);
       return true;
     }
     return false;
-  }
+  }*/
 
   // starts the game
   // if _send, _endGame, _players & _questions are set
   // returns whether it was successful
   public Start(): boolean {
-    if (this._send && this._gameEnded && this._players && this._questions) {
+    if (this._players && this._questions) {
       this._gamePhase = QuestionQGamePhase.Running;
       for (let player of this._players) {
         if (player.state == PlayerState.Launch) {
@@ -206,7 +197,7 @@ export class QuestionQCore {
 
   // questions the player
   // only while running
-  private QuestionPlayer(player: iQuestionQPlayerData): void {
+  private QuestionPlayer(player: QuestionQPlayer): void {
     if (this._gamePhase == QuestionQGamePhase.Running) {
       // if there are questions left
       if (player.questions.length < this._questions.length) {
@@ -235,18 +226,33 @@ export class QuestionQCore {
           string
         ] = this.GetQuestionQQuestion(nextQuestionBase);
 
+        // timer
         // send nextQuestion to Username
-        this._send(
-          player.username,
-          MessageType.QuestionQQuestion,
-          nextQuestion[0]
-        );
+        const th: Tryharder = new Tryharder();
+        if (
+          !th.Tryhard(
+            () => { return player.Inform(MessageType.QuestionQQuestion, nextQuestion[0]); },
+            3000, // delay
+            3 // tries
+          )
+        ) {
+          this.DisqualifyPlayer(player);
+          return;
+        }
+
         // add question to the player's questions
         player.questions.push(nextQuestion);
       } else {
         // finished
         player.state = PlayerState.Finished;
-        this._send(player.username, MessageType.QuestionQPlayerData, player);
+        const th: Tryharder = new Tryharder();
+        if (
+          !th.Tryhard(
+            () => { return player.Inform(MessageType.QuestionQPlayerData, player); },
+            3000, // delay
+            3 // tries
+          )
+        ) {}
 
         this.CheckForEnd();
       }
@@ -255,7 +261,7 @@ export class QuestionQCore {
 
   // to be called whenever a player gives a tip
   public PlayerGivesTip(username: string, tip: iQuestionQTip): void {
-    let player: iQuestionQPlayerData | undefined = this._players.find(
+    const player: QuestionQPlayer | undefined = this._players.find(
       x => x.username == username
     );
     if (!player) {
@@ -270,18 +276,21 @@ export class QuestionQCore {
     ) {
       // only the player did not give a tip for this question before
       if (!player.tips.find(x => x.tip.questionId == tip.questionId)) {
-        const PlayerQuestionTuple:
-          | [iQuestionQQuestion, string]
-          | undefined = player.questions.find(
+        const PlayerQuestionTuple: [iQuestionQQuestion, string] | undefined = player.questions.find(
           x => x[0].questionId == tip.questionId
         );
         // if the player has not been asked this question
         if (!PlayerQuestionTuple) {
-          this._send(
-            player.username,
-            MessageType.PlayerInputError,
-            "You were not asked this question >:c"
-          );
+          const th: Tryharder = new Tryharder();
+          if (
+            !th.Tryhard(
+              () => { return player.Inform(MessageType.PlayerInputError, "You were not asked this question >:c"); },
+              3000, // delay
+              3 // tries
+            )
+          ) {
+            this.DisqualifyPlayer(player);
+          }
           return;
         }
 
@@ -324,7 +333,18 @@ export class QuestionQCore {
           feedback.score = player.score;
           feedback.message = "too slow";
         }
-        this._send(player.username, MessageType.QuestionQTipFeedback, feedback);
+
+        const th: Tryharder = new Tryharder();
+        if (
+          !th.Tryhard(
+            () => { return player.Inform(MessageType.QuestionQTipFeedback, feedback); },
+            3000, // delay
+            3 // tries
+          )
+        ) {
+          this.DisqualifyPlayer(player);
+          return;
+        }
 
         //add to playertipdata
         this.QuestionPlayer(player);
@@ -333,14 +353,35 @@ export class QuestionQCore {
           message: "You already gave a tip for this question",
           data: { QuestionId: tip.questionId }
         };
-        this._send(player.username, MessageType.PlayerInputError, message);
+        
+        const th: Tryharder = new Tryharder();
+        if (
+          !th.Tryhard(
+            () => { return player.Inform(MessageType.PlayerInputError, message); },
+            3000, // delay
+            3 // tries
+          )
+        ) {
+          this.DisqualifyPlayer(player);
+          return;
+        }
       }
     } else {
       const message: iGeneralPlayerInputError = {
         message: "You are not allowed to give a tip",
         data: { GamePhase: this._gamePhase, PlayerState: player.state }
       };
-      this._send(player.username, MessageType.PlayerInputError, message);
+      const th: Tryharder = new Tryharder();
+      if (
+        !th.Tryhard(
+          () => { return player.Inform(MessageType.PlayerInputError, message); },
+          3000, // delay
+          3 // tries
+        )
+      ) {
+        this.DisqualifyPlayer(player);
+        return;
+      }
     }
   }
 }

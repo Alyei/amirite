@@ -1,4 +1,5 @@
-import { iGame, IPlayerSocket } from "../game/iGame";
+import { iGame } from "../game/iGame";
+import { PlayerBase } from "../game/PlayerBase"
 import { RunningGames } from "../game/RunningGames";
 import * as GModels from "../models/GameModels";
 import { PlayerNotFoundError, GameNotFoundError } from "./Errors";
@@ -19,37 +20,6 @@ export class PlayerCommunication {
   }
 
   /**
-   * Sends a message to the player's socket.
-   * @function
-   * @param {string} gamemode - The case sensitive gamemode. `questionq, millionaire, determination, trivialpursuit`
-   * @param {string} id - The game's id the player is in.
-   * @param {string} username - The player's case sensitive username.
-   * @param {string} event - The event to be sent to the client.
-   * @param {string} msg - The message to be sent.
-   * @public
-   */
-  public SendToPlayer(
-    id: string,
-    username: string,
-    event: GModels.MessageType,
-    msg: object
-  ): void {
-    for (let item of this.RunningGames.Sessions) {
-      if (item.GeneralArguments.gameId === id) {
-        for (let player of item.players) {
-          if (player.username === username) {
-            player.socket.emit(event.toString(), JSON.stringify(msg));
-          } else {
-            throw new PlayerNotFoundError(username);
-          }
-        }
-      } else {
-        throw new GameNotFoundError(id);
-      }
-    }
-  }
-
-  /**
    * Sends a message to the everyone in the room.
    * @function@param {string} id - The game's id the player is in.
    * @param {string} event - The event to be sent to the client.
@@ -59,7 +29,7 @@ export class PlayerCommunication {
   public SendToRoom(id: string, event: GModels.MessageType, msg: object): void {
     for (let item of this.RunningGames.Sessions) {
       if (item.GeneralArguments.gameId === id) {
-        item.socket.to(id).emit(event.toString(), JSON.stringify(msg));
+        item.namespace.to(id).emit(event.toString(), JSON.stringify(msg));
       } else {
         throw new PlayerNotFoundError("id");
       }
