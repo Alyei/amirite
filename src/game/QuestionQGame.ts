@@ -93,21 +93,22 @@ export class QuestionQGame implements iGame {
   public ProcessUserInput(
     username: string,
     messageType: string /*msgType: MessageType*/,
-    data: string
+    data: iQuestionQTip
   ): void {
     const msgType: MessageType = (<any>MessageType)[messageType];
     switch (msgType) {
       case MessageType.QuestionQTip: {
         try {
-          const tip: iQuestionQTip = JSON.parse(data);
-          this.GameCore.PlayerGivesTip(username, tip);
+          console.log(data.questionId);
+          console.log(data.answerId);
+          this.GameCore.PlayerGivesTip(username, data);
         } catch (err) {
           let errorMessage: iGeneralPlayerInputError = {
-            message: "Tip could not be parsed.",
+            message: "Giving tip failed.",
             data: { username: username, msgType: msgType }
           };
-          this.LogInfo(JSON.stringify(errorMessage));
-          this.SendToUser(username, MessageType.PlayerInputError, errorMessage);
+          this.LogInfo(err.message);
+          //this.SendToUser(username, MessageType.PlayerInputError, errorMessage);
         }
         break;
       }
@@ -161,6 +162,20 @@ export class QuestionQGame implements iGame {
     return new Promise((resolve: any, reject: any) => {
       try {
         resolve(this.GameCore.DisqualifyUser(username));
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  public StartGame(username: string): Promise<any> {
+    return new Promise((resolve: any, reject: any) => {
+      try {
+        if (username == this.GeneralArguments.owner) {
+          resolve(this.GameCore.Start());
+        } else {
+          reject(-1);
+        }
       } catch (err) {
         reject(err);
       }

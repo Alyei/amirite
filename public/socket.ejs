@@ -4,22 +4,61 @@
 <head>
     <title>Socket.IO chat</title>
     <style>
-
     </style>
 </head>
 
 <body>
     <ul id="messages"></ul>
-    <form action="">
-        <input id="m" autocomplete="off" />
-        <button>Host game</button>
-    </form>
+    <button id="host" type="button">Host game</button>
+    <button id="join" type="button">Join Game</button>
+    <button id="start" type="button">Start Game</button>
+    <button id="sendtip" type="button">Send tip</button>
 
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
         $(function () {
+
             var socket = io('/questionq');
+
+            var currentId;
+
+            var host = $("#host"),
+                join = $("#join"),
+                start = $("#start"),
+                tip = $("#sendtip");
+
+            host.click(function () {
+                socket.emit("host game", "alyei");
+                return false;
+            })
+            join.click(function () {
+                alert('Joined game');
+            })
+            start.click(function () {
+                socket.emit("start game", JSON.stringify({
+                    "gameId": currentId,
+                    "username": "alyei"
+                }));
+                return false;
+            })
+            tip.click(function () {
+                socket.emit("action", JSON.stringify({
+                    "username": "alyei",
+                    "gameId": currentId,
+                    "msgType": "QuestionQTip",
+                    "data": {
+                        "questionId": "1234567890",
+                        "answerId": "a"
+                    }
+                }))
+            })
+
+            socket.on('gameid', function (msg) {
+                currentId = msg;
+                $("#sendtip").prop('value', msg);
+            })
+
             $('form').submit(function () {
                 socket.emit('host game', 'alyei');
                 return false;

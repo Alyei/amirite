@@ -33,18 +33,6 @@ export class RunningGames {
       console.error(err);
       throw new GameCouldNotBeAddedError(game.GeneralArguments.gameId);
     }
-
-    try {
-      logger.log(
-        "info",
-        "New QuestionQ session hosted. ID: %s, Owner: %s",
-
-        game.GeneralArguments.owner,
-        game.GeneralArguments.gamemode
-      );
-    } catch (err) {
-      throw new LoggingFailedError(err);
-    }
     return this.Sessions;
   }
 }

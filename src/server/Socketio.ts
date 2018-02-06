@@ -9,7 +9,9 @@ import {
   iGeneralHostArguments,
   iPlayerAction,
   iJoinGame,
-  iLeaveGame
+  iLeaveGame,
+  iStartGame,
+  iQuestionQTip
 } from "../models/GameModels";
 import * as GModels from "../models/GameModels";
 
@@ -59,20 +61,14 @@ export class io {
       playerSocket.join("test room");
 
       playerSocket.on("host game", (username: string) => {
-        console.log("received event host game");
         const args: iGeneralHostArguments = {
           gameId: generateGameId(),
           gamemode: GModels.Gamemode.QuestionQ,
           owner: username,
-          questionIds: ["lol"]
+          questionIds: ["1234567890"]
         };
-        this.GameFactory.CreateGame(args, this.QuestionQ);
-        /*let gameId: string = this.InitGame.HostGame(playerSocket, {
-          mode: "questionq",
-          owner: "alyei" //change to username
-        });*/
 
-        //start game here
+        this.GameFactory.CreateGame(args, this.QuestionQ);
 
         playerSocket.emit("gameid", args.gameId);
       });
@@ -89,6 +85,37 @@ export class io {
                 logger.log("info", err.message);
                 playerSocket.emit("error");
               });
+          }
+        }
+      });
+
+      playerSocket.on("start game", (optS: string) => {
+        const opt: iStartGame = JSON.parse(optS);
+        for (let item of this.GameSessions.Sessions) {
+          if (item.GeneralArguments.gameId == opt.gameId) {
+            item
+              .StartGame(opt.username)
+              .then((res: any) => {
+                logger.log("info", "Game %s started.", opt.gameId);
+                playerSocket.emit("success");
+              })
+              .catch((err: any) => {
+                if (err == -1) {
+                  logger.log("info", "Non-owner tried to launch a game");
+                  playerSocket.emit("error", "permission denied");
+                } else {
+                  logger.log(
+                    "info",
+                    "Something went wrong while starting game %s: " +
+                      err.message,
+                    opt.gameId
+                  );
+                  playerSocket.emit("error");
+                }
+              });
+          } else {
+            logger.log("info", "Can't start game %s. It doesn't exist.");
+            playerSocket.emit("error");
           }
         }
       });
@@ -114,7 +141,8 @@ export class io {
         }
       });
 
-      playerSocket.on("action", (msg: iPlayerAction) => {
+      playerSocket.on("action", (msgS: string) => {
+        const msg: iPlayerAction = JSON.parse(msgS);
         for (let item of this.GameSessions.Sessions) {
           if (item.GeneralArguments.gameId == msg.gameId) {
             item.ProcessUserInput(msg.username, msg.msgType, msg.data);

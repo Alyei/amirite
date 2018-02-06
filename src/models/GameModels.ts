@@ -14,7 +14,7 @@ export interface iPlayerAction {
   username: string;
   gameId: string;
   msgType: string; //myb msgType?
-  data: string; // ==> JSON.Parse
+  data: iQuestionQTip;
 }
 
 export interface iJoinGame {
@@ -26,6 +26,11 @@ export interface iLeaveGame {
   gameId: string;
   username: string;
   //reason?
+}
+
+export interface iStartGame {
+  gameId: string;
+  username: string;
 }
 
 export interface iGeneralPlayerInputError {

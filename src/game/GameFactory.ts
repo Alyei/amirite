@@ -34,7 +34,7 @@ export class GameFactory {
           logger.log(
             "info",
             "New QuestionQ game: %s hosted.",
-            generalArguments.owner
+            generalArguments.gameId
           );
         } catch (e) {
           logger.log("error", e.message);
