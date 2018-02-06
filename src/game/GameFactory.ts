@@ -30,7 +30,27 @@ export class GameFactory {
           gameArguments
         );
         try {
+          newGame
+            .AddPlayer(generalArguments.owner, generalArguments.ownerSocket)
+            .then((res: any) => {
+              logger.log(
+                "info",
+                "Added owner %s as player to game %s.",
+                generalArguments.owner,
+                generalArguments.gameId
+              );
+            })
+            .catch((err: any) => {
+              logger.log(
+                "info",
+                "Adding of player %s to game %s was unsuccessful.",
+                generalArguments.owner,
+                generalArguments.gameId
+              );
+            });
           this.Sessions.addRunningGame(newGame);
+          console.log("ADDEDRUNNINGGAME");
+          console.log(newGame.GeneralArguments);
           logger.log(
             "info",
             "New QuestionQ game: %s hosted.",

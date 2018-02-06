@@ -99,15 +99,9 @@ export class QuestionQGame implements iGame {
     switch (msgType) {
       case MessageType.QuestionQTip: {
         try {
-          console.log(data.questionId);
-          console.log(data.answerId);
           this.GameCore.PlayerGivesTip(username, data);
         } catch (err) {
-          let errorMessage: iGeneralPlayerInputError = {
-            message: "Giving tip failed.",
-            data: { username: username, msgType: msgType }
-          };
-          this.LogInfo(err.message);
+          logger.log("info", err.message);
           //this.SendToUser(username, MessageType.PlayerInputError, errorMessage);
         }
         break;
@@ -190,20 +184,14 @@ export class QuestionQGame implements iGame {
   private LogInfo(toLog: string) {
     logger.log(
       "info",
-        "Game: " +
-        this.GeneralArguments.gameId +
-        " - " +
-        toLog
+      "Game: " /*+ this.GeneralArguments.gameId*/ + " - " + toLog
     );
   }
 
   private LogSilly(toLog: string) {
     logger.log(
       "silly",
-        "Game: " +
-        this.GeneralArguments.gameId +
-        " - " +
-        toLog
+      "Game: " + /*this.GeneralArguments.gameId +*/ " - " + toLog
     );
   }
 
