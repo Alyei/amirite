@@ -3,10 +3,14 @@ import { Server } from "http";
 import { generateGameId } from "./Helper";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "./Logging";
-import * as IEvents from "../models/IEvents";
 import { GameFactory } from "../game/GameFactory";
 import { PlayerCommunication } from "./PlayerCom";
-import { iGeneralHostArguments, iPlayerAction } from "../models/GameModels";
+import {
+  iGeneralHostArguments,
+  iPlayerAction,
+  iJoinGame,
+  iLeaveGame
+} from "../models/GameModels";
 import * as GModels from "../models/GameModels";
 
 export class io {
@@ -62,10 +66,7 @@ export class io {
           owner: username,
           questionIds: ["lol"]
         };
-        this.GameFactory.CreateGame(
-          args,
-          this.QuestionQ
-        );
+        this.GameFactory.CreateGame(args, this.QuestionQ);
         /*let gameId: string = this.InitGame.HostGame(playerSocket, {
           mode: "questionq",
           owner: "alyei" //change to username
@@ -76,14 +77,38 @@ export class io {
         playerSocket.emit("gameid", args.gameId);
       });
 
-      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+      playerSocket.on("leave game", (opt: iLeaveGame) => {
+        for (let item of this.GameSessions.Sessions) {
+          if (item.GeneralArguments.gameId == opt.gameId) {
+            item
+              .RemovePlayer(opt.username)
+              .then((res: any) => {
+                playerSocket.emit("success");
+              })
+              .catch((err: any) => {
+                logger.log("info", err.message);
+                playerSocket.emit("error");
+              });
+          }
+        }
+      });
+
+      playerSocket.on("join game", (opt: iJoinGame) => {
         for (let item of this.GameSessions.Sessions) {
           if (item.GeneralArguments.gameId == opt.gameId) {
             try {
-              item.AddPlayer(opt.username, playerSocket);
+              item
+                .AddPlayer(opt.username, playerSocket)
+                .then((res: any) => {
+                  playerSocket.join(item.GeneralArguments.gameId);
+                })
+                .catch((err: any) => {
+                  logger.log("info", "Error: " + err.message);
+                  playerSocket.emit("error");
+                });
             } catch (err) {
               logger.error(err.message);
-              playerSocket.emit("error", "failed");
+              playerSocket.emit("error");
             }
           }
         }

@@ -32,30 +32,18 @@ export class QuestionQGame implements iGame {
   //users list of usernames UNIQUE
   //questions list of questions UNIQUE
   public constructor(
-    readonly GeneralArguments:    iGeneralHostArguments,
-    public namespace:             SocketIO.Namespace,
-    private _gameCoreArguments?:  iQuestionQHostArguments
+    readonly GeneralArguments: iGeneralHostArguments,
+    public namespace: SocketIO.Namespace,
+    private _gameCoreArguments?: iQuestionQHostArguments
   ) {
-
     this.GameCore = new QuestionQCore(
       this.LogInfo,
       this.LogSilly,
       this.SendGameData,
-      /*[
-        {
-          questionId: "1",
-          question: "hi",
-          pictureId: "123",
-          answer: "hi",
-          otherOptions: ["1", "2", "3", "4"],
-          timeLimit: 21,
-          difficulty: 4
-        }
-      ]*/
       this.LoadQuestions(),
       [],
       this._gameCoreArguments
-    ); //this.LoadQuestions(), instead of object array
+    );
   }
 
   private LoadQuestions(): iGeneralQuestion[] {
@@ -63,22 +51,20 @@ export class QuestionQGame implements iGame {
     let result: iGeneralQuestion[] = [];
     for (let qid of this.GeneralArguments.questionIds) {
       QuestionModel.findOne({ id: qid }, (err: any, question: any) => {
-        if (err)
-          return err;
-        if (!question)
-          return question;
+        if (err) return err;
+        if (!question) return question;
         result.push({
           questionId: question.id,
           question: question.question,
           answer: question.answer,
           otherOptions: question.otherOptions,
           timeLimit: question.timeLimit,
-          difficulty: question.difficulty,
+          difficulty: question.difficulty
           //explanation: question.explanation,
           //pictureId: question.pictureId
         });
-      });;
-    }// go git merge and love yaself
+      });
+    } // go git merge and love yaself
 
     return result;
   }
@@ -148,13 +134,37 @@ export class QuestionQGame implements iGame {
 
   /**
    * Adds a user with their corresponding socket to the game's players array.
-   * @function
    * @param username - The user's username.
-   * @param socket - The user's socket. Access the id through `socket.id`
-   * @returns The new players array.
+   * @param socket - The user's socket. Access the id through `socket.id`.
+   * @returns Promise with the new players-array.
    */
-  public AddPlayer(username: string, socket: SocketIO.Socket, roles?: PlayerRole[]): boolean {
-    return this.GameCore.AddUser(new PlayerBase(username, socket, roles));
+  public AddPlayer(
+    username: string,
+    socket: SocketIO.Socket,
+    roles?: PlayerRole[]
+  ): Promise<any> {
+    return new Promise((resolve: any, reject: any) => {
+      try {
+        resolve(this.GameCore.AddUser(new PlayerBase(username, socket, roles)));
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  /**
+   * Disqualifies the player from the game.
+   * @param username The username of the player to be disqualified.
+   * @returns Promise.
+   */
+  public RemovePlayer(username: string): Promise<any> {
+    return new Promise((resolve: any, reject: any) => {
+      try {
+        resolve(this.GameCore.DisqualifyUser(username));
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
   public AddQuestion(question: iGeneralQuestion): boolean {
@@ -198,7 +208,9 @@ export class QuestionQGame implements iGame {
     for (let player of players) {
       if (
         !th.Tryhard(
-          () => { return player.Inform(MessageType.QuestionQGameData, gameData); },
+          () => {
+            return player.Inform(MessageType.QuestionQGameData, gameData);
+          },
           3000, // delay
           3 // tries
         )
