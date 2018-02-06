@@ -15,7 +15,7 @@ export interface iGame {
   //-socket: SocketIO.Namespace;
 
   //(+)players
-  GetGameData: () => [Gamemode, string];
+  //(-)GetGameData: () => [Gamemode, string];
   ProcessUserInput: (username: string, msgType: string, data: string) => any;
   //(-)PerformAction: (actionArguments: any) => any;
   AddPlayer: (username: string, socket: SocketIO.Socket) => any;

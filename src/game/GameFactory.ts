@@ -51,8 +51,6 @@ export class GameFactory {
               );
             });
           this.Sessions.addRunningGame(newGame);
-          console.log("ADDEDRUNNINGGAME");
-          console.log(newGame.GeneralArguments);
           logger.log(
             "info",
             "New QuestionQ game: %s hosted.",

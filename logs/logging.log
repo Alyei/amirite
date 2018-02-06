@@ -12,3 +12,179 @@
 {"level":"info","message":"Added owner alyei as player to game nDY0p1.","timestamp":"2018-02-06T21:14:03.741Z"}
 {"level":"info","message":"Game nDY0p1 started.","timestamp":"2018-02-06T21:14:04.640Z"}
 {"level":"info","message":"{\"message\":\"You are not allowed to give a tip\",\"data\":{\"GamePhase\":1,\"PlayerState\":4}}","timestamp":"2018-02-06T21:14:06.237Z"}
+{"date":"Tue Feb 06 2018 22:18:06 GMT+0100 (W. Europe Standard Time)","process":{"pid":11648,"uid":null,"gid":null,"cwd":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite","execPath":"C:\\Users\\andy\\scoop\\apps\\nodejs\\current\\node.exe","version":"v8.6.0","argv":["node","D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\index.ts"],"memoryUsage":{"rss":133042176,"heapTotal":111890432,"heapUsed":81772968,"external":85391}},"os":{"loadavg":[0,0,0],"uptime":287993.7706221},"trace":[{"column":15,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"getOutput","line":307,"method":null,"native":false},{"column":16,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":null,"line":336,"method":null,"native":false},{"column":11,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Object.compile","line":498,"method":"compile","native":false},{"column":43,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Module.m._compile","line":392,"method":"_compile","native":false},{"column":10,"file":"module.js","function":"Module._extensions..js","line":635,"method":".js","native":false},{"column":12,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Object.require.extensions.(anonymous function) [as .ts]","line":395,"method":"ts]","native":false},{"column":32,"file":"module.js","function":"Module.load","line":545,"method":"load","native":false},{"column":12,"file":"module.js","function":"tryModuleLoad","line":508,"method":null,"native":false},{"column":3,"file":"module.js","function":"Module._load","line":500,"method":"_load","native":false},{"column":17,"file":"module.js","function":"Module.require","line":568,"method":"require","native":false}],"stack":["TSError: ⨯ Unable to compile TypeScript","src\\game\\QuestionQGame.ts (27,14): Class 'QuestionQGame' incorrectly implements interface 'iGame'.","  Property 'GetGameData' is missing in type 'QuestionQGame'. (2420)","    at getOutput (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:307:15)","    at D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:336:16","    at Object.compile (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:498:11)","    at Module.m._compile (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:392:43)","    at Module._extensions..js (module.js:635:10)","    at Object.require.extensions.(anonymous function) [as .ts] (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:395:12)","    at Module.load (module.js:545:32)","    at tryModuleLoad (module.js:508:12)","    at Function.Module._load (module.js:500:3)","    at Module.require (module.js:568:17)"],"level":"error","message":"uncaughtException: ⨯ Unable to compile TypeScript\nsrc\\game\\QuestionQGame.ts (27,14): Class 'QuestionQGame' incorrectly implements interface 'iGame'.\n  Property 'GetGameData' is missing in type 'QuestionQGame'. (2420)","timestamp":"2018-02-06T21:18:06.962Z"}
+{"date":"Tue Feb 06 2018 22:18:06 GMT+0100 (W. Europe Standard Time)","process":{"pid":11648,"uid":null,"gid":null,"cwd":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite","execPath":"C:\\Users\\andy\\scoop\\apps\\nodejs\\current\\node.exe","version":"v8.6.0","argv":["node","D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\index.ts"],"memoryUsage":{"rss":133451776,"heapTotal":111890432,"heapUsed":82071256,"external":85415}},"os":{"loadavg":[0,0,0],"uptime":287993.7806228},"trace":[{"column":15,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"getOutput","line":307,"method":null,"native":false},{"column":16,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":null,"line":336,"method":null,"native":false},{"column":11,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Object.compile","line":498,"method":"compile","native":false},{"column":43,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Module.m._compile","line":392,"method":"_compile","native":false},{"column":10,"file":"module.js","function":"Module._extensions..js","line":635,"method":".js","native":false},{"column":12,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Object.require.extensions.(anonymous function) [as .ts]","line":395,"method":"ts]","native":false},{"column":32,"file":"module.js","function":"Module.load","line":545,"method":"load","native":false},{"column":12,"file":"module.js","function":"tryModuleLoad","line":508,"method":null,"native":false},{"column":3,"file":"module.js","function":"Module._load","line":500,"method":"_load","native":false},{"column":17,"file":"module.js","function":"Module.require","line":568,"method":"require","native":false}],"stack":["TSError: ⨯ Unable to compile TypeScript","src\\game\\QuestionQGame.ts (27,14): Class 'QuestionQGame' incorrectly implements interface 'iGame'.","  Property 'GetGameData' is missing in type 'QuestionQGame'. (2420)","    at getOutput (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:307:15)","    at D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:336:16","    at Object.compile (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:498:11)","    at Module.m._compile (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:392:43)","    at Module._extensions..js (module.js:635:10)","    at Object.require.extensions.(anonymous function) [as .ts] (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:395:12)","    at Module.load (module.js:545:32)","    at tryModuleLoad (module.js:508:12)","    at Function.Module._load (module.js:500:3)","    at Module.require (module.js:568:17)"],"level":"error","message":"uncaughtException: ⨯ Unable to compile TypeScript\nsrc\\game\\QuestionQGame.ts (27,14): Class 'QuestionQGame' incorrectly implements interface 'iGame'.\n  Property 'GetGameData' is missing in type 'QuestionQGame'. (2420)","timestamp":"2018-02-06T21:18:06.970Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:18:48.156Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:18:48.160Z"}
+{"level":"info","message":"New user connected: k-jExhQhB-cZToyhAAAA","timestamp":"2018-02-06T21:18:51.132Z"}
+{"level":"info","message":"New QuestionQ game: fn3Xbx hosted.","timestamp":"2018-02-06T21:18:51.245Z"}
+{"level":"info","message":"Added owner alyei as player to game fn3Xbx.","timestamp":"2018-02-06T21:18:51.250Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:18:52.787Z"}
+{"level":"info","message":"Game fn3Xbx started.","timestamp":"2018-02-06T21:18:52.799Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:18:52.789Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:18:52.796Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:18:52.798Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:18:52.798Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:18:52.799Z"}
+{"level":"info","message":"{\"message\":\"You are not allowed to give a tip\",\"data\":{\"GamePhase\":2,\"PlayerState\":3}}","timestamp":"2018-02-06T21:19:00.601Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:23:07.166Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:23:07.169Z"}
+{"level":"info","message":"New user connected: X7n84u0SUODbef_GAAAA","timestamp":"2018-02-06T21:23:07.359Z"}
+{"level":"info","message":"New QuestionQ game: 3ESvXK hosted.","timestamp":"2018-02-06T21:23:08.877Z"}
+{"level":"info","message":"Added owner alyei as player to game 3ESvXK.","timestamp":"2018-02-06T21:23:08.882Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:23:14.294Z"}
+{"level":"info","message":"Game 3ESvXK started.","timestamp":"2018-02-06T21:23:14.298Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:23:14.296Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:23:14.296Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:23:14.297Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:23:14.298Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:23:14.298Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:24:59.888Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:24:59.890Z"}
+{"level":"info","message":"New user connected: Nk7CUUxd_V18Cpe1AAAA","timestamp":"2018-02-06T21:25:01.676Z"}
+{"level":"info","message":"New QuestionQ game: eFcVOU hosted.","timestamp":"2018-02-06T21:25:01.704Z"}
+{"level":"info","message":"Added owner alyei as player to game eFcVOU.","timestamp":"2018-02-06T21:25:01.709Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:25:03.254Z"}
+{"level":"info","message":"Game eFcVOU started.","timestamp":"2018-02-06T21:25:03.266Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:25:03.263Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:25:03.263Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:25:03.264Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:25:03.265Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:25:03.265Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:25:58.243Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:25:58.244Z"}
+{"level":"info","message":"New user connected: 1nJiazR0O1XXzdk5AAAA","timestamp":"2018-02-06T21:25:58.455Z"}
+{"level":"info","message":"New QuestionQ game: MepwtF hosted.","timestamp":"2018-02-06T21:25:59.151Z"}
+{"level":"info","message":"Added owner alyei as player to game MepwtF.","timestamp":"2018-02-06T21:25:59.157Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:26:00.830Z"}
+{"level":"info","message":"Game MepwtF started.","timestamp":"2018-02-06T21:26:00.836Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:26:00.831Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:26:00.831Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:26:00.832Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:26:00.833Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:26:00.833Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:26:18.318Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:26:18.321Z"}
+{"level":"info","message":"New user connected: _1ISBVmczomAX9knAAAA","timestamp":"2018-02-06T21:26:18.557Z"}
+{"date":"Tue Feb 06 2018 22:26:32 GMT+0100 (W. Europe Standard Time)","process":{"pid":10336,"uid":null,"gid":null,"cwd":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite","execPath":"C:\\Users\\andy\\scoop\\apps\\nodejs\\current\\node.exe","version":"v8.6.0","argv":["node","D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\index.ts"],"memoryUsage":{"rss":128925696,"heapTotal":108220416,"heapUsed":84968352,"external":85391}},"os":{"loadavg":[0,0,0],"uptime":288498.9953093},"trace":[{"column":15,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"getOutput","line":307,"method":null,"native":false},{"column":16,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":null,"line":336,"method":null,"native":false},{"column":11,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Object.compile","line":498,"method":"compile","native":false},{"column":43,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Module.m._compile","line":392,"method":"_compile","native":false},{"column":10,"file":"module.js","function":"Module._extensions..js","line":635,"method":".js","native":false},{"column":12,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Object.require.extensions.(anonymous function) [as .ts]","line":395,"method":"ts]","native":false},{"column":32,"file":"module.js","function":"Module.load","line":545,"method":"load","native":false},{"column":12,"file":"module.js","function":"tryModuleLoad","line":508,"method":null,"native":false},{"column":3,"file":"module.js","function":"Module._load","line":500,"method":"_load","native":false},{"column":17,"file":"module.js","function":"Module.require","line":568,"method":"require","native":false}],"stack":["TSError: ⨯ Unable to compile TypeScript","src\\game\\QuestionQGame.ts (162,23): Cannot find name 'opt'. (2304)","    at getOutput (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:307:15)","    at D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:336:16","    at Object.compile (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:498:11)","    at Module.m._compile (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:392:43)","    at Module._extensions..js (module.js:635:10)","    at Object.require.extensions.(anonymous function) [as .ts] (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:395:12)","    at Module.load (module.js:545:32)","    at tryModuleLoad (module.js:508:12)","    at Function.Module._load (module.js:500:3)","    at Module.require (module.js:568:17)"],"level":"error","message":"uncaughtException: ⨯ Unable to compile TypeScript\nsrc\\game\\QuestionQGame.ts (162,23): Cannot find name 'opt'. (2304)","timestamp":"2018-02-06T21:26:32.187Z"}
+{"date":"Tue Feb 06 2018 22:26:32 GMT+0100 (W. Europe Standard Time)","process":{"pid":10336,"uid":null,"gid":null,"cwd":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite","execPath":"C:\\Users\\andy\\scoop\\apps\\nodejs\\current\\node.exe","version":"v8.6.0","argv":["node","D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\index.ts"],"memoryUsage":{"rss":129757184,"heapTotal":108220416,"heapUsed":85260080,"external":85415}},"os":{"loadavg":[0,0,0],"uptime":288499.0048098},"trace":[{"column":15,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"getOutput","line":307,"method":null,"native":false},{"column":16,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":null,"line":336,"method":null,"native":false},{"column":11,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Object.compile","line":498,"method":"compile","native":false},{"column":43,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Module.m._compile","line":392,"method":"_compile","native":false},{"column":10,"file":"module.js","function":"Module._extensions..js","line":635,"method":".js","native":false},{"column":12,"file":"D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts","function":"Object.require.extensions.(anonymous function) [as .ts]","line":395,"method":"ts]","native":false},{"column":32,"file":"module.js","function":"Module.load","line":545,"method":"load","native":false},{"column":12,"file":"module.js","function":"tryModuleLoad","line":508,"method":null,"native":false},{"column":3,"file":"module.js","function":"Module._load","line":500,"method":"_load","native":false},{"column":17,"file":"module.js","function":"Module.require","line":568,"method":"require","native":false}],"stack":["TSError: ⨯ Unable to compile TypeScript","src\\game\\QuestionQGame.ts (162,23): Cannot find name 'opt'. (2304)","    at getOutput (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:307:15)","    at D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:336:16","    at Object.compile (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:498:11)","    at Module.m._compile (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:392:43)","    at Module._extensions..js (module.js:635:10)","    at Object.require.extensions.(anonymous function) [as .ts] (D:\\Documents\\1Schule\\Diplomarbeit\\amirite\\node_modules\\ts-node\\src\\index.ts:395:12)","    at Module.load (module.js:545:32)","    at tryModuleLoad (module.js:508:12)","    at Function.Module._load (module.js:500:3)","    at Module.require (module.js:568:17)"],"level":"error","message":"uncaughtException: ⨯ Unable to compile TypeScript\nsrc\\game\\QuestionQGame.ts (162,23): Cannot find name 'opt'. (2304)","timestamp":"2018-02-06T21:26:32.195Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:26:50.754Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:26:50.756Z"}
+{"level":"info","message":"New user connected: 8CXi7-3n8E6kSJr-AAAA","timestamp":"2018-02-06T21:26:55.462Z"}
+{"level":"info","message":"New QuestionQ game: 93H3YU hosted.","timestamp":"2018-02-06T21:27:13.604Z"}
+{"level":"info","message":"Added owner alyei as player to game 93H3YU.","timestamp":"2018-02-06T21:27:13.610Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:27:14.560Z"}
+{"level":"info","message":"Game 93H3YU started.","timestamp":"2018-02-06T21:27:14.571Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:27:14.561Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:27:14.562Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:27:14.563Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:27:14.563Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:27:14.564Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:27:41.074Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:27:41.076Z"}
+{"level":"info","message":"New user connected: aJ5pjySP6jNXQgVoAAAA","timestamp":"2018-02-06T21:27:41.208Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:28:40.678Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:28:40.680Z"}
+{"level":"info","message":"New user connected: cV2TVYyG3PqcTI-zAAAA","timestamp":"2018-02-06T21:28:40.904Z"}
+{"level":"info","message":"New QuestionQ game: oBPQlI hosted.","timestamp":"2018-02-06T21:28:41.490Z"}
+{"level":"info","message":"Added owner alyei as player to game oBPQlI.","timestamp":"2018-02-06T21:28:41.496Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:28:42.679Z"}
+{"level":"info","message":"Game oBPQlI started.","timestamp":"2018-02-06T21:28:42.684Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:28:42.680Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:28:42.682Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:28:42.683Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:28:42.683Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:28:42.684Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:28:57.440Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:28:57.442Z"}
+{"level":"info","message":"New user connected: t_l1pgbnzWlYTl7WAAAA","timestamp":"2018-02-06T21:28:59.457Z"}
+{"level":"info","message":"New QuestionQ game: 2PYTsa hosted.","timestamp":"2018-02-06T21:28:59.695Z"}
+{"level":"info","message":"Added owner alyei as player to game 2PYTsa.","timestamp":"2018-02-06T21:28:59.701Z"}
+{"level":"info","message":"Converting circular structure to JSONa","timestamp":"2018-02-06T21:29:02.836Z"}
+{"level":"info","message":"Game 2PYTsa started.","timestamp":"2018-02-06T21:29:02.857Z"}
+{"level":"info","message":"Converting circular structure to JSONa","timestamp":"2018-02-06T21:29:02.838Z"}
+{"level":"info","message":"Converting circular structure to JSONa","timestamp":"2018-02-06T21:29:02.854Z"}
+{"level":"info","message":"Converting circular structure to JSONa","timestamp":"2018-02-06T21:29:02.855Z"}
+{"level":"info","message":"Converting circular structure to JSONa","timestamp":"2018-02-06T21:29:02.856Z"}
+{"level":"info","message":"Converting circular structure to JSONa","timestamp":"2018-02-06T21:29:02.856Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:29:20.265Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:29:20.267Z"}
+{"level":"info","message":"New user connected: pTA5ATc6HRvUx7hEAAAA","timestamp":"2018-02-06T21:29:20.535Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:29:30.898Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:29:30.899Z"}
+{"level":"info","message":"New user connected: UM5rz8XJkIRsqY41AAAA","timestamp":"2018-02-06T21:29:32.794Z"}
+{"level":"info","message":"New QuestionQ game: idw4IM hosted.","timestamp":"2018-02-06T21:29:32.889Z"}
+{"level":"info","message":"Added owner alyei as player to game idw4IM.","timestamp":"2018-02-06T21:29:32.900Z"}
+{"level":"info","message":"Game idw4IM started.","timestamp":"2018-02-06T21:29:34.279Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:29:43.098Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:29:43.099Z"}
+{"level":"info","message":"New user connected: caDQS1jbt3ccxgOJAAAA","timestamp":"2018-02-06T21:29:43.160Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:29:50.287Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:29:50.288Z"}
+{"level":"info","message":"New user connected: lRvnxtqBNGztxL_cAAAA","timestamp":"2018-02-06T21:29:50.348Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:30:41.216Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:30:41.217Z"}
+{"level":"info","message":"New user connected: WdnJwcg7aYvaD89AAAAA","timestamp":"2018-02-06T21:30:41.361Z"}
+{"level":"info","message":"New QuestionQ game: 8ln99j hosted.","timestamp":"2018-02-06T21:30:43.197Z"}
+{"level":"info","message":"Added owner alyei as player to game 8ln99j.","timestamp":"2018-02-06T21:30:43.202Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:30:43.965Z"}
+{"level":"info","message":"Game 8ln99j started.","timestamp":"2018-02-06T21:30:43.969Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:30:43.966Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:30:43.967Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:30:43.967Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:30:43.968Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:30:43.968Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:31:31.820Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:31:31.821Z"}
+{"level":"info","message":"New user connected: OIHfXisPAl3zFsytAAAA","timestamp":"2018-02-06T21:31:33.775Z"}
+{"level":"info","message":"New QuestionQ game: pxje8T hosted.","timestamp":"2018-02-06T21:31:34.840Z"}
+{"level":"info","message":"Added owner alyei as player to game pxje8T.","timestamp":"2018-02-06T21:31:34.846Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:31:35.922Z"}
+{"level":"info","message":"Game pxje8T started.","timestamp":"2018-02-06T21:31:35.925Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:31:35.923Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:31:35.924Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:31:35.924Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:31:35.924Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:31:35.925Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:31:45.528Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:31:45.529Z"}
+{"level":"info","message":"New user connected: GgVrJ2Be-O9WboUSAAAA","timestamp":"2018-02-06T21:31:45.606Z"}
+{"level":"info","message":"New QuestionQ game: tUvt5f hosted.","timestamp":"2018-02-06T21:32:34.732Z"}
+{"level":"info","message":"Added owner alyei as player to game tUvt5f.","timestamp":"2018-02-06T21:32:34.737Z"}
+{"level":"info","message":"\"[object Object]TEST\"","timestamp":"2018-02-06T21:32:38.252Z"}
+{"level":"info","message":"Game tUvt5f started.","timestamp":"2018-02-06T21:32:38.276Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:32:38.253Z"}
+{"level":"info","message":"\"[object Object]TEST\"","timestamp":"2018-02-06T21:32:38.254Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:32:38.254Z"}
+{"level":"info","message":"\"[object Object]TEST\"","timestamp":"2018-02-06T21:32:38.254Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:32:38.254Z"}
+{"level":"info","message":"\"[object Object]TEST\"","timestamp":"2018-02-06T21:32:38.255Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:32:38.255Z"}
+{"level":"info","message":"\"[object Object]TEST\"","timestamp":"2018-02-06T21:32:38.257Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:32:38.257Z"}
+{"level":"info","message":"\"[object Object]TEST\"","timestamp":"2018-02-06T21:32:38.275Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:32:38.276Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:33:00.548Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:33:00.550Z"}
+{"level":"info","message":"New user connected: gpBtHYdYTcCUzchsAAAA","timestamp":"2018-02-06T21:33:00.746Z"}
+{"level":"info","message":"New QuestionQ game: NVmDoY hosted.","timestamp":"2018-02-06T21:33:01.382Z"}
+{"level":"info","message":"Added owner alyei as player to game NVmDoY.","timestamp":"2018-02-06T21:33:01.387Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:33:02.795Z"}
+{"level":"info","message":"Game NVmDoY started.","timestamp":"2018-02-06T21:33:02.799Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:33:02.796Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:33:02.797Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:33:02.797Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:33:02.798Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:33:02.798Z"}
+{"level":"info","message":"HTTP redirect to HTTPS started listening.","timestamp":"2018-02-06T21:33:47.234Z"}
+{"level":"info","message":"HTTPS server started listening on port 443.","timestamp":"2018-02-06T21:33:47.235Z"}
+{"level":"info","message":"New user connected: yeBddW_RPZx46q_eAAAA","timestamp":"2018-02-06T21:33:49.272Z"}
+{"level":"info","message":"New QuestionQ game: 8L3AhZ hosted.","timestamp":"2018-02-06T21:34:16.179Z"}
+{"level":"info","message":"Added owner alyei as player to game 8L3AhZ.","timestamp":"2018-02-06T21:34:16.184Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:34:39.669Z"}
+{"level":"info","message":"Game 8L3AhZ started.","timestamp":"2018-02-06T21:34:39.672Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:34:39.670Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:34:39.670Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:34:39.671Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:34:39.671Z"}
+{"level":"info","message":"Converting circular structure to JSON","timestamp":"2018-02-06T21:34:39.672Z"}

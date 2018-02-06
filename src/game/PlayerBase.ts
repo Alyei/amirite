@@ -24,16 +24,17 @@ export class PlayerBase {
       this.state = PlayerState.Launch;
   }
 
-  public Inform(messageType: MessageType, data: {}): boolean {
+  public Inform(messageType: MessageType, data: object): boolean {
     try {
+      logger.log("silly", JSON.stringify(data + "TEST"));
       this.socket.emit(
         MessageType[messageType] /*.toLowerCase()*/,
         JSON.stringify(data)
       );
-      logger.log("info", JSON.stringify(data));
+
       return true;
     } catch (err) {
-      logger.log("info", err.message);
+      logger.log("info", err.message); //Converting circular structure to JSONa
       return false;
     }
   }
