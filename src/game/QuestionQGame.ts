@@ -183,31 +183,11 @@ export class QuestionQGame implements iGame {
   }
 
   private LogInfo(game: QuestionQCore, toLog: string) {
-    logger.log(
-      "info",
-<<<<<<< HEAD
-      "Game: " /*+ this.GeneralArguments.gameId*/ + " - " + toLog
-=======
-        "Game: " +
-        game.gameId +
-        " - " +
-        toLog
->>>>>>> master
-    );
+    logger.log("info", "Game: " + game.gameId + " - " + toLog);
   }
 
   private LogSilly(game: QuestionQCore, toLog: string) {
-    logger.log(
-      "silly",
-<<<<<<< HEAD
-      "Game: " + /*this.GeneralArguments.gameId +*/ " - " + toLog
-=======
-        "Game: " +
-        game.gameId +
-        " - " +
-        toLog
->>>>>>> master
-    );
+    logger.log("silly", "Game: " + game.gameId + " - " + toLog);
   }
 
   /*
