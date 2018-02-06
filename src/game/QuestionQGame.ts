@@ -93,13 +93,13 @@ export class QuestionQGame implements iGame {
   public ProcessUserInput(
     username: string,
     messageType: string /*msgType: MessageType*/,
-    data: iQuestionQTip
+    data: string
   ): void {
     const msgType: MessageType = (<any>MessageType)[messageType];
     switch (msgType) {
       case MessageType.QuestionQTip: {
         try {
-          this.GameCore.PlayerGivesTip(username, data);
+          this.GameCore.PlayerGivesTip(username, JSON.parse(data));
         } catch (err) {
           logger.log("info", err.message);
           //this.SendToUser(username, MessageType.PlayerInputError, errorMessage);

@@ -31,7 +31,9 @@ export class GameFactory {
         );
         try {
           newGame
-            .AddPlayer(generalArguments.owner, generalArguments.ownerSocket)
+            .AddPlayer(generalArguments.owner, generalArguments.ownerSocket, [
+              2
+            ])
             .then((res: any) => {
               logger.log(
                 "info",

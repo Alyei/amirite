@@ -15,11 +15,8 @@ export interface iGame {
   //-socket: SocketIO.Namespace;
 
   //(+)players
-  ProcessUserInput: (
-    username: string,
-    msgType: string,
-    data: iQuestionQTip
-  ) => any;
+  GetGameData: () => [Gamemode, string];
+  ProcessUserInput: (username: string, msgType: string, data: string) => any;
   //(-)PerformAction: (actionArguments: any) => any;
   AddPlayer: (username: string, socket: SocketIO.Socket) => any;
   RemovePlayer: (username: string) => any;

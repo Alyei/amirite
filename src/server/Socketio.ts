@@ -107,8 +107,7 @@ export class io {
                 } else {
                   logger.log(
                     "info",
-                    "Something went wrong while starting game %s: " +
-                      err.message,
+                    "Something went wrong while starting game %s: " + err.stack,
                     opt.gameId
                   );
                   playerSocket.emit("error");
@@ -146,7 +145,11 @@ export class io {
         const msg: iPlayerAction = JSON.parse(msgS);
         for (let item of this.GameSessions.Sessions) {
           if (item.GeneralArguments.gameId == msg.gameId) {
-            item.ProcessUserInput(msg.username, msg.msgType, msg.data);
+            item.ProcessUserInput(
+              msg.username,
+              msg.msgType,
+              JSON.stringify(msg.data)
+            );
           }
         }
       });
