@@ -15,6 +15,7 @@ import {
 import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
 import { Tryharder } from "./Tryharder";
+import { platform } from "os";
 
 export enum QuestionQGamePhase {
   Setup = 0,
@@ -29,6 +30,7 @@ export class QuestionQCore {
   private _gamePhase: QuestionQGamePhase;
   private _logSilly?: (toLog: string) => void;
   private _logInfo?: (toLog: string) => void;
+  private _timers: { [id: string]: NodeJS.Timer };  
 
   get Players(): QuestionQPlayer[] {
     return this._players;
@@ -68,6 +70,30 @@ export class QuestionQCore {
 
   public GetPlayerData(): iQuestionQPlayerData[] {
     return this._players;
+  }
+
+  //ping check method
+  private CheckQuestionTime(player: QuestionQPlayer, question: iQuestionQQuestion) {
+    if (player.LatestQuestion) { // has been questioned?
+      if (player.LatestQuestion[0].questionId == question.questionId) { // is the question current?
+        if (question.questionTime.getTime() + question.timeLimit < (new Date()).getTime()) { // time left?
+          this._timers[player.username + ":" + question.questionId] = global.setTimeout(
+            () => { this.CheckQuestionTime(player, question); },
+            0 // current ping / 2
+          );
+        } else {
+          this.PlayerGivesTip(player.username, {
+            questionId: question.questionId,
+            answerId: "none"
+          }); // give empty tip to continue
+        }
+      } else {
+        // the question has already been answered
+      }
+    } else {
+      if (this._logSilly)
+        this._logSilly("this should not have happened... (" + JSON.stringify(player) + "; " + JSON.stringify(question) + ")");
+    }
   }
 
   //returns the json that is sent to a player + the key for the correct answer
@@ -202,12 +228,8 @@ export class QuestionQCore {
       // if there are questions left
       if (player.questions.length < this._questions.length) {
         // generate nextQuestion
-        const nextQuestionBase:
-          | iGeneralQuestion
-          | undefined = this._questions.find(
-          x =>
-            player.questions.find(y => y[0].questionId == x.questionId) ==
-            undefined
+        const nextQuestionBase: iGeneralQuestion | undefined = this._questions.find(
+          x => !player.questions.find(y => y[0].questionId == x.questionId)
         );
         // L-> find a question you cannot find in player.questions
         if (!nextQuestionBase) {
@@ -242,6 +264,12 @@ export class QuestionQCore {
 
         // add question to the player's questions
         player.questions.push(nextQuestion);
+
+        // start timer
+        this._timers[player.username + ":" + nextQuestion[0].questionId] = global.setTimeout(
+          () => { this.CheckQuestionTime(player, nextQuestion[0]); },
+          nextQuestion[0].timeLimit // + current ping / 2
+        );
       } else {
         // finished
         player.state = PlayerState.Finished;

@@ -42,6 +42,7 @@ export interface iGeneralHostArguments {
   gameId: string;
   gamemode: Gamemode;
   owner: string;
+  ownerSocket: SocketIO.Socket;
   questionIds: string[];
 }
 

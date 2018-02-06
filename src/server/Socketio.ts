@@ -65,6 +65,7 @@ export class io {
           gameId: generateGameId(),
           gamemode: GModels.Gamemode.QuestionQ,
           owner: username,
+          ownerSocket: playerSocket,
           questionIds: ["1234567890"]
         };
 
