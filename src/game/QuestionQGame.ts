@@ -185,28 +185,20 @@ export class QuestionQGame implements iGame {
   private LogInfo(game: QuestionQCore, toLog: string) {
     logger.log(
       "info",
-<<<<<<< HEAD
-      "Game: " /*+ this.GeneralArguments.gameId*/ + " - " + toLog
-=======
         "Game: " +
         game.gameId +
         " - " +
         toLog
->>>>>>> master
     );
   }
 
   private LogSilly(game: QuestionQCore, toLog: string) {
     logger.log(
       "silly",
-<<<<<<< HEAD
-      "Game: " + /*this.GeneralArguments.gameId +*/ " - " + toLog
-=======
         "Game: " +
         game.gameId +
         " - " +
         toLog
->>>>>>> master
     );
   }
 
