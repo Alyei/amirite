@@ -31,7 +31,7 @@ export class QuestionQCore {
   private _gamePhase: QuestionQGamePhase;
   private _logSilly?: (game: QuestionQCore, toLog: string) => void;
   private _logInfo?: (game: QuestionQCore, toLog: string) => void;
-  private _timers: { [id: string]: NodeJS.Timer };  
+  private _timers: { [id: string]: NodeJS.Timer };
 
   get Players(): QuestionQPlayer[] {
     return this._players;
@@ -66,6 +66,11 @@ export class QuestionQCore {
         this._players.push(new QuestionQPlayer(player.GetArguments()));
       }
     }
+
+    console.log(this._questions);
+    for (let item of this._questions) {
+      console.log(item);
+    }
   }
 
   public GetPlayerData(): iQuestionQPlayerData[] {
@@ -98,12 +103,25 @@ export class QuestionQCore {
   }
 
   //ping check method
-  private CheckQuestionTime(player: QuestionQPlayer, question: iQuestionQQuestion) {
-    if (player.LatestQuestion) { // has been questioned?
-      if (player.LatestQuestion[0].questionId == question.questionId) { // is the question current?
-        if (question.questionTime.getTime() + question.timeLimit < (new Date()).getTime()) { // time left?
-          this._timers[player.username + ":" + question.questionId] = global.setTimeout(
-            () => { this.CheckQuestionTime(player, question); },
+  private CheckQuestionTime(
+    player: QuestionQPlayer,
+    question: iQuestionQQuestion
+  ) {
+    if (player.LatestQuestion) {
+      // has been questioned?
+      if (player.LatestQuestion[0].questionId == question.questionId) {
+        // is the question current?
+        if (
+          question.questionTime.getTime() + question.timeLimit <
+          new Date().getTime()
+        ) {
+          // time left?
+          this._timers[
+            player.username + ":" + question.questionId
+          ] = global.setTimeout(
+            () => {
+              this.CheckQuestionTime(player, question);
+            },
             0 // current ping / 2
           );
         } else {
@@ -117,7 +135,14 @@ export class QuestionQCore {
       }
     } else {
       if (this._logSilly)
-        this._logSilly(this, "this should not have happened... (" + JSON.stringify(player) + "; " + JSON.stringify(question) + ")");
+        this._logSilly(
+          this,
+          "this should not have happened... (" +
+            JSON.stringify(player) +
+            "; " +
+            JSON.stringify(question) +
+            ")"
+        );
     }
   }
 
@@ -179,10 +204,11 @@ export class QuestionQCore {
       return true;
     }
     if (this._gamePhase == QuestionQGamePhase.Running) {
-      let newPlayer: QuestionQPlayer = new QuestionQPlayer(player.GetArguments());
+      let newPlayer: QuestionQPlayer = new QuestionQPlayer(
+        player.GetArguments()
+      );
       this._players.push(newPlayer);
-      if (newPlayer.state == PlayerState.Launch)
-        this.QuestionPlayer(newPlayer);
+      if (newPlayer.state == PlayerState.Launch) this.QuestionPlayer(newPlayer);
       return true;
     }
     return false;
@@ -260,13 +286,16 @@ export class QuestionQCore {
       // if there are questions left
       if (player.questions.length < this._questions.length) {
         // generate nextQuestion
-        const nextQuestionBase: iGeneralQuestion | undefined = this._questions.find(
+        const nextQuestionBase:
+          | iGeneralQuestion
+          | undefined = this._questions.find(
           x => !player.questions.find(y => y[0].questionId == x.questionId)
         );
         // L-> find a question you cannot find in player.questions
         if (!nextQuestionBase) {
           if (this._logInfo)
-            this._logInfo(this, 
+            this._logInfo(
+              this,
               "could not find next question in '" +
                 this._questions.toString() +
                 "''" +
@@ -285,7 +314,12 @@ export class QuestionQCore {
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
-            () => { return player.Inform(MessageType.QuestionQQuestion, nextQuestion[0]); },
+            () => {
+              return player.Inform(
+                MessageType.QuestionQQuestion,
+                nextQuestion[0]
+              );
+            },
             3000, // delay
             3 // tries
           )
@@ -298,8 +332,12 @@ export class QuestionQCore {
         player.questions.push(nextQuestion);
 
         // start timer
-        this._timers[player.username + ":" + nextQuestion[0].questionId] = global.setTimeout(
-          () => { this.CheckQuestionTime(player, nextQuestion[0]); },
+        this._timers[
+          player.username + ":" + nextQuestion[0].questionId
+        ] = global.setTimeout(
+          () => {
+            this.CheckQuestionTime(player, nextQuestion[0]);
+          },
           nextQuestion[0].timeLimit // + current ping / 2
         );
       } else {
@@ -308,11 +346,14 @@ export class QuestionQCore {
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
-            () => { return player.Inform(MessageType.QuestionQPlayerData, player); },
+            () => {
+              return player.Inform(MessageType.QuestionQPlayerData, player);
+            },
             3000, // delay
             3 // tries
           )
-        ) {}
+        ) {
+        }
 
         this.CheckForEnd();
       }
@@ -336,7 +377,9 @@ export class QuestionQCore {
     ) {
       // only the player did not give a tip for this question before
       if (!player.tips.find(x => x.tip.questionId == tip.questionId)) {
-        const PlayerQuestionTuple: [iQuestionQQuestion, string] | undefined = player.questions.find(
+        const PlayerQuestionTuple:
+          | [iQuestionQQuestion, string]
+          | undefined = player.questions.find(
           x => x[0].questionId == tip.questionId
         );
         // if the player has not been asked this question
@@ -344,7 +387,12 @@ export class QuestionQCore {
           const th: Tryharder = new Tryharder();
           if (
             !th.Tryhard(
-              () => { return player.Inform(MessageType.PlayerInputError, "You were not asked this question >:c"); },
+              () => {
+                return player.Inform(
+                  MessageType.PlayerInputError,
+                  "You were not asked this question >:c"
+                );
+              },
               3000, // delay
               3 // tries
             )
@@ -397,7 +445,9 @@ export class QuestionQCore {
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
-            () => { return player.Inform(MessageType.QuestionQTipFeedback, feedback); },
+            () => {
+              return player.Inform(MessageType.QuestionQTipFeedback, feedback);
+            },
             3000, // delay
             3 // tries
           )
@@ -413,11 +463,13 @@ export class QuestionQCore {
           message: "You already gave a tip for this question",
           data: { QuestionId: tip.questionId }
         };
-        
+
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
-            () => { return player.Inform(MessageType.PlayerInputError, message); },
+            () => {
+              return player.Inform(MessageType.PlayerInputError, message);
+            },
             3000, // delay
             3 // tries
           )
@@ -434,7 +486,9 @@ export class QuestionQCore {
       const th: Tryharder = new Tryharder();
       if (
         !th.Tryhard(
-          () => { return player.Inform(MessageType.PlayerInputError, message); },
+          () => {
+            return player.Inform(MessageType.PlayerInputError, message);
+          },
           3000, // delay
           3 // tries
         )

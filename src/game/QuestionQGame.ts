@@ -26,6 +26,7 @@ import { Tryharder } from "./Tryharder";
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
+  private Questions: iGeneralQuestion[];
 
   //_send function to send JSONs to a specific player
   //_gameEnded function to be executed, when the game ended
@@ -36,11 +37,13 @@ export class QuestionQGame implements iGame {
     public namespace: SocketIO.Namespace,
     private _gameCoreArguments?: iQuestionQHostArguments
   ) {
+    this.Questions = new Array<iGeneralQuestion>();
+    this.LoadQuestions();
     this.GameCore = new QuestionQCore(
       this.GeneralArguments.gameId,
       this.LogInfo,
       this.LogSilly,
-      this.LoadQuestions(),
+      this.Questions,
       [],
       this._gameCoreArguments
     );
@@ -48,24 +51,25 @@ export class QuestionQGame implements iGame {
 
   private LoadQuestions(): iGeneralQuestion[] {
     // get from mongodb with this.GeneralArguments.questionIds;
-    let result: iGeneralQuestion[] = [];
+    const result: iGeneralQuestion[] = [];
     for (let qid of this.GeneralArguments.questionIds) {
       QuestionModel.findOne({ id: qid }, (err: any, question: any) => {
         if (err) return err;
         if (!question) return question;
-        result.push({
+        this.Questions.push({
           questionId: question.id,
           question: question.question,
           answer: question.answer,
           otherOptions: question.otherOptions,
           timeLimit: question.timeLimit,
           difficulty: question.difficulty
-          //explanation: question.explanation,
+          //explanation: question.explanation
           //pictureId: question.pictureId
         });
+        console.log(this.Questions);
       });
     } // go git merge and love yaself
-
+    console.log(this.Questions);
     return result;
   }
 

@@ -24,9 +24,9 @@ export class PlayerBase {
       this.state = PlayerState.Launch;
   }
 
-  public Inform(messageType: MessageType, data: object): boolean {
+  public Inform(messageType: MessageType, data: {}): boolean {
     try {
-      logger.log("silly", JSON.stringify(data + "TEST"));
+      logger.log("silly", JSON.stringify(data));
       this.socket.emit(
         MessageType[messageType] /*.toLowerCase()*/,
         JSON.stringify(data)

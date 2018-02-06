@@ -66,7 +66,7 @@ export class io {
           gamemode: GModels.Gamemode.QuestionQ,
           owner: username,
           ownerSocket: playerSocket,
-          questionIds: ["1234567890"]
+          questionIds: ["1234567890", "YxUy07SElM"]
         };
 
         this.GameFactory.CreateGame(args, this.QuestionQ);
