@@ -9,6 +9,13 @@ export interface iGeneralQuestion {
   difficulty: number;
 }
 
+export interface iPlayerAction {
+  username: string;
+  gameId: string;
+  msgType: MessageType; //myb string?
+  data: string; // ==> JSON.Parse
+}
+
 export interface iGeneralPlayerInputError {
   message: string;
   data: any;

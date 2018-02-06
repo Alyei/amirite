@@ -6,7 +6,7 @@ import { logger } from "./Logging";
 import * as IEvents from "../models/IEvents";
 import { GameFactory } from "../game/GameFactory";
 import { PlayerCommunication } from "./PlayerCom";
-import { iGeneralHostArguments } from "../models/GameModels";
+import { iGeneralHostArguments, iPlayerAction } from "../models/GameModels";
 import * as GModels from "../models/GameModels";
 
 export class io {
@@ -80,14 +80,23 @@ export class io {
       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
         for (let item of this.GameSessions.Sessions) {
           if (item.GeneralArguments.gameId == opt.gameId) {
-            item.AddPlayer(opt.username, playerSocket);
+            try {
+              item.AddPlayer(opt.username, playerSocket);
+            } catch (err) {
+              logger.error(err.message);
+              playerSocket.emit("error", "failed");
+            }
           }
         }
       });
 
-      playerSocket.on("tip", (msg: object) => {});
-
-      //Placeholder
+      playerSocket.on("action", (msg: iPlayerAction) => {
+        for (let item of this.GameSessions.Sessions) {
+          if (item.GeneralArguments.gameId == msg.gameId) {
+            item.ProcessUserInput(msg.username, msg.msgType, msg.data);
+          }
+        }
+      });
     });
   }
   //   private MillionaireConf(): void {

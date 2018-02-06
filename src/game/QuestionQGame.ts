@@ -92,9 +92,17 @@ export class QuestionQGame implements iGame {
   ): void {
     switch (msgType) {
       case MessageType.QuestionQTip: {
-        // try & catch !!!
-        const tip: iQuestionQTip = JSON.parse(data);
-        this.GameCore.PlayerGivesTip(username, tip);
+        try {
+          const tip: iQuestionQTip = JSON.parse(data);
+          this.GameCore.PlayerGivesTip(username, tip);
+        } catch (err) {
+          let errorMessage: iGeneralPlayerInputError = {
+            message: "Tip could not be parsed.",
+            data: { username: username, msgType: msgType }
+          };
+          this.LogInfo(JSON.stringify(errorMessage));
+          this.SendToUser(username, MessageType.PlayerInputError, errorMessage);
+        }
         break;
       }
       default: {
