@@ -38,6 +38,7 @@ export class QuestionQGame implements iGame {
   ) {
 
     this.GameCore = new QuestionQCore(
+      this.GeneralArguments.gameId,
       this.LogInfo,
       this.LogSilly,
       this.SendGameData,
@@ -122,7 +123,7 @@ export class QuestionQGame implements iGame {
           message: "invalid message type",
           data: { username: username, msgType: msgType }
         };
-        this.LogInfo(JSON.stringify(errorMessage));
+        this.LogInfo(this.GameCore, JSON.stringify(errorMessage));
         //this.SendToUser(username, MessageType.PlayerInputError, errorMessage);
         break;
       }
@@ -154,21 +155,21 @@ export class QuestionQGame implements iGame {
     return false;
   }
 
-  private LogInfo(toLog: string) {
+  private LogInfo(game: QuestionQCore, toLog: string) {
     logger.log(
       "info",
         "Game: " +
-        this.GeneralArguments.gameId +
+        game.gameId +
         " - " +
         toLog
     );
   }
 
-  private LogSilly(toLog: string) {
+  private LogSilly(game: QuestionQCore, toLog: string) {
     logger.log(
       "silly",
         "Game: " +
-        this.GeneralArguments.gameId +
+        game.gameId +
         " - " +
         toLog
     );

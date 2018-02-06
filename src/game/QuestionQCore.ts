@@ -28,8 +28,8 @@ export class QuestionQCore {
   private _players: QuestionQPlayer[];
   private _questions: iGeneralQuestion[];
   private _gamePhase: QuestionQGamePhase;
-  private _logSilly?: (toLog: string) => void;
-  private _logInfo?: (toLog: string) => void;
+  private _logSilly?: (game: QuestionQCore, toLog: string) => void;
+  private _logInfo?: (game: QuestionQCore, toLog: string) => void;
   private _timers: { [id: string]: NodeJS.Timer };  
 
   get Players(): QuestionQPlayer[] {
@@ -42,8 +42,9 @@ export class QuestionQCore {
   //users list of usernames UNIQUE
   //questions list of questions UNIQUE
   public constructor(
-    logInfo: (toLog: string) => void,
-    logSilly: (toLog: string) => void,
+    public gameId: string,
+    logInfo: (game: QuestionQCore, toLog: string) => void,
+    logSilly: (game: QuestionQCore, toLog: string) => void,
     private _gameEnded: () => void,
     questions: iGeneralQuestion[],
     players?: PlayerBase[],
@@ -92,7 +93,7 @@ export class QuestionQCore {
       }
     } else {
       if (this._logSilly)
-        this._logSilly("this should not have happened... (" + JSON.stringify(player) + "; " + JSON.stringify(question) + ")");
+        this._logSilly(this, "this should not have happened... (" + JSON.stringify(player) + "; " + JSON.stringify(question) + ")");
     }
   }
 
@@ -131,7 +132,7 @@ export class QuestionQCore {
     );
     if (!player) {
       if (this._logInfo)
-        this._logInfo("could not find player '" + username + "'");
+        this._logInfo(this, "could not find player '" + username + "'");
       return false;
     }
 
@@ -234,7 +235,7 @@ export class QuestionQCore {
         // L-> find a question you cannot find in player.questions
         if (!nextQuestionBase) {
           if (this._logInfo)
-            this._logInfo(
+            this._logInfo(this, 
               "could not find next question in '" +
                 this._questions.toString() +
                 "''" +
@@ -294,7 +295,7 @@ export class QuestionQCore {
     );
     if (!player) {
       if (this._logInfo)
-        this._logInfo("could not find player '" + username + "'");
+        this._logInfo(this, "could not find player '" + username + "'");
       return;
     }
     // only while running and if the player is ingame
