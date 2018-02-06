@@ -3,10 +3,16 @@ import { Server } from "http";
 import { generateGameId } from "./Helper";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "./Logging";
-import * as IEvents from "../models/IEvents";
 import { GameFactory } from "../game/GameFactory";
 import { PlayerCommunication } from "./PlayerCom";
-import { iGeneralHostArguments } from "../models/GameModels";
+import {
+  iGeneralHostArguments,
+  iPlayerAction,
+  iJoinGame,
+  iLeaveGame,
+  iStartGame,
+  iQuestionQTip
+} from "../models/GameModels";
 import * as GModels from "../models/GameModels";
 
 export class io {
@@ -55,38 +61,98 @@ export class io {
       playerSocket.join("test room");
 
       playerSocket.on("host game", (username: string) => {
-        console.log("received event host game");
         const args: iGeneralHostArguments = {
           gameId: generateGameId(),
           gamemode: GModels.Gamemode.QuestionQ,
           owner: username,
-          questionIds: ["lol"]
+          ownerSocket: playerSocket,
+          questionIds: ["1234567890", "YxUy07SElM"]
         };
-        this.GameFactory.CreateGame(
-          args,
-          this.QuestionQ
-        );
-        /*let gameId: string = this.InitGame.HostGame(playerSocket, {
-          mode: "questionq",
-          owner: "alyei" //change to username
-        });*/
 
-        //start game here
+        this.GameFactory.CreateGame(args, this.QuestionQ);
 
         playerSocket.emit("gameid", args.gameId);
       });
 
-      playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
+      playerSocket.on("leave game", (opt: iLeaveGame) => {
         for (let item of this.GameSessions.Sessions) {
           if (item.GeneralArguments.gameId == opt.gameId) {
-            item.AddPlayer(opt.username, playerSocket);
+            item
+              .RemovePlayer(opt.username)
+              .then((res: any) => {
+                playerSocket.emit("success");
+              })
+              .catch((err: any) => {
+                logger.log("info", err.message);
+                playerSocket.emit("error");
+              });
           }
         }
       });
 
-      playerSocket.on("tip", (msg: object) => {});
+      playerSocket.on("start game", (optS: string) => {
+        const opt: iStartGame = JSON.parse(optS);
+        for (let item of this.GameSessions.Sessions) {
+          if (item.GeneralArguments.gameId == opt.gameId) {
+            item
+              .StartGame(opt.username)
+              .then((res: any) => {
+                logger.log("info", "Game %s started.", opt.gameId);
+                playerSocket.emit("success");
+              })
+              .catch((err: any) => {
+                if (err == -1) {
+                  logger.log("info", "Non-owner tried to launch a game");
+                  playerSocket.emit("error", "permission denied");
+                } else {
+                  logger.log(
+                    "info",
+                    "Something went wrong while starting game %s: " + err.stack,
+                    opt.gameId
+                  );
+                  playerSocket.emit("error");
+                }
+              });
+          } else {
+            logger.log("info", "Can't start game %s. It doesn't exist.");
+            playerSocket.emit("error");
+          }
+        }
+      });
 
-      //Placeholder
+      playerSocket.on("join game", (opt: iJoinGame) => {
+        for (let item of this.GameSessions.Sessions) {
+          if (item.GeneralArguments.gameId == opt.gameId) {
+            try {
+              item
+                .AddPlayer(opt.username, playerSocket)
+                .then((res: any) => {
+                  playerSocket.join(item.GeneralArguments.gameId);
+                })
+                .catch((err: any) => {
+                  logger.log("info", "Error: " + err.message);
+                  playerSocket.emit("error");
+                });
+            } catch (err) {
+              logger.error(err.message);
+              playerSocket.emit("error");
+            }
+          }
+        }
+      });
+
+      playerSocket.on("action", (msgS: string) => {
+        const msg: iPlayerAction = JSON.parse(msgS);
+        for (let item of this.GameSessions.Sessions) {
+          if (item.GeneralArguments.gameId == msg.gameId) {
+            item.ProcessUserInput(
+              msg.username,
+              msg.msgType,
+              JSON.stringify(msg.data)
+            );
+          }
+        }
+      });
     });
   }
   //   private MillionaireConf(): void {
