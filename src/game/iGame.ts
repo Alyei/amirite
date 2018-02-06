@@ -15,7 +15,6 @@ export interface iGame {
   //-socket: SocketIO.Namespace;
 
   //(+)players
-  GetGameData: () => [Gamemode, string];
   ProcessUserInput: (
     username: string,
     msgType: string,

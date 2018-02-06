@@ -10,7 +10,8 @@ import {
   MessageType,
   iQuestionQHostArguments,
   iQuestionQPlayerData,
-  Gamemode
+  Gamemode,
+  iQuestionQGameData
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
@@ -38,14 +39,12 @@ export class QuestionQCore {
 
   //constructor of QuestionQCore
   //_send function to send JSONs to a specific player
-  //_gameEnded function to be executed, when the game ended
   //users list of usernames UNIQUE
   //questions list of questions UNIQUE
   public constructor(
     public gameId: string,
     logInfo: (game: QuestionQCore, toLog: string) => void,
     logSilly: (game: QuestionQCore, toLog: string) => void,
-    private _gameEnded: () => void,
     questions: iGeneralQuestion[],
     players?: PlayerBase[],
     gameArguments?: iQuestionQHostArguments
@@ -71,6 +70,31 @@ export class QuestionQCore {
 
   public GetPlayerData(): iQuestionQPlayerData[] {
     return this._players;
+  }
+
+  /*
+  private SendToRoom(messageType: MessageType, data: {}): void {
+    this.namespace.to(this.GeneralArguments.gameId).emit(MessageType[messageType], JSON.stringify(data))
+  }
+  */
+  // end (add save to DB)
+  private SendGameData(gameData: iQuestionQGameData): void {
+    const players: PlayerBase[] = this.Players;
+    const th: Tryharder = new Tryharder();
+    for (let player of players) {
+      if (
+        !th.Tryhard(
+          () => {
+            return player.Inform(MessageType.QuestionQGameData, gameData);
+          },
+          3000, // delay
+          3 // tries
+        )
+      ) {
+        // player not reachable
+      }
+    }
+    //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }
 
   //ping check method
@@ -200,7 +224,14 @@ export class QuestionQCore {
   public Stop(): void {
     this._gamePhase = QuestionQGamePhase.Ended;
 
-    this._gameEnded();
+    this.SendGameData(this.GetGameData());
+  }
+
+  public GetGameData(): iQuestionQGameData {
+    return {
+      gameId: this.gameId,
+      players: this.GetPlayerData()
+    };
   }
 
   // ends the game when specific conditions are current
