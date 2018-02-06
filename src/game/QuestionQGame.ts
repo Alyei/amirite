@@ -40,7 +40,6 @@ export class QuestionQGame implements iGame {
       this.GeneralArguments.gameId,
       this.LogInfo,
       this.LogSilly,
-      this.SendGameData,
       this.LoadQuestions(),
       [],
       this._gameCoreArguments
@@ -119,15 +118,6 @@ export class QuestionQGame implements iGame {
     }
   }
 
-  public GetGameData(): [Gamemode, string] {
-    const gameData: iQuestionQGameData = {
-      gameId: this.GeneralArguments.gameId,
-      players: this.GameCore.GetPlayerData()
-    };
-
-    return [this.GameCore.Gamemode, JSON.stringify(gameData)];
-  }
-
   /**
    * Adds a user with their corresponding socket to the game's players array.
    * @param username - The user's username.
@@ -188,33 +178,5 @@ export class QuestionQGame implements iGame {
 
   private LogSilly(game: QuestionQCore, toLog: string) {
     logger.log("silly", "Game: " + game.gameId + " - " + toLog);
-  }
-
-  /*
-  private SendToRoom(messageType: MessageType, data: {}): void {
-    this.namespace.to(this.GeneralArguments.gameId).emit(MessageType[messageType], JSON.stringify(data))
-  }
-  */
-  // end (add save to DB)
-  private SendGameData(): void {
-    const gameData = JSON.parse(this.GetGameData()[1]);
-
-    const players: PlayerBase[] = this.GameCore.Players;
-    const th: Tryharder = new Tryharder();
-    for (let player of players) {
-      if (
-        !th.Tryhard(
-          () => {
-            return player.Inform(MessageType.QuestionQGameData, gameData);
-          },
-          3000, // delay
-          3 // tries
-        )
-      ) {
-        this.GameCore.DisqualifyPlayer(player);
-        return;
-      }
-    }
-    //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }
 }
