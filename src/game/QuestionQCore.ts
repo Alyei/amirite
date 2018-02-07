@@ -98,7 +98,7 @@ export class QuestionQCore {
     }
     return result;
   }
-
+  
   /*
   private SendToRoom(messageType: MessageType, data: {}): void {
     this.namespace.to(this.GeneralArguments.gameId).emit(MessageType[messageType], JSON.stringify(data))
@@ -312,7 +312,9 @@ export class QuestionQCore {
       // if there are questions left
       if (player.questions.length < this._questions.length) {
         // generate nextQuestion
-        const nextQuestionBase: iGeneralQuestion | undefined = this._questions.find(
+        const nextQuestionBase:
+          | iGeneralQuestion
+          | undefined = this._questions.find(
           x => !player.questions.find(y => y[0].questionId == x.questionId)
         );
         // L-> find a question you cannot find in player.questions
@@ -359,7 +361,7 @@ export class QuestionQCore {
           player.username + ":" + nextQuestion[0].questionId
         ] = global.setTimeout(
           () => {
-            console.log("Start timer ");
+            console.log("execute timer callback");
             this.CheckQuestionTime(player, nextQuestion[0]);
           },
           nextQuestion[0].timeLimit // + current ping / 2
