@@ -26,19 +26,18 @@ import { Tryharder } from "./Tryharder";
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
-  private Questions: iGeneralQuestion[];
 
-  //_send function to send JSONs to a specific player
-  //_gameEnded function to be executed, when the game ended
-  //users list of usernames UNIQUE
-  //questions list of questions UNIQUE
+  /**
+   * Creates an instance of a QuestionQ-Game.
+   * @param GeneralArguments - general game arguments
+   * @param namespace - the namespace socket (unused)
+   * @param _gameCoreArguments - game specific arguments for QuestionQ
+   */
   public constructor(
     readonly GeneralArguments: iGeneralHostArguments,
     public namespace: SocketIO.Namespace,
     private _gameCoreArguments?: iQuestionQHostArguments
   ) {
-    this.Questions = new Array<iGeneralQuestion>();
-    //this.LoadQuestions();
     this.GameCore = new QuestionQCore(
       this.GeneralArguments.gameId,
       this.LogInfo,
@@ -49,27 +48,12 @@ export class QuestionQGame implements iGame {
     );
   }
 
-  /*
-  public PerformAction(actionArguments: any): any {
-    if ("gameAction" in actionArguments)
-      switch (actionArguments.gameAction) {
-        case GameAction.Start: {
-          return this.GameCore.Start();
-        }
-        case GameAction.Stop: {
-          return this.GameCore.Stop();
-        }
-        default: {
-          return {
-            message: "action not available for this gamemode",
-            data: actionArguments
-          };
-        }
-      }
-    return { message: "invalid parameter", actionArguments };
-  }
-  */
-
+  /**
+   * Processes game actions received from users.
+   * @param username - the user who performs the action
+   * @param msgType - the type of the action
+   * @param data - the action's data
+   */
   public ProcessUserInput(
     username: string,
     messageType: string /*msgType: MessageType*/,
@@ -133,10 +117,20 @@ export class QuestionQGame implements iGame {
     });
   }
 
+  /**
+   * Starts the game.
+   * @param username - The user who ordered the game start
+   */
   public StartGame(username: string): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
-        if (username == this.GeneralArguments.owner) {
+        const player:
+          | PlayerBase
+          | undefined
+          = this.GameCore.Players.find(
+            x => x.username == username
+        );
+        if (player && player.roles.find(x => x == PlayerRole.Mod || x == PlayerRole.Host)) {
           resolve(this.GameCore.Start());
         } else {
           reject(-1);
@@ -147,15 +141,28 @@ export class QuestionQGame implements iGame {
     });
   }
 
+  /**
+   * DEACTIVATED
+   */
   public AddQuestion(question: iGeneralQuestion): boolean {
     //return this.GameCore.AddQuestion(question);
     return false;
   }
 
+  /**
+   * Logs magnificient game information.
+   * @param game - the game instance
+   * @param toLog - the information to log
+   */
   private LogInfo(game: QuestionQCore, toLog: string) {
     logger.log("info", "Game: " + game.gameId + " - " + toLog);
   }
 
+  /**
+   * Logs silly game information.
+   * @param game - the game instance
+   * @param toLog - the information to log
+   */
   private LogSilly(game: QuestionQCore, toLog: string) {
     logger.log("silly", "Game: " + game.gameId + " - " + toLog);
   }

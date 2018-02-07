@@ -35,14 +35,22 @@ export class QuestionQCore {
   private _logInfo?: (game: QuestionQCore, toLog: string) => void;
   private _timers: { [id: string]: NodeJS.Timer } = {};
 
+  /**
+   * Getter for the game's players
+   */
   get Players(): QuestionQPlayer[] {
     return this._players;
   }
 
-  //constructor of QuestionQCore
-  //_send function to send JSONs to a specific player
-  //users list of usernames UNIQUE
-  //questions list of questions UNIQUE
+  /**
+   * Creates a new instance of the QuestionQCore-class
+   * @param gameId - the game's id
+   * @param logInfo - method to log magnificient information
+   * @param logSilly - method to log silly information
+   * @param questionIds - list of the questions' IDs
+   * @param players - list of players that are here from the beginning
+   * @param gameArguments - QuestionQ-specific game arguments
+   */
   public constructor(
     public gameId: string,
     logInfo: (game: QuestionQCore, toLog: string) => void,
@@ -66,6 +74,10 @@ export class QuestionQCore {
     }
   }
 
+  /**
+   * Loads the questions' data from the DB.
+   * @param questionIds - list of IDs of the questions that are to load from the DB
+   */
   private LoadQuestions(questionIds: string[]) {
     this._questions = [];
     QuestionModel.find({ id: { $in: questionIds } })
@@ -91,6 +103,10 @@ export class QuestionQCore {
     this._questions = am.ShuffleArray();
   }
 
+  /**
+   * Returns an array of the players' data.
+   * @returns - array of the players' data according to the iQuestionQPlayerData-interface
+   */
   public GetPlayerData(): iQuestionQPlayerData[] {
     const result: iQuestionQPlayerData[] = [];
     for (let player of this._players) {
@@ -99,13 +115,11 @@ export class QuestionQCore {
     return result;
   }
   
-  /*
-  private SendToRoom(messageType: MessageType, data: {}): void {
-    this.namespace.to(this.GeneralArguments.gameId).emit(MessageType[messageType], JSON.stringify(data))
-  }
-  */
-  // end (add save to DB)
-  private SendGameData(gameData: iQuestionQGameData): void {
+  /**
+   * Sends the game's data to all players.
+   */
+  private SendGameData(): void {
+    const gameData = this.GetGameData();
     const players: PlayerBase[] = this.Players;
     const th: Tryharder = new Tryharder();
     for (let player of players) {
@@ -125,6 +139,11 @@ export class QuestionQCore {
   }
 
   //ping check method
+  /**
+   * Checks whether a player is taking too much time for answering a question
+   * @param player - the player
+   * @param question - the questioning data
+   */
   private CheckQuestionTime(
     player: QuestionQPlayer,
     question: iQuestionQQuestion
@@ -174,7 +193,10 @@ export class QuestionQCore {
     }
   }
 
-  //returns the json that is sent to a player + the key for the correct answer
+  /**
+   * Returns a [iQuestionQQuestion, string]-tuple combinig the questioning data with the correct answer's ID.
+   * @param question - the question base's data
+   */
   public GetQuestionQQuestion(
     question: iGeneralQuestion
   ): [iQuestionQQuestion, string] {
@@ -202,7 +224,11 @@ export class QuestionQCore {
     ];
   }
 
-  // returns whether there was an error or not
+  /**
+   * Disqualifies a user by their name
+   * @param username - user to disqualify
+   * @returns - whether the user was found
+   */
   public DisqualifyUser(username: string): boolean {
     let player: iQuestionQPlayerData | undefined = this._players.find(
       x => x.username == username
@@ -218,14 +244,20 @@ export class QuestionQCore {
     return true;
   }
 
+  /**
+   * Disqualifies a player
+   * @param player - player to disqualify
+   */
   public DisqualifyPlayer(player: PlayerBase): void {
     player.state = PlayerState.Disqualified;
     this.CheckForEnd();
   }
 
-  // returns wether it was successful
-  // - only before the game has ended
-  // - only new users
+  /**
+   * Adds a new user to the game when it did not end already.
+   * @param player - the player to add
+   * @returns - whether the user could be added
+   */
   public AddUser(player: PlayerBase): boolean {
     if (this._gamePhase == QuestionQGamePhase.Setup) {
       this._players.push(new QuestionQPlayer(player.GetArguments()));
@@ -242,25 +274,10 @@ export class QuestionQCore {
     return false;
   }
 
-  /*
-  // returns wether it was successful
-  // - if no player finished yet
-  // - only new questions
-  public AddQuestion(question: iGeneralQuestion): boolean {
-    let finished: boolean = false;
-    for (let p of this._players) {
-      if (p.state != PlayerTag.Finished) finished = true;
-    }
-    if (!finished) {
-      this._questions.push(question);
-      return true;
-    }
-    return false;
-  }*/
-
-  // starts the game
-  // if _send, _endGame, _players & _questions are set
-  // returns whether it was successful
+  /**
+   * Starts the game, if all confitions are met.
+   * @returns - whether the game has been started
+   */
   public Start(): boolean {
     if (this._players && this._questions) {
       this._gamePhase = QuestionQGamePhase.Running;
@@ -274,13 +291,21 @@ export class QuestionQCore {
     } else return false;
   }
 
-  // forces the game's end
+  /**
+   * Ends the game
+   */
   public Stop(): void {
     this._gamePhase = QuestionQGamePhase.Ended;
 
-    this.SendGameData(this.GetGameData());
+    this.SendGameData();
+
+    //!!! save game to database
   }
 
+  /**
+   * Returns the game's data
+   * @returns - the game's data according to the iQuestionQGameData-interface
+   */
   public GetGameData(): iQuestionQGameData {
     return {
       gameId: this.gameId,
@@ -288,9 +313,10 @@ export class QuestionQCore {
     };
   }
 
-  // ends the game when specific conditions are current
-  // - only while running
-  // to check whenever player leaves, is disqualified and whenever a tip is given
+  /**
+   * Checks whether the game end's conditions are met and, if so, ends the game.
+   * This has to be executed whenever a player is disqualified and whenever a player finishes.
+   */
   public CheckForEnd(): void {
     if (this._gamePhase == QuestionQGamePhase.Running) {
       // check for whether everyone finished
@@ -307,8 +333,10 @@ export class QuestionQCore {
     }
   }
 
-  // questions the player
-  // only while running
+  /**
+   * Questions the passed player or processes that they finished.
+   * @param player - the player to be questioned
+   */
   private QuestionPlayer(player: QuestionQPlayer): void {
     if (this._gamePhase == QuestionQGamePhase.Running) {
       // if there are questions left
@@ -387,7 +415,11 @@ export class QuestionQCore {
     }
   }
 
-  // to be called whenever a player gives a tip
+  /**
+   * Processes a player that is giving a tip.
+   * @param username - the name of the user, who is giving the tip
+   * @param tip - the tip that is given
+   */
   public PlayerGivesTip(username: string, tip: iQuestionQTip): void {
     const player: QuestionQPlayer | undefined = this._players.find(
       x => x.username == username

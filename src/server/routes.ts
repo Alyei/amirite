@@ -43,7 +43,7 @@ export class Https {
     this.app.get("/api/signup", (req: any, res: any) => {
       res.render("signup")
     });
-/*
+
     this.app.get("/profile", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "profile.ejs"), {
         user: req.user
@@ -69,7 +69,7 @@ export class Https {
         successRedirect: "/profile", //Redirect to the secure profile section.
         failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
         failureFlash: true //Allow flash messages.
-      });*/
+      }));
 
     this.app.post("/api/signup", (req: any, res: any) => {
       console.log("THIS COMING IN");
