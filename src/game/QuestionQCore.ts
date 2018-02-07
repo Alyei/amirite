@@ -151,10 +151,12 @@ export class QuestionQCore {
             logger.log("info", "Error: %s", err.stack);
           }
         } else {
-          this.PlayerGivesTip(player.username, {
-            questionId: question.questionId,
-            answerId: "none"
-          }); // give empty tip to continue
+          if (player.state == PlayerState.Playing) {
+            this.PlayerGivesTip(player.username, {
+              questionId: question.questionId,
+              answerId: "none"
+            }); // give empty tip to continue
+          }
         }
       } else {
         // the question has already been answered
@@ -476,9 +478,14 @@ export class QuestionQCore {
             3 // tries
           )
         ) {
-          this.DisqualifyPlayer(player);
-          return;
+          //this.DisqualifyPlayer(player);
+          //return;
         }
+
+        player.tips.push({
+          tip: tip,
+          feedback: feedback
+        });
 
         //add to playertipdata
         this.QuestionPlayer(player);
@@ -498,7 +505,7 @@ export class QuestionQCore {
             3 // tries
           )
         ) {
-          this.DisqualifyPlayer(player);
+          //this.DisqualifyPlayer(player);
           return;
         }
       }
@@ -517,7 +524,7 @@ export class QuestionQCore {
           3 // tries
         )
       ) {
-        this.DisqualifyPlayer(player);
+        //this.DisqualifyPlayer(player);
         return;
       }
     }
