@@ -38,39 +38,32 @@ export class QuestionQGame implements iGame {
     private _gameCoreArguments?: iQuestionQHostArguments
   ) {
     this.Questions = new Array<iGeneralQuestion>();
-    this.LoadQuestions();
+    //this.LoadQuestions();
     this.GameCore = new QuestionQCore(
       this.GeneralArguments.gameId,
       this.LogInfo,
       this.LogSilly,
-      this.Questions,
+      this.GeneralArguments.questionIds,
       [],
       this._gameCoreArguments
     );
   }
 
-  private LoadQuestions(): iGeneralQuestion[] {
+  private LoadQuestions(): void {
     // get from mongodb with this.GeneralArguments.questionIds;
     const result: iGeneralQuestion[] = [];
-    for (let qid of this.GeneralArguments.questionIds) {
-      QuestionModel.findOne({ id: qid }, (err: any, question: any) => {
-        if (err) return err;
-        if (!question) return question;
-        this.Questions.push({
-          questionId: question.id,
-          question: question.question,
-          answer: question.answer,
-          otherOptions: question.otherOptions,
-          timeLimit: question.timeLimit,
-          difficulty: question.difficulty
-          //explanation: question.explanation
-          //pictureId: question.pictureId
-        });
+
+    QuestionModel.find({
+      id: { $in: this.GeneralArguments.questionIds }
+    })
+      .then((questions: any) => {
+        console.log(questions + "\r\n _________");
+        this.Questions = questions;
         console.log(this.Questions);
+      })
+      .catch((err: any) => {
+        logger.log("info", err.message);
       });
-    } // go git merge and love yaself
-    console.log(this.Questions);
-    return result;
   }
 
   /*

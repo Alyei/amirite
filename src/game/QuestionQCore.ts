@@ -17,6 +17,8 @@ import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
 import { Tryharder } from "./Tryharder";
 import { platform } from "os";
+import { QuestionModel } from "../models/Schemas";
+import { logger } from "../server/logging";
 
 export enum QuestionQGamePhase {
   Setup = 0,
@@ -32,6 +34,7 @@ export class QuestionQCore {
   private _logSilly?: (game: QuestionQCore, toLog: string) => void;
   private _logInfo?: (game: QuestionQCore, toLog: string) => void;
   private _timers: { [id: string]: NodeJS.Timer };
+  private _questionsLoaded: boolean = false;
 
   get Players(): QuestionQPlayer[] {
     return this._players;
@@ -45,7 +48,7 @@ export class QuestionQCore {
     public gameId: string,
     logInfo: (game: QuestionQCore, toLog: string) => void,
     logSilly: (game: QuestionQCore, toLog: string) => void,
-    questions: iGeneralQuestion[],
+    questionIds: string[],
     players?: PlayerBase[],
     gameArguments?: iQuestionQHostArguments
   ) {
@@ -55,21 +58,22 @@ export class QuestionQCore {
     this._logSilly = logSilly;
 
     this._questions = [];
-    if (questions) {
-      let am: ArrayManager = new ArrayManager(questions);
-      this._questions = am.ShuffleArray();
-    }
+    QuestionModel.find({ id: { $in: questionIds } })
+      .then((res: any) => {
+        let am: ArrayManager = new ArrayManager(res);
+        this._questions = am.ShuffleArray();
+        this._questionsLoaded = true;
+        logger.log("silly", "Questions loaded in game %s.", gameId);
+      })
+      .catch((err: any) => {
+        logger.log("info", "Could not load questions in %s.", gameId);
+      });
 
     this._players = [];
     if (players) {
       for (let player of players) {
         this._players.push(new QuestionQPlayer(player.GetArguments()));
       }
-    }
-
-    console.log(this._questions);
-    for (let item of this._questions) {
-      console.log(item);
     }
   }
 
@@ -116,14 +120,18 @@ export class QuestionQCore {
           new Date().getTime()
         ) {
           // time left?
-          this._timers[
-            player.username + ":" + question.questionId
-          ] = global.setTimeout(
-            () => {
-              this.CheckQuestionTime(player, question);
-            },
-            0 // current ping / 2
-          );
+          try {
+            this._timers[
+              player.username + ":" + question.questionId //FEHLER
+            ] = global.setTimeout(
+              () => {
+                this.CheckQuestionTime(player, question);
+              },
+              0 // current ping / 2
+            );
+          } catch (err) {
+            logger.log("info", "Error: %s", err.stack);
+          }
         } else {
           this.PlayerGivesTip(player.username, {
             questionId: question.questionId,
