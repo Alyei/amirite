@@ -138,22 +138,32 @@ export class QuestionQCore {
     //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }
 
-  //ping check method
+  //!!! beim player time correction eintragen
   /**
    * Checks whether a player is taking too much time for answering a question
    * @param player - the player
    * @param question - the questioning data
+   * @param lastPing - Due notte iuse ciise
    */
   private CheckQuestionTime(
     player: QuestionQPlayer,
-    question: iQuestionQQuestion
-  ) {
+    question: iQuestionQQuestion,
+    lastPing?: number
+  ): void {
     if (player.LatestQuestion) {
       // has been questioned?
-      if (player.LatestQuestion[0].questionId == question.questionId) {
+      if (player.state == PlayerState.Playing && player.LatestQuestion[0].questionId == question.questionId) {
         // is the question current?
+        
+        player.GetPing();
+
+        if (lastPing && question.timeCorrection)
+          question.timeCorrection += player.Ping;
+        else
+          question.timeCorrection = player.Ping;
+
         if (
-          question.questionTime.getTime() + question.timeLimit >
+          question.questionTime.getTime() + question.timeLimit + (lastPing || player.Ping) >
           new Date().getTime()
         ) {
           // time left?
@@ -162,9 +172,9 @@ export class QuestionQCore {
               player.username + ":" + question.question
             ] = global.setTimeout(
               () => {
-                this.CheckQuestionTime(player, question);
+                this.CheckQuestionTime(player, question, player.Ping / 2);
               },
-              0 // current ping / 2
+              player.Ping / 2 // current ping / 2
             );
           } catch (err) {
             logger.log("info", "Error: %s", err.stack);
