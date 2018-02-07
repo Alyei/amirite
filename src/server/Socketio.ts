@@ -60,18 +60,30 @@ export class io {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
       playerSocket.join("test room");
 
+      let args: iGeneralHostArguments;
+
       playerSocket.on("host game", (username: string) => {
-        const args: iGeneralHostArguments = {
+        //Check if requestee is already owner of another game
+        args = {
           gameId: generateGameId(),
           gamemode: GModels.Gamemode.QuestionQ,
           owner: username,
           ownerSocket: playerSocket,
           questionIds: ["1234567890", "YxUy07SElM"]
         };
-
-        this.GameFactory.CreateGame(args, this.QuestionQ);
-
-        playerSocket.emit("gameid", args.gameId);
+        try {
+          this.GameFactory.CreateGame(args, this.QuestionQ)
+            .then((res: any) => {
+              playerSocket.emit("gameid", args.gameId);
+            })
+            .catch((err: any) => {
+              logger.log("info", err);
+              playerSocket.emit("err", err);
+            });
+        } catch (err) {
+          logger.log("info", err);
+          playerSocket.emit("err");
+        }
       });
 
       playerSocket.on("leave game", (opt: iLeaveGame) => {
@@ -84,7 +96,7 @@ export class io {
               })
               .catch((err: any) => {
                 logger.log("info", err.message);
-                playerSocket.emit("error");
+                playerSocket.emit("err");
               });
           }
         }
@@ -97,8 +109,12 @@ export class io {
             item
               .StartGame(opt.username)
               .then((res: any) => {
-                logger.log("info", "Game %s started.", opt.gameId);
-                playerSocket.emit("success");
+                if (res) {
+                  logger.log("info", "Game %s started.", opt.gameId);
+                  playerSocket.emit("success");
+                } else {
+                  logger.log("info", "Game %s is already running.", opt.gameId);
+                }
               })
               .catch((err: any) => {
                 if (err == -1) {
@@ -110,7 +126,7 @@ export class io {
                     "Something went wrong while starting game %s: " + err.stack,
                     opt.gameId
                   );
-                  playerSocket.emit("error");
+                  playerSocket.emit("err");
                 }
               });
           } else {
@@ -131,11 +147,10 @@ export class io {
                 })
                 .catch((err: any) => {
                   logger.log("info", "Error: " + err.message);
-                  playerSocket.emit("error");
+                  playerSocket.emit("err");
                 });
             } catch (err) {
               logger.error(err.message);
-              playerSocket.emit("error");
             }
           }
         }
@@ -143,6 +158,7 @@ export class io {
 
       playerSocket.on("action", (msgS: string) => {
         const msg: iPlayerAction = JSON.parse(msgS);
+        console.log(msgS);
         for (let item of this.GameSessions.Sessions) {
           if (item.GeneralArguments.gameId == msg.gameId) {
             item.ProcessUserInput(

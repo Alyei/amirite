@@ -116,10 +116,11 @@ export class server {
           this.port
         );
       });
-    } catch (e) {
+    } catch (err) {
       logger.log(
         "error",
-        "Stopping program execution - server could not start listening: " + e
+        "Stopping program execution - server could not start listening: " +
+          err.stack
       );
       process.exit(-1);
     }

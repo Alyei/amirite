@@ -73,23 +73,23 @@
             });
 
             $("#answa").css({
-                top: "200px",
-                left: "170px",
+                top: "185px",
+                left: "200px",
                 position: 'absolute'
             })
             $("#answb").css({
-                top: "220px",
-                left: "170px",
+                top: "205px",
+                left: "200px",
                 position: 'absolute'
             })
             $("#answc").css({
-                top: "240px",
-                left: "170px",
+                top: "225px",
+                left: "200px",
                 position: 'absolute'
             })
             $("#answd").css({
-                top: "260px",
-                left: "170px",
+                top: "245px",
+                left: "200px",
                 position: 'absolute'
             })
 
@@ -187,16 +187,16 @@
                 $("#questionident").text(message.questionId);
                 answerid = message.questionId;
                 $("#questiontext").text(message.question);
-                answa = msg.options[0];
-                answb = msg.options[1][1];
-                answc = msg.options[2][1];
-                answd = msg.options[3][1];
-                $("#answa").text("test");
-                $("#answb").text(answb);
-                $("#answc").text("test");
-                $("#answd").text(answd);
+                changeElements(message);
             })
         });
+
+        function changeElements(msg) {
+            $("#answa").text(msg.options[0][1]);
+            $("#answb").text(msg.options[1][1]);
+            $("#answc").text(msg.options[2][1]);
+            $("#answd").text(msg.options[3][1]);
+        }
     </script>
 </body>
 
