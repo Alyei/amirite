@@ -143,36 +143,34 @@ export class QuestionQCore {
    * Checks whether a player is taking too much time for answering a question
    * @param player - the player
    * @param question - the questioning data
-   * @param lastPing - Due notte iuse ciise
+   * @param lastCorrection - Due notte iuse ciise
    */
   private CheckQuestionTime(
     player: QuestionQPlayer,
     question: iQuestionQQuestion,
-    lastPing?: number
+    lastCorrection?: number
   ): void {
     if (player.LatestQuestion) {
       // has been questioned?
       if (player.state == PlayerState.Playing && player.LatestQuestion[0].questionId == question.questionId) {
         // is the question current?
         
-        player.GetPing();
+        //player.GetPing();
 
-        if (lastPing && question.timeCorrection)
-          question.timeCorrection += player.Ping;
+        if (lastCorrection && question.timeCorrection)
+          question.timeCorrection += player.Ping / 2;
         else
-          question.timeCorrection = player.Ping;
+          question.timeCorrection = player.Ping / 2;
 
-        if (
-          question.questionTime.getTime() + question.timeLimit + (lastPing || player.Ping) >
-          new Date().getTime()
-        ) {
+        const deltaTime: number = question.questionTime.getTime() + question.timeLimit + (lastCorrection || player.Ping / 2) - new Date().getTime();
+        if (deltaTime > 0) {
           // time left?
           try {
             this._timers[
               player.username + ":" + question.question
             ] = global.setTimeout(
               () => {
-                this.CheckQuestionTime(player, question, player.Ping / 2);
+                this.CheckQuestionTime(player, question, deltaTime);
               },
               player.Ping / 2 // current ping / 2
             );
@@ -403,7 +401,7 @@ export class QuestionQCore {
           () => {
             this.CheckQuestionTime(player, nextQuestion[0]);
           },
-          nextQuestion[0].timeLimit // + current ping / 2
+          nextQuestion[0].timeLimit + player.Ping / 2 // + current ping / 2
         );
       } else {
         // finished
@@ -477,7 +475,8 @@ export class QuestionQCore {
         let feedback: iQuestionQTipFeedback = {
           questionId: tip.questionId,
           correct: false,
-          duration: 0,
+          duration: duration,
+          timeCorrection: PlayerQuestionTuple[0].timeCorrection || 0,
           points: 0,
           score: 0,
           message: "unset"
@@ -494,22 +493,15 @@ export class QuestionQCore {
             player.score += points;
 
             feedback.correct = true;
-            feedback.duration = duration;
-            feedback.points = points;
-            feedback.score = player.score;
             feedback.message = "correct answer";
           } else {
-            feedback.duration = duration;
-            feedback.points = points;
-            feedback.score = player.score;
             feedback.message = "wrong answer";
           }
         } else {
-          feedback.duration = duration;
-          feedback.points = points;
-          feedback.score = player.score;
           feedback.message = "too slow";
         }
+        feedback.points = points;
+          feedback.score = player.score;
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
