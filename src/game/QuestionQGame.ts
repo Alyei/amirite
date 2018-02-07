@@ -130,7 +130,7 @@ export class QuestionQGame implements iGame {
           = this.GameCore.Players.find(
             x => x.username == username
         );
-        if (player && player.roles.find(x => x == PlayerRole.Mod || x == PlayerRole.Host)) {
+        if (username == this.GeneralArguments.owner || (player && player.roles.find(x => x == PlayerRole.Mod || x == PlayerRole.Host))) {
           resolve(this.GameCore.Start());
         } else {
           reject(-1);
