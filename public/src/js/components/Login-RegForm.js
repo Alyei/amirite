@@ -8,8 +8,7 @@ export default class Form extends React.Component {
       username: "",
       password: "",
       repassword: "",
-      email: "",
-      testi: "abc"
+      email: ""
     };
     this.handleValueChange = this.handleValueChange.bind(this);
     this.onSubmit = this.handleFormSubmit.bind(this);
@@ -17,12 +16,12 @@ export default class Form extends React.Component {
 
   handleFormSubmit(event) {
     event.preventDefault();
-    fetch("https://localhost/api/signup", {
+    fetch("https://localhost:443/api/signup", {
       method: "POST",
       body: JSON.stringify({
-        username: "thisName",
-        email: "thismail@react.com",
-        password: "password"
+        username: this.state.username,
+        email: this.state.email,
+        password: this.state.password
       })
     })
       .then(res => {
