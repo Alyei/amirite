@@ -59,6 +59,10 @@
                 $("#sendtip").prop('value', msg);
             })
 
+            socket.on('click', function (msg) {
+                socket.emit("clack");
+            })
+
             $('form').submit(function () {
                 socket.emit('host game', 'alyei');
                 return false;
