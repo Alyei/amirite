@@ -30,7 +30,7 @@ export default class Form extends React.Component {
         else return { status: res.status };
       })
       .then(responseJson => {
-        console.log(responseJson.test, responseJson.status);
+        console.log(responseJson.status);
       });
   }
   handleValueChange(event) {
