@@ -5,16 +5,19 @@ export default class QuestionBox extends React.Component {
     constructor() {
         super();
         this.state = {
-            text: "",
-            image: null,
         }
+    }
+    static defaultProps = {
+        questionid: "",
+        text: "",
+        pictureId: ""
     }
 
     render() {
         return(
             <div>
-                {this.state.image != null ? this.state.image : null}
-                {this.state.text}
+                {this.props.text}
+                {this.props.image != "" ? this.props.image : ""}
             </div>
         )
     }

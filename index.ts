@@ -20,6 +20,7 @@ let pass: any = new userauth.Authentication();
 
 let serverano = new server(creds, pass.passport);
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 let app: any = express();
 serverano.StartListening();
 
