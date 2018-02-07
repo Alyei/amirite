@@ -478,7 +478,7 @@ export class QuestionQCore {
         }
 
         const duration: number =
-          new Date().getTime() - PlayerQuestionTuple[0].questionTime.getTime();
+          new Date().getTime() - PlayerQuestionTuple[0].questionTime.getTime() - (PlayerQuestionTuple[0].timeCorrection || 0);
         let points: number = 0;
         let feedback: iQuestionQTipFeedback = {
           questionId: tip.questionId,
@@ -494,10 +494,11 @@ export class QuestionQCore {
           // if correct
           if (tip.answerId == PlayerQuestionTuple[1]) {
             points = Math.floor(
-              PlayerQuestionTuple[0].difficulty *
-                PlayerQuestionTuple[0].timeLimit /
-                (1 + duration)
-            );
+              PlayerQuestionTuple[0].difficulty * (
+                PlayerQuestionTuple[0].timeLimit / (1 + duration)
+                + 100
+              )
+            ); // points = difficulty * (timeLimit / (1 + answerDuration) + 100)
             player.score += points;
 
             feedback.correct = true;
@@ -509,7 +510,7 @@ export class QuestionQCore {
           feedback.message = "too slow";
         }
         feedback.points = points;
-          feedback.score = player.score;
+        feedback.score = player.score;
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
