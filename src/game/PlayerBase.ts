@@ -47,4 +47,24 @@ export class PlayerBase {
       state: this.state
     };
   }
+
+  public GetPing(): Promise<any> {
+    return new Promise((resolve: any, reject: any) => {
+      this.socket.emit("click");
+      let t0: any = performance.now();
+      this.socket.on("clack", (res: any) => {
+        let t1: any = performance.now();
+        logger.log("silly", "Latency of %s: %s", this.username, t1 - t0);
+        try {
+          resolve(t1 - t0);
+        } catch (err) {
+          logger.log(
+            "info",
+            "Something went wrong during the latencycheck: %s",
+            err.message
+          );
+        }
+      });
+    });
+  }
 }
