@@ -134,7 +134,7 @@ export class QuestionQCore {
       if (player.LatestQuestion[0].questionId == question.questionId) {
         // is the question current?
         if (
-          question.questionTime.getTime() + question.timeLimit <
+          question.questionTime.getTime() + question.timeLimit >
           new Date().getTime()
         ) {
           // time left?
@@ -361,7 +361,6 @@ export class QuestionQCore {
           player.username + ":" + nextQuestion[0].questionId
         ] = global.setTimeout(
           () => {
-            console.log("execute timer callback");
             this.CheckQuestionTime(player, nextQuestion[0]);
           },
           nextQuestion[0].timeLimit // + current ping / 2
