@@ -141,7 +141,6 @@ export interface iQuestionQPlayerData {
   score: number;
   questions: [iQuestionQQuestion, string][];
   tips: iQuestionQTipData[];
-  // time correction
 }
 export interface iQuestionQTipData {
   tip: iQuestionQTip;

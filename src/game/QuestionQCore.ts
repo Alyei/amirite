@@ -92,7 +92,11 @@ export class QuestionQCore {
   }
 
   public GetPlayerData(): iQuestionQPlayerData[] {
-    return this._players;
+    const result: iQuestionQPlayerData[] = [];
+    for (let player of this._players) {
+      result.push(player.GetPlayerData());
+    }
+    return result;
   }
 
   /*
@@ -308,9 +312,7 @@ export class QuestionQCore {
       // if there are questions left
       if (player.questions.length < this._questions.length) {
         // generate nextQuestion
-        const nextQuestionBase:
-          | iGeneralQuestion
-          | undefined = this._questions.find(
+        const nextQuestionBase: iGeneralQuestion | undefined = this._questions.find(
           x => !player.questions.find(y => y[0].questionId == x.questionId)
         );
         // L-> find a question you cannot find in player.questions
@@ -326,12 +328,10 @@ export class QuestionQCore {
             );
           return;
         }
-        console.log(JSON.stringify(nextQuestionBase));
         const nextQuestion: [
           iQuestionQQuestion,
           string
         ] = this.GetQuestionQQuestion(nextQuestionBase);
-        console.log(JSON.stringify(nextQuestion));
         
         // send nextQuestion to Username
         const th: Tryharder = new Tryharder();
@@ -371,7 +371,7 @@ export class QuestionQCore {
         if (
           !th.Tryhard(
             () => {
-              return player.Inform(MessageType.QuestionQPlayerData, player);
+              return player.Inform(MessageType.QuestionQPlayerData, player.GetPlayerData());
             },
             3000, // delay
             3 // tries
@@ -415,14 +415,13 @@ export class QuestionQCore {
                 return player.Inform(
                   MessageType.PlayerInputError,
                   "You were not asked this question >:c"
-                  + JSON.stringify(player) + JSON.stringify(tip)
                 );
               },
               3000, // delay
               3 // tries
             )
           ) {
-            this.DisqualifyPlayer(player);
+            //this.DisqualifyPlayer(player);
           }
           return;
         }
@@ -466,7 +465,6 @@ export class QuestionQCore {
           feedback.score = player.score;
           feedback.message = "too slow";
         }
-
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
