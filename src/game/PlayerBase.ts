@@ -1,4 +1,9 @@
-import { PlayerState, PlayerRole, MessageType, iQuestionQPlayerData } from "../models/GameModels";
+import {
+  PlayerState,
+  PlayerRole,
+  MessageType,
+  iQuestionQPlayerData
+} from "../models/GameModels";
 import { logger } from "../server/logging";
 
 export interface iPlayerBaseArguments {
@@ -51,9 +56,9 @@ export class PlayerBase {
   public GetPing(): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       this.socket.emit("click");
-      let t0: any = performance.now();
+      let t0: number = performance.now();
       this.socket.on("clack", (res: any) => {
-        let t1: any = performance.now();
+        let t1: number = performance.now();
         logger.log("silly", "Latency of %s: %s", this.username, t1 - t0);
         try {
           resolve(t1 - t0);
