@@ -163,7 +163,7 @@ export class QuestionQCore {
           else
             question.timeCorrection = player.Ping;
         }
-        if (!question.timeCorrection) // notte gonne appene
+        if (!question.timeCorrection)
           question.timeCorrection = 0;
 
         const deltaTime: number = question.questionTime.getTime() + question.timeLimit + question.timeCorrection - new Date().getTime();
