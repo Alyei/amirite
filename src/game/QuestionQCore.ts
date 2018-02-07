@@ -34,7 +34,6 @@ export class QuestionQCore {
   private _logSilly?: (game: QuestionQCore, toLog: string) => void;
   private _logInfo?: (game: QuestionQCore, toLog: string) => void;
   private _timers: { [id: string]: NodeJS.Timer } = {};
-  private _questionsLoaded: boolean = false;
 
   get Players(): QuestionQPlayer[] {
     return this._players;
@@ -57,17 +56,7 @@ export class QuestionQCore {
     this._logInfo = logInfo;
     this._logSilly = logSilly;
 
-    this._questions = [];
-    QuestionModel.find({ id: { $in: questionIds } })
-      .then((res: any) => {
-        let am: ArrayManager = new ArrayManager(res);
-        this._questions = am.ShuffleArray();
-        this._questionsLoaded = true;
-        logger.log("silly", "Questions loaded in game %s.", gameId);
-      })
-      .catch((err: any) => {
-        logger.log("info", "Could not load questions in %s.", gameId);
-      });
+    this.LoadQuestions(questionIds);
 
     this._players = [];
     if (players) {
@@ -75,6 +64,31 @@ export class QuestionQCore {
         this._players.push(new QuestionQPlayer(player.GetArguments()));
       }
     }
+  }
+
+  private LoadQuestions(questionIds: string[]) {
+    this._questions = [];
+    QuestionModel.find({ id: { $in: questionIds } })
+      .then((res: any) => {
+        for (let question of res) {
+          this._questions.push({
+            questionId: question.id,
+            question: question.question,
+            answer: question.answer,
+            otherOptions: question.otherOptions, // check if undefined
+            timeLimit: question.timeLimit,
+            difficulty: question.difficulty,
+            explanation: question.explanation,
+            pictureId: question.pictureId
+          });
+        }
+        logger.log("silly", "Questions (%s) loaded in game %s.", JSON.stringify(this._questions), this.gameId);
+      })
+      .catch((err: any) => {
+        logger.log("info", "Could not load questions in %s.", this.gameId);
+      });
+    let am: ArrayManager = new ArrayManager(this._questions);
+    this._questions = am.ShuffleArray();
   }
 
   public GetPlayerData(): iQuestionQPlayerData[] {
@@ -158,6 +172,7 @@ export class QuestionQCore {
   public GetQuestionQQuestion(
     question: iGeneralQuestion
   ): [iQuestionQQuestion, string] {
+
     let am: ArrayManager = new ArrayManager("A B C D".split(" "));
     const letters: string[] = am.ShuffleArray();
     let answers: [string, string][] = [];
@@ -167,7 +182,6 @@ export class QuestionQCore {
     }
     answers.sort((a, b) => a[0].charCodeAt(0) - b[0].charCodeAt(0));
 
-    am.collection = answers;
     return [
       {
         questionId: question.questionId,
@@ -217,7 +231,7 @@ export class QuestionQCore {
       );
       this._players.push(newPlayer);
       if (newPlayer.state == PlayerState.Launch) this.QuestionPlayer(newPlayer);
-      return true;
+        return true;
     }
     return false;
   }
@@ -312,12 +326,13 @@ export class QuestionQCore {
             );
           return;
         }
+        console.log(JSON.stringify(nextQuestionBase));
         const nextQuestion: [
           iQuestionQQuestion,
           string
         ] = this.GetQuestionQQuestion(nextQuestionBase);
-
-        // timer
+        console.log(JSON.stringify(nextQuestion));
+        
         // send nextQuestion to Username
         const th: Tryharder = new Tryharder();
         if (
@@ -344,7 +359,7 @@ export class QuestionQCore {
           player.username + ":" + nextQuestion[0].questionId
         ] = global.setTimeout(
           () => {
-            console.log("Start timer");
+            console.log("Start timer ");
             this.CheckQuestionTime(player, nextQuestion[0]);
           },
           nextQuestion[0].timeLimit // + current ping / 2
@@ -400,6 +415,7 @@ export class QuestionQCore {
                 return player.Inform(
                   MessageType.PlayerInputError,
                   "You were not asked this question >:c"
+                  + JSON.stringify(player) + JSON.stringify(tip)
                 );
               },
               3000, // delay
