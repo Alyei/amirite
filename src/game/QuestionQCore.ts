@@ -291,7 +291,7 @@ export class QuestionQCore {
    * @returns - whether the game has been started
    */
   public Start(): boolean {
-    if (this._players && this._questions) {
+    if (this._players && this._players.length > 0 && this._questions && this._questions.length > 0) {
       this._gamePhase = QuestionQGamePhase.Running;
       for (let player of this._players) {
         if (player.state == PlayerState.Launch) {
