@@ -33,7 +33,7 @@ export class QuestionQCore {
   private _gamePhase: QuestionQGamePhase;
   private _logSilly?: (game: QuestionQCore, toLog: string) => void;
   private _logInfo?: (game: QuestionQCore, toLog: string) => void;
-  private _timers: { [id: string]: NodeJS.Timer };
+  private _timers: { [id: string]: NodeJS.Timer } = {};
   private _questionsLoaded: boolean = false;
 
   get Players(): QuestionQPlayer[] {
@@ -122,7 +122,7 @@ export class QuestionQCore {
           // time left?
           try {
             this._timers[
-              player.username + ":" + question.questionId //FEHLER
+              player.username + ":" + question.question
             ] = global.setTimeout(
               () => {
                 this.CheckQuestionTime(player, question);
@@ -344,6 +344,7 @@ export class QuestionQCore {
           player.username + ":" + nextQuestion[0].questionId
         ] = global.setTimeout(
           () => {
+            console.log("Start timer");
             this.CheckQuestionTime(player, nextQuestion[0]);
           },
           nextQuestion[0].timeLimit // + current ping / 2
