@@ -157,12 +157,16 @@ export class QuestionQCore {
         
         //player.GetPing();
 
-        if (lastCorrection && question.timeCorrection)
-          question.timeCorrection += player.Ping / 2;
-        else
-          question.timeCorrection = player.Ping / 2;
+        if (!lastCorrection) {
+          if (question.timeCorrection)
+            question.timeCorrection += player.Ping / 2;
+          else
+            question.timeCorrection = player.Ping;
+        }
+        if (!question.timeCorrection)
+          question.timeCorrection = 0;
 
-        const deltaTime: number = question.questionTime.getTime() + question.timeLimit + (lastCorrection || player.Ping / 2) - new Date().getTime();
+        const deltaTime: number = question.questionTime.getTime() + question.timeLimit + question.timeCorrection - new Date().getTime();
         if (deltaTime > 0) {
           // time left?
           try {
@@ -172,7 +176,7 @@ export class QuestionQCore {
               () => {
                 this.CheckQuestionTime(player, question, deltaTime);
               },
-              player.Ping / 2 // current ping / 2
+              question.timeCorrection // current ping / 2
             );
           } catch (err) {
             logger.log("info", "Error: %s", err.stack);
@@ -391,6 +395,9 @@ export class QuestionQCore {
           return;
         }
 
+        // set time correction
+        nextQuestion[0].timeCorrection = player.Ping / 2;
+
         // add question to the player's questions
         player.questions.push(nextQuestion);
 
@@ -401,7 +408,7 @@ export class QuestionQCore {
           () => {
             this.CheckQuestionTime(player, nextQuestion[0]);
           },
-          nextQuestion[0].timeLimit + player.Ping / 2 // + current ping / 2
+          nextQuestion[0].timeLimit
         );
       } else {
         // finished
