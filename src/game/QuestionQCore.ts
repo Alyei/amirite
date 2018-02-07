@@ -138,7 +138,6 @@ export class QuestionQCore {
     //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }
 
-  //!!! beim player time correction eintragen
   /**
    * Checks whether a player is taking too much time for answering a question
    * @param player - the player
@@ -242,7 +241,7 @@ export class QuestionQCore {
    * @returns - whether the user was found
    */
   public DisqualifyUser(username: string): boolean {
-    let player: iQuestionQPlayerData | undefined = this._players.find(
+    let player: QuestionQPlayer | undefined = this._players.find(
       x => x.username == username
     );
     if (!player) {
@@ -251,8 +250,7 @@ export class QuestionQCore {
       return false;
     }
 
-    player.state = PlayerState.Disqualified;
-    this.CheckForEnd();
+    this.DisqualifyPlayer(player);
     return true;
   }
 
@@ -262,6 +260,7 @@ export class QuestionQCore {
    */
   public DisqualifyPlayer(player: PlayerBase): void {
     player.state = PlayerState.Disqualified;
+    //player.StopPing();!!!
     this.CheckForEnd();
   }
 
@@ -413,6 +412,8 @@ export class QuestionQCore {
       } else {
         // finished
         player.state = PlayerState.Finished;
+        //player.StopPing();!!!
+
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
