@@ -94,7 +94,12 @@ export class QuestionQCore {
             pictureId: question.pictureId
           });
         }
-        logger.log("silly", "Questions (%s) loaded in game %s.", JSON.stringify(this._questions), this.gameId);
+        logger.log(
+          "silly",
+          "Questions (%s) loaded in game %s.",
+          JSON.stringify(this._questions),
+          this.gameId
+        );
       })
       .catch((err: any) => {
         logger.log("info", "Could not load questions in %s.", this.gameId);
@@ -114,7 +119,7 @@ export class QuestionQCore {
     }
     return result;
   }
-  
+
   /**
    * Sends the game's data to all players.
    */
@@ -152,18 +157,22 @@ export class QuestionQCore {
   ): void {
     if (player.LatestQuestion) {
       // has been questioned?
-      if (player.state == PlayerState.Playing && player.LatestQuestion[0].questionId == question.questionId) {
+      if (
+        player.state == PlayerState.Playing &&
+        player.LatestQuestion[0].questionId == question.questionId
+      ) {
         // is the question current?
-        
+
         player.GetPing();
 
         if (lastPing && question.timeCorrection)
           question.timeCorrection += player.Ping;
-        else
-          question.timeCorrection = player.Ping;
+        else question.timeCorrection = player.Ping;
 
         if (
-          question.questionTime.getTime() + question.timeLimit + (lastPing || player.Ping) >
+          question.questionTime.getTime() +
+            question.timeLimit +
+            (lastPing || player.Ping) >
           new Date().getTime()
         ) {
           // time left?
@@ -210,7 +219,6 @@ export class QuestionQCore {
   public GetQuestionQQuestion(
     question: iGeneralQuestion
   ): [iQuestionQQuestion, string] {
-
     let am: ArrayManager = new ArrayManager("A B C D".split(" "));
     const letters: string[] = am.ShuffleArray();
     let answers: [string, string][] = [];
@@ -279,7 +287,7 @@ export class QuestionQCore {
       );
       this._players.push(newPlayer);
       if (newPlayer.state == PlayerState.Launch) this.QuestionPlayer(newPlayer);
-        return true;
+      return true;
     }
     return false;
   }
@@ -294,6 +302,7 @@ export class QuestionQCore {
       for (let player of this._players) {
         if (player.state == PlayerState.Launch) {
           player.state = PlayerState.Playing;
+          player.StartPing();
           this.QuestionPlayer(player);
         }
       }
@@ -374,7 +383,7 @@ export class QuestionQCore {
           iQuestionQQuestion,
           string
         ] = this.GetQuestionQQuestion(nextQuestionBase);
-        
+
         // send nextQuestion to Username
         const th: Tryharder = new Tryharder();
         if (
@@ -412,7 +421,10 @@ export class QuestionQCore {
         if (
           !th.Tryhard(
             () => {
-              return player.Inform(MessageType.QuestionQPlayerData, player.GetPlayerData());
+              return player.Inform(
+                MessageType.QuestionQPlayerData,
+                player.GetPlayerData()
+              );
             },
             3000, // delay
             3 // tries

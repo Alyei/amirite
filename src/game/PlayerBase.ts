@@ -18,7 +18,10 @@ export class PlayerBase {
   public state: PlayerState;
   private ping: number;
   public performPing: boolean = false;
-  private pingArray: number[];
+  private pingArray: number[] = [];
+  private pingIntervalTimer: any;
+  private startTime: [number, number];
+  private endTime: [number, number];
 
   get Ping(): number {
     this.GetPingAverage();
@@ -39,7 +42,6 @@ export class PlayerBase {
     this.ping = 0;
     this.roles = role || [];
 
-    this.StartPing();
     this.state = PlayerState.Disqualified;
     if (this.roles.find(x => x == PlayerRole.Player))
       this.state = PlayerState.Launch;
@@ -62,7 +64,7 @@ export class PlayerBase {
 
       return true;
     } catch (err) {
-      logger.log("info", err.message); //Converting circular structure to JSONa
+      logger.log("info", err.message);
       return false;
     }
   }
@@ -80,49 +82,44 @@ export class PlayerBase {
   }
 
   /**
-   * Starts the pingcheck to the client, based on parameters in the server.conf.
-   * `PingInitialPings, PingInitialInterval, PingStandardInterval`
+   * Starts the pingcheck to the client, settings in server.conf.
+   * `PingInterval`
    */
   private GetPing(): void {
-    const initialPings: number = 5;
-    const initialInterval: number = 2000; //Move to conf
-    const standardInterval: number = 5000;
-    let currentPing: number = 0;
+    console.log("GetPing()");
+    const interval: number = 2000; //Move to conf
 
-    if (currentPing <= initialPings) {
-      global.setInterval(this.CheckPingRun(currentPing), initialInterval);
-    } else {
-      global.setInterval(this.CheckPingRun(currentPing), standardInterval);
-    }
+    this.pingIntervalTimer = global.setInterval(
+      this.PingLogic.bind(this),
+      interval
+    );
   }
 
-  private CheckPingRun(currentPing: number): any {
+  private PingLogic(obj: any): void {
     if (this.performPing) {
-      this.PingLogic(currentPing);
+      this.socket.emit("click");
+      this.startTime = process.hrtime();
+    } else {
+      global.clearInterval(this.pingIntervalTimer);
     }
-
-    currentPing++;
   }
 
-  private PingLogic(currentPing: number): void {
-    let startTime: [number, number];
-    let endTime: [number, number];
-    this.socket.emit("click");
-    startTime = process.hrtime();
-
-    logger.log("silly", "Starting latency of %s: %s", this.username, startTime);
-
-    this.socket.on("clack", (res: any) => {
-      endTime = process.hrtime(startTime);
-      logger.log("silly", "Ending latency of %s: %s", this.username, endTime);
-      this.RefreshPingArray(endTime[1]);
-    });
+  private OnClack(): void {
+    console.log("Starttime: " + this.startTime);
+    this.endTime = process.hrtime(this.startTime);
+    logger.log(
+      "silly",
+      "Ending latency of %s: %s",
+      this.username,
+      this.endTime
+    );
+    this.RefreshPingArray(this.endTime[1]);
+    this.GetPingAverage();
+    console.log("Average: " + this.ping);
   }
 
   private RefreshPingArray(newTime: number): any {
-    this.pingArray = [];
-
-    if (this.pingArray.length <= 5) {
+    if (this.pingArray.length < 5) {
       this.pingArray.push(newTime);
     } else {
       this.pingArray.shift();
@@ -135,15 +132,21 @@ export class PlayerBase {
     for (let i = 0; i < this.pingArray.length; i++) {
       sum += this.pingArray[i];
     }
-    this.ping = sum / this.pingArray.length;
+    console.log("Array length: " + this.pingArray.length);
+    this.ping = Math.floor(sum / this.pingArray.length);
   }
 
+  private listener: any;
   public StartPing(): void {
+    this.listener = this.socket.on("clack", (res: any) => {
+      this.OnClack();
+    });
     this.performPing = true;
     this.GetPing();
   }
 
   public StopPing(): void {
+    this.socket.removeListener("listener removed", this.listener);
     this.performPing = false;
   }
 }
