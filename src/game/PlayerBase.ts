@@ -22,6 +22,7 @@ export class PlayerBase {
   private pingIntervalTimer: any;
   private startTime: [number, number];
   private endTime: [number, number];
+  private socketListener: any;
 
   get Ping(): number {
     this.GetPingAverage();
@@ -70,7 +71,7 @@ export class PlayerBase {
   }
 
   /**
-   * Returns the arguments that have been passed to the object's constructor so it can be used to initialize inheriting objects.
+   * @return The arguments that have been passed to the object's constructor so it can be used to initialize inheriting objects.
    */
   public GetArguments(): iPlayerBaseArguments {
     return {
@@ -82,8 +83,8 @@ export class PlayerBase {
   }
 
   /**
-   * Starts the pingcheck to the client, settings in server.conf.
-   * `PingInterval`
+   * Starts the pingcheck to the client by reading the interval from `server.conf`, and creating
+   * an intervalTimer for `this.PingLogic()` for the specified interval.
    */
   private GetPing(): void {
     console.log("GetPing()");
@@ -95,6 +96,11 @@ export class PlayerBase {
     );
   }
 
+  /**
+   * Checks if `this.performPing` is true. If yes, it sends the `click` event to the client
+   * and starts the timer. If not, it clears the intervalTimer at `this.pingIntervalTimer`.
+   * @param obj Binds `this` to `this.Pinglogic` so it can access the field variables.
+   */
   private PingLogic(obj: any): void {
     if (this.performPing) {
       this.socket.emit("click");
@@ -104,6 +110,10 @@ export class PlayerBase {
     }
   }
 
+  /**
+   * Takes the second timestamp, calculates `this.endTime-this.startTime` in nanoseconds
+   * and pushes it to this.pingArray.
+   */
   private OnClack(): void {
     console.log("Starttime: " + this.startTime);
     this.endTime = process.hrtime(this.startTime);
@@ -118,6 +128,10 @@ export class PlayerBase {
     console.log("Average: " + this.ping);
   }
 
+  /**
+   *Pushes the new time to `this.pingArray`, which holds a maximum of 5 times.
+   * @param newTime The new time to add to the array in nanoseconds.
+   */
   private RefreshPingArray(newTime: number): any {
     if (this.pingArray.length < 5) {
       this.pingArray.push(newTime);
@@ -127,26 +141,39 @@ export class PlayerBase {
     }
   }
 
+  /**
+   * Sets `this.ping` to the average of the last 5 pings in milliseconds.
+   */
   private GetPingAverage(): any {
     let sum: number = 0;
     for (let i = 0; i < this.pingArray.length; i++) {
       sum += this.pingArray[i];
     }
+    console.log("SUM: " + sum);
+    console.log("ARRAY: " + this.pingArray);
     console.log("Array length: " + this.pingArray.length);
     this.ping = Math.floor(sum / this.pingArray.length / 1000000);
   }
 
-  private listener: any;
+  /**
+   * Starts the process of calculating the latency by adding the listener
+   * for the `clack` event, setting `this.performPing` to true, and running
+   * `this.GetPing()`.
+   */
   public StartPing(): void {
-    this.listener = this.socket.on("clack", (res: any) => {
+    this.socketListener = this.socket.on("clack", (res: any) => {
       this.OnClack();
     });
     this.performPing = true;
     this.GetPing();
   }
 
+  /**
+   * Stops the process of calculating the latency by removing removing
+   * the listener at `this.socketListener` and setting `this.performPing` to false.
+   */
   public StopPing(): void {
-    this.socket.removeListener("listener removed", this.listener);
+    this.socket.removeListener("listener removed", this.socketListener);
     this.performPing = false;
   }
 }
