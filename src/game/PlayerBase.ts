@@ -1,9 +1,4 @@
-import {
-  PlayerState,
-  PlayerRole,
-  MessageType,
-  iQuestionQPlayerData
-} from "../models/GameModels";
+import { PlayerState, PlayerRole, MessageType, iQuestionQPlayerData } from "../models/GameModels";
 import { logger } from "../server/logging";
 
 export interface iPlayerBaseArguments {
@@ -17,16 +12,16 @@ export class PlayerBase {
   public roles: PlayerRole[];
   public state: PlayerState;
   private ping: number;
+<<<<<<< HEAD
   public performPing: boolean = false;
   private pingArray: number[] = [];
   private pingIntervalTimer: any;
   private startTime: [number, number];
   private endTime: [number, number];
+=======
+>>>>>>> origin/gs_pingCheck
 
-  get Ping(): number {
-    this.GetPingAverage();
-    return this.ping;
-  }
+  get Ping(): number { return this.ping; }
 
   /**
    * Initializes PlayerBase with the passed arguments.
@@ -51,15 +46,16 @@ export class PlayerBase {
    * Uses the object's socket to emit the passed data with the message type as socket event.
    * @param messageType - socket event / data format
    * @param data - data
-   * @returns - Whether an error has happened.
+   * @returns - whether no error happened
    */
   public Inform(messageType: MessageType, data: {}): boolean {
     try {
       logger.log("silly", JSON.stringify(data));
       this.socket.emit(
         //MessageType[messageType]
-        messageType.toString(),
-        /*.toLowerCase()*/ JSON.stringify(data)
+        messageType.toString()
+        /*.toLowerCase()*/,
+        JSON.stringify(data)
       );
 
       return true;
@@ -70,7 +66,7 @@ export class PlayerBase {
   }
 
   /**
-   * @returns The arguments that have been passed to the object's constructor so it can be used to initialize inheriting objects.
+   * Returns the arguments that have been passed to the object's constructor so it can be used to initialize inheriting objects.
    */
   public GetArguments(): iPlayerBaseArguments {
     return {

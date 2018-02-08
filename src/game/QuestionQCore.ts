@@ -143,17 +143,16 @@ export class QuestionQCore {
     //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }
 
-  //!!! beim player time correction eintragen
   /**
    * Checks whether a player is taking too much time for answering a question
    * @param player - the player
    * @param question - the questioning data
-   * @param lastPing - Due notte iuse ciise
+   * @param lastCorrection - Due notte iuse ciise
    */
   private CheckQuestionTime(
     player: QuestionQPlayer,
     question: iQuestionQQuestion,
-    lastPing?: number
+    lastCorrection?: number
   ): void {
     if (player.LatestQuestion) {
       // has been questioned?
@@ -163,27 +162,30 @@ export class QuestionQCore {
       ) {
         // is the question current?
 
-        player.GetPing();
+        //player.GetPing();
 
-        if (lastPing && question.timeCorrection)
-          question.timeCorrection += player.Ping;
-        else question.timeCorrection = player.Ping;
+        if (!lastCorrection) {
+          if (question.timeCorrection)
+            question.timeCorrection += player.Ping / 2;
+          else question.timeCorrection = player.Ping;
+        }
+        if (!question.timeCorrection) question.timeCorrection = 0;
 
-        if (
+        const deltaTime: number =
           question.questionTime.getTime() +
-            question.timeLimit +
-            (lastPing || player.Ping) >
-          new Date().getTime()
-        ) {
+          question.timeLimit +
+          question.timeCorrection -
+          new Date().getTime();
+        if (deltaTime > 0) {
           // time left?
           try {
             this._timers[
               player.username + ":" + question.question
             ] = global.setTimeout(
               () => {
-                this.CheckQuestionTime(player, question, player.Ping / 2);
+                this.CheckQuestionTime(player, question, deltaTime);
               },
-              player.Ping / 2 // current ping / 2
+              question.timeCorrection // current ping / 2
             );
           } catch (err) {
             logger.log("info", "Error: %s", err.stack);
@@ -248,7 +250,7 @@ export class QuestionQCore {
    * @returns - whether the user was found
    */
   public DisqualifyUser(username: string): boolean {
-    let player: iQuestionQPlayerData | undefined = this._players.find(
+    let player: QuestionQPlayer | undefined = this._players.find(
       x => x.username == username
     );
     if (!player) {
@@ -257,8 +259,7 @@ export class QuestionQCore {
       return false;
     }
 
-    player.state = PlayerState.Disqualified;
-    this.CheckForEnd();
+    this.DisqualifyPlayer(player);
     return true;
   }
 
@@ -268,6 +269,7 @@ export class QuestionQCore {
    */
   public DisqualifyPlayer(player: PlayerBase): void {
     player.state = PlayerState.Disqualified;
+    //player.StopPing();!!!
     this.CheckForEnd();
   }
 
@@ -297,7 +299,12 @@ export class QuestionQCore {
    * @returns - whether the game has been started
    */
   public Start(): boolean {
-    if (this._players && this._questions) {
+    if (
+      this._players &&
+      this._players.length > 0 &&
+      this._questions &&
+      this._questions.length > 0
+    ) {
       this._gamePhase = QuestionQGamePhase.Running;
       for (let player of this._players) {
         if (player.state == PlayerState.Launch) {
@@ -402,21 +409,23 @@ export class QuestionQCore {
           return;
         }
 
+        // set time correction
+        nextQuestion[0].timeCorrection = player.Ping / 2;
+
         // add question to the player's questions
         player.questions.push(nextQuestion);
 
         // start timer
         this._timers[
           player.username + ":" + nextQuestion[0].questionId
-        ] = global.setTimeout(
-          () => {
-            this.CheckQuestionTime(player, nextQuestion[0]);
-          },
-          nextQuestion[0].timeLimit // + current ping / 2
-        );
+        ] = global.setTimeout(() => {
+          this.CheckQuestionTime(player, nextQuestion[0]);
+        }, nextQuestion[0].timeLimit);
       } else {
         // finished
         player.state = PlayerState.Finished;
+        //player.StopPing();!!!
+
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
@@ -484,12 +493,15 @@ export class QuestionQCore {
         }
 
         const duration: number =
-          new Date().getTime() - PlayerQuestionTuple[0].questionTime.getTime();
+          new Date().getTime() -
+          PlayerQuestionTuple[0].questionTime.getTime() -
+          (PlayerQuestionTuple[0].timeCorrection || 0);
         let points: number = 0;
         let feedback: iQuestionQTipFeedback = {
           questionId: tip.questionId,
           correct: false,
-          duration: 0,
+          duration: duration,
+          timeCorrection: PlayerQuestionTuple[0].timeCorrection || 0,
           points: 0,
           score: 0,
           message: "unset"
@@ -500,28 +512,20 @@ export class QuestionQCore {
           if (tip.answerId == PlayerQuestionTuple[1]) {
             points = Math.floor(
               PlayerQuestionTuple[0].difficulty *
-                PlayerQuestionTuple[0].timeLimit /
-                (1 + duration)
-            );
+                (PlayerQuestionTuple[0].timeLimit / (1 + duration) + 100)
+            ); // points = difficulty * (timeLimit / (1 + answerDuration) + 100)
             player.score += points;
 
             feedback.correct = true;
-            feedback.duration = duration;
-            feedback.points = points;
-            feedback.score = player.score;
             feedback.message = "correct answer";
           } else {
-            feedback.duration = duration;
-            feedback.points = points;
-            feedback.score = player.score;
             feedback.message = "wrong answer";
           }
         } else {
-          feedback.duration = duration;
-          feedback.points = points;
-          feedback.score = player.score;
           feedback.message = "too slow";
         }
+        feedback.points = points;
+        feedback.score = player.score;
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(
