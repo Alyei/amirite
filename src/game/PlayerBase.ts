@@ -17,6 +17,12 @@ export class PlayerBase {
   public roles: PlayerRole[];
   public state: PlayerState;
 
+  /**
+   * Initializes PlayerBase with the passed arguments.
+   * @param username - defines the player's username
+   * @param socket - the socket that is used to communicate with the player
+   * @param role - optional
+   */
   constructor(
     public username: string,
     protected socket: SocketIO.Socket,
@@ -29,11 +35,19 @@ export class PlayerBase {
       this.state = PlayerState.Launch;
   }
 
+  /**
+   * Uses the object's socket to emit the passed data with the message type as socket event.
+   * @param messageType - socket event / data format
+   * @param data - data
+   * @returns - whether no error happened
+   */
   public Inform(messageType: MessageType, data: {}): boolean {
     try {
       logger.log("silly", JSON.stringify(data));
       this.socket.emit(
-        MessageType[messageType] /*.toLowerCase()*/,
+        //MessageType[messageType]
+        messageType.toString()
+        /*.toLowerCase()*/,
         JSON.stringify(data)
       );
 
@@ -44,6 +58,9 @@ export class PlayerBase {
     }
   }
 
+  /**
+   * Returns the arguments that have been passed to the object's constructor so it can be used to initialize inheriting objects.
+   */
   public GetArguments(): iPlayerBaseArguments {
     return {
       username: this.username,
@@ -53,6 +70,9 @@ export class PlayerBase {
     };
   }
 
+  /**
+   * Returns the current latency?
+   */
   public GetPing(): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       this.socket.emit("click");

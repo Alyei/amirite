@@ -43,7 +43,6 @@ export class Https {
     this.app.get("/api/signup", (req: any, res: any) => {
       res.render("signup");
     });
-    /*
     this.app.get("/profile", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "profile.ejs"), {
         user: req.user
@@ -54,7 +53,7 @@ export class Https {
       req.logout();
       res.redirect("/");
     });
-*/
+
     this.app.get("/socket", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "socket.ejs"));
     });

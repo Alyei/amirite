@@ -1,10 +1,21 @@
 import { logger } from "../server/logging";
 
 export class Tryharder {
+    /**
+     * Waits for the passed amount of time... That's it actually.
+     * @param time - time to rest in milliseconds
+     */
     private Sleep (time: number) {
         return new Promise((resolve) => setTimeout(resolve, time));
       }
 
+    /**
+     * Tries to execute the passed method and retries it after the passed amount of timer when it fails.
+     * @param toTry - the method that is executed
+     * @param timeGap - the time gap between every try
+     * @param maxTries - the maximum amount of tries
+     * @returns - true if a try succeeded, false when all tries failed
+     */
     public Tryhard(
         toTry: () => boolean,
         timeGap: number,

@@ -14,9 +14,21 @@ import { GameCreationError } from "../server/Errors";
 
 export class GameFactory {
   public Sessions: RunningGames;
+
+  /**
+   * Creates a new instance of the GameFactory-class
+   * @param Sessions 
+   */
   constructor(Sessions: RunningGames) {
     this.Sessions = Sessions;
   }
+
+  /**
+   * Creates a new instance of iGame according to the arguments
+   * @param generalArguments - general game arguments
+   * @param namespaceSocket - the namespace socket (unused)
+   * @param gameArguments - gamemode-specific arguments
+   */
   public CreateGame(
     generalArguments: iGeneralHostArguments,
     namespaceSocket: SocketIO.Namespace,
