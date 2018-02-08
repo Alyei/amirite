@@ -56,7 +56,8 @@ export class PlayerBase {
    */
   public Inform(messageType: MessageType, data: {}): boolean {
     try {
-      logger.log("silly", JSON.stringify(data));
+      logger.log("silly", messageType.toString());
+      logger.log("silly", JSON.stringify(data, null, 0));
       this.socket.emit(
         //MessageType[messageType]
         messageType.toString(),
