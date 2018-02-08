@@ -23,6 +23,7 @@ import {
   QuestionCouldNotBeAddedError
 } from "../server/Errors";
 import { Tryharder } from "./Tryharder";
+import { QuestionQPlayer } from "./QuestionQPlayer";
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
@@ -125,7 +126,7 @@ export class QuestionQGame implements iGame {
     return new Promise((resolve: any, reject: any) => {
       try {
         const player:
-          | PlayerBase
+          | QuestionQPlayer
           | undefined
           = this.GameCore.Players.find(
             x => x.username == username

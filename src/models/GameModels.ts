@@ -124,12 +124,13 @@ export interface iQuestionQQuestion {
   timeLimit: number;
   difficulty: number;
   questionTime: Date;
+  timeCorrection?: number;
 }
 export interface iQuestionQTipFeedback {
   questionId: string;
   correct: boolean;
   duration: number;
-  // time correction
+  timeCorrection: number;
   points: number;
   score: number;
   message: string;

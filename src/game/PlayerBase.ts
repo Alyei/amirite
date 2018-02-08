@@ -11,6 +11,9 @@ export interface iPlayerBaseArguments {
 export class PlayerBase {
   public roles: PlayerRole[];
   public state: PlayerState;
+  private ping: number;
+
+  get Ping(): number { return this.ping; }
 
   /**
    * Initializes PlayerBase with the passed arguments.
@@ -23,6 +26,7 @@ export class PlayerBase {
     protected socket: SocketIO.Socket,
     role?: PlayerRole[]
   ) {
+    this.ping = 0;
     this.roles = role || [];
 
     this.state = PlayerState.Disqualified;
@@ -71,11 +75,12 @@ export class PlayerBase {
   public GetPing(): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       this.socket.emit("click");
-      let t0: any = performance.now();
+      let t0: number = performance.now();
       this.socket.on("clack", (res: any) => {
-        let t1: any = performance.now();
+        let t1: number = performance.now();
         logger.log("silly", "Latency of %s: %s", this.username, t1 - t0);
         try {
+          this.ping = t1 - t0;
           resolve(t1 - t0);
         } catch (err) {
           logger.log(
