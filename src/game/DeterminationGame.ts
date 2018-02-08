@@ -56,7 +56,17 @@ export class DeterminationGame implements iGame {
     messageType: MessageType,
     data: string
   ): void {
-    switch (messageType) {
+    let msgType: number | undefined;
+    try { msgType = +messageType; }
+    catch (err) {
+      let errorMessage: iGeneralPlayerInputError = {
+        message: "invalid message type",
+        data: { username: username, msgType: messageType }
+      };
+      this.ProcessUserError(username, errorMessage);
+    }
+    
+    switch (msgType) {
       case MessageType.DeterminationTip: {
         try {
           this.GameCore.PlayerGivesTip(username, JSON.parse(data));
@@ -68,7 +78,7 @@ export class DeterminationGame implements iGame {
       default: {
         let errorMessage: iGeneralPlayerInputError = {
           message: "invalid message type",
-          data: { username: username, msgType: messageType }
+          data: { username: username, msgType: msgType }
         };
         this.ProcessUserError(username, errorMessage);
         break;
