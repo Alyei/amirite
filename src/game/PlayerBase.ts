@@ -164,7 +164,7 @@ export class PlayerBase {
    * the listener at `this.socketListener` and setting `this.performPing` to false.
    */
   public StopPing(): void {
-    this.socket.removeListener("listener removed", this.socketListener);
-    this.performPing = false;
+    //this.socket.removeListener("listener removed", this.socketListener);
+    //this.performPing = false;
   }
 }
