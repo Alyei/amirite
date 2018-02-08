@@ -1,4 +1,9 @@
-import { PlayerState, PlayerRole, MessageType, iQuestionQPlayerData } from "../models/GameModels";
+import {
+  PlayerState,
+  PlayerRole,
+  MessageType,
+  iQuestionQPlayerData
+} from "../models/GameModels";
 import { logger } from "../server/logging";
 
 export interface iPlayerBaseArguments {
@@ -12,16 +17,15 @@ export class PlayerBase {
   public roles: PlayerRole[];
   public state: PlayerState;
   private ping: number;
-<<<<<<< HEAD
   public performPing: boolean = false;
   private pingArray: number[] = [];
   private pingIntervalTimer: any;
   private startTime: [number, number];
   private endTime: [number, number];
-=======
->>>>>>> origin/gs_pingCheck
 
-  get Ping(): number { return this.ping; }
+  get Ping(): number {
+    return this.ping;
+  }
 
   /**
    * Initializes PlayerBase with the passed arguments.
@@ -53,9 +57,8 @@ export class PlayerBase {
       logger.log("silly", JSON.stringify(data));
       this.socket.emit(
         //MessageType[messageType]
-        messageType.toString()
-        /*.toLowerCase()*/,
-        JSON.stringify(data)
+        messageType.toString(),
+        /*.toLowerCase()*/ JSON.stringify(data)
       );
 
       return true;
