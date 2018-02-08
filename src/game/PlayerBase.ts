@@ -1,4 +1,9 @@
-import { PlayerState, PlayerRole, MessageType, iQuestionQPlayerData } from "../models/GameModels";
+import {
+  PlayerState,
+  PlayerRole,
+  MessageType,
+  iQuestionQPlayerData
+} from "../models/GameModels";
 import { logger } from "../server/logging";
 
 export interface iPlayerBaseArguments {
@@ -12,8 +17,16 @@ export class PlayerBase {
   public roles: PlayerRole[];
   public state: PlayerState;
   private ping: number;
+  public performPing: boolean = false;
+  private pingArray: number[] = [];
+  private pingIntervalTimer: any;
+  private startTime: [number, number];
+  private endTime: [number, number];
 
-  get Ping(): number { return this.ping; }
+  get Ping(): number {
+    this.GetPingAverage();
+    return this.ping;
+  }
 
   /**
    * Initializes PlayerBase with the passed arguments.
@@ -45,14 +58,13 @@ export class PlayerBase {
       logger.log("silly", JSON.stringify(data));
       this.socket.emit(
         //MessageType[messageType]
-        messageType.toString()
-        /*.toLowerCase()*/,
-        JSON.stringify(data)
+        messageType.toString(),
+        /*.toLowerCase()*/ JSON.stringify(data)
       );
 
       return true;
     } catch (err) {
-      logger.log("info", err.message); //Converting circular structure to JSONa
+      logger.log("info", err.message);
       return false;
     }
   }
@@ -70,26 +82,71 @@ export class PlayerBase {
   }
 
   /**
-   * Returns the current latency?
+   * Starts the pingcheck to the client, settings in server.conf.
+   * `PingInterval`
    */
-  public GetPing(): Promise<any> {
-    return new Promise((resolve: any, reject: any) => {
+  private GetPing(): void {
+    console.log("GetPing()");
+    const interval: number = 2000; //Move to conf
+
+    this.pingIntervalTimer = global.setInterval(
+      this.PingLogic.bind(this),
+      interval
+    );
+  }
+
+  private PingLogic(obj: any): void {
+    if (this.performPing) {
       this.socket.emit("click");
-      let t0: number = performance.now();
-      this.socket.on("clack", (res: any) => {
-        let t1: number = performance.now();
-        logger.log("silly", "Latency of %s: %s", this.username, t1 - t0);
-        try {
-          this.ping = t1 - t0;
-          resolve(t1 - t0);
-        } catch (err) {
-          logger.log(
-            "info",
-            "Something went wrong during the latencycheck: %s",
-            err.message
-          );
-        }
-      });
+      this.startTime = process.hrtime();
+    } else {
+      global.clearInterval(this.pingIntervalTimer);
+    }
+  }
+
+  private OnClack(): void {
+    console.log("Starttime: " + this.startTime);
+    this.endTime = process.hrtime(this.startTime);
+    logger.log(
+      "silly",
+      "Ending latency of %s: %s",
+      this.username,
+      this.endTime
+    );
+    this.RefreshPingArray(this.endTime[1]);
+    this.GetPingAverage();
+    console.log("Average: " + this.ping);
+  }
+
+  private RefreshPingArray(newTime: number): any {
+    if (this.pingArray.length < 5) {
+      this.pingArray.push(newTime);
+    } else {
+      this.pingArray.shift();
+      this.pingArray.push(newTime);
+    }
+  }
+
+  private GetPingAverage(): any {
+    let sum: number = 0;
+    for (let i = 0; i < this.pingArray.length; i++) {
+      sum += this.pingArray[i];
+    }
+    console.log("Array length: " + this.pingArray.length);
+    this.ping = Math.floor(sum / this.pingArray.length / 1000000);
+  }
+
+  private listener: any;
+  public StartPing(): void {
+    this.listener = this.socket.on("clack", (res: any) => {
+      this.OnClack();
     });
+    this.performPing = true;
+    this.GetPing();
+  }
+
+  public StopPing(): void {
+    this.socket.removeListener("listener removed", this.listener);
+    this.performPing = false;
   }
 }

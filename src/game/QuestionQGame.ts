@@ -125,11 +125,8 @@ export class QuestionQGame implements iGame {
   public StartGame(username: string): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
-        const player:
-          | QuestionQPlayer
-          | undefined
-          = this.GameCore.Players.find(
-            x => x.username == username
+        const player: QuestionQPlayer | undefined = this.GameCore.Players.find(
+          x => x.username == username
         );
         if (username == this.GeneralArguments.owner || (player && player.roles.find(x => x == PlayerRole.Mod || x == PlayerRole.Host))) {
           resolve(this.GameCore.Start());
