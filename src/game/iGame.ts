@@ -14,7 +14,7 @@ export interface iGame {
    * @param msgType - the type of the action
    * @param data - the action's data
    */
-  ProcessUserInput: (username: string, msgType: string, data: string) => any;
+  ProcessUserInput: (username: string, msgType: MessageType, data: string) => any;
   /**
    * Adds a new player to the game.
    */

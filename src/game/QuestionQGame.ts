@@ -3,7 +3,6 @@ import {
   Gamemode,
   iGeneralHostArguments,
   iQuestionQHostArguments,
-  iQuestionQGameData,
   iGeneralQuestion,
   iGeneralPlayerInputError,
   iQuestionQTip,
@@ -11,7 +10,6 @@ import {
   PlayerRole
 } from "../models/GameModels";
 import { logger } from "../server/logging";
-import { QuestionModel } from "../models/Schemas";
 
 // game modes
 import { QuestionQCore } from "./QuestionQCore";
@@ -23,7 +21,6 @@ import {
   QuestionCouldNotBeAddedError
 } from "../server/Errors";
 import { Tryharder } from "./Tryharder";
-import { QuestionQPlayer } from "./QuestionQPlayer";
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
@@ -41,8 +38,6 @@ export class QuestionQGame implements iGame {
   ) {
     this.GameCore = new QuestionQCore(
       this.GeneralArguments.gameId,
-      this.LogInfo,
-      this.LogSilly,
       this.GeneralArguments.questionIds,
       [],
       this._gameCoreArguments
@@ -57,29 +52,46 @@ export class QuestionQGame implements iGame {
    */
   public ProcessUserInput(
     username: string,
-    messageType: string /*msgType: MessageType*/,
+    messageType: MessageType /*msgType: MessageType*/,
     data: string
   ): void {
-    const msgType: MessageType = (<any>MessageType)[messageType];
-    switch (msgType) {
+    switch (messageType) {
       case MessageType.QuestionQTip: {
         try {
           this.GameCore.PlayerGivesTip(username, JSON.parse(data));
         } catch (err) {
-          logger.log("info", err.message);
-          //this.SendToUser(username, MessageType.PlayerInputError, errorMessage);
+          this.ProcessUserError(username, { message: err.message, data: err});
         }
         break;
       }
       default: {
         let errorMessage: iGeneralPlayerInputError = {
           message: "invalid message type",
-          data: { username: username, msgType: msgType }
+          data: { username: username, msgType: messageType }
         };
-        this.LogInfo(this.GameCore, JSON.stringify(errorMessage));
-        //this.SendToUser(username, MessageType.PlayerInputError, errorMessage);
+        this.ProcessUserError(username, errorMessage);
         break;
       }
+    }
+  }
+
+  /**
+   * Processes an user caused error.
+   * @param username - the user who caused the error
+   * @param errorMessage - the error's error message
+   */
+  private ProcessUserError(username: string, errorMessage: iGeneralPlayerInputError): void {
+    this.LogInfo(JSON.stringify(errorMessage));
+    const user: PlayerBase | undefined = this.GameCore.Players.find(x => x.username == username);
+    if (user) {
+        const th: Tryharder = new Tryharder();
+        th.Tryhard(
+            () => {
+                return user.Inform(MessageType.PlayerInputError, errorMessage);
+            },
+            3000,
+            3
+        );
     }
   }
 
@@ -125,7 +137,7 @@ export class QuestionQGame implements iGame {
   public StartGame(username: string): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
-        const player: QuestionQPlayer | undefined = this.GameCore.Players.find(
+        const player: PlayerBase | undefined = this.GameCore.Players.find(
           x => x.username == username
         );
         if (username == this.GeneralArguments.owner || (player && player.roles.find(x => x == PlayerRole.Mod || x == PlayerRole.Host))) {
@@ -140,28 +152,30 @@ export class QuestionQGame implements iGame {
   }
 
   /**
-   * DEACTIVATED
-   */
-  public AddQuestion(question: iGeneralQuestion): boolean {
-    //return this.GameCore.AddQuestion(question);
-    return false;
-  }
-
-  /**
    * Logs magnificient game information.
-   * @param game - the game instance
    * @param toLog - the information to log
    */
-  private LogInfo(game: QuestionQCore, toLog: string) {
-    logger.log("info", "Game: " + game.gameId + " - " + toLog);
+  private LogInfo(toLog: string) {
+    logger.log(
+      "info",
+        "Game: " +
+        this.GeneralArguments.gameId +
+        " - " +
+        toLog
+    );
   }
 
   /**
    * Logs silly game information.
-   * @param game - the game instance
    * @param toLog - the information to log
    */
-  private LogSilly(game: QuestionQCore, toLog: string) {
-    logger.log("silly", "Game: " + game.gameId + " - " + toLog);
+  private LogSilly(toLog: string) {
+    logger.log(
+      "silly",
+        "Game: " +
+        this.GeneralArguments.gameId +
+        " - " +
+        toLog
+    );
   }
 }

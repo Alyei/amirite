@@ -13,8 +13,8 @@ export interface iGeneralQuestion {
 export interface iPlayerAction {
   username: string;
   gameId: string;
-  msgType: string; //myb msgType?
-  data: iQuestionQTip;
+  msgType: MessageType; //myb msgType?
+  data: any;
 }
 
 export interface iJoinGame {
@@ -111,6 +111,10 @@ export interface iQuestionQHostArguments {}
 export interface iQuestionQGameData {
   gameId: string;
   players: iQuestionQPlayerData[];
+  explanations: {
+    questionId: string,
+    explanation: string
+  }[];
 }
 export interface iQuestionQTip {
   questionId: string;
@@ -166,12 +170,15 @@ export interface iDeterminationQuestion {
   pictureId?: string;
   timeLimit: number;
   difficulty: number;
-  questionTime: Date;
+  firstOption?: iDeterminationOption;
 }
 export interface iDeterminationQuestionData {
   question: iDeterminationQuestion;
   options: { [id: string]: string };
   correct: string;
+  questionTime?: Date;
+  explanation?: string;
+  timeCorrection?: number;
 }
 export interface iDeterminationOption {
   questionId: string;
@@ -181,22 +188,23 @@ export interface iDeterminationTipFeedback {
   tip: iDeterminationTip;
   correct: boolean;
   duration: number;
-  // time correction
+  timeCorrection: number;
   points: number;
   score: number;
   message: string;
+  nextOption?: iDeterminationOption;
 }
 export interface iDeterminationTipData {
   tip: iDeterminationTip;
-  feedback: iDeterminationTipFeedback;
+  feedback?: iDeterminationTipFeedback;
 }
 export interface iDeterminationPlayerData {
   username: string;
+  roles: PlayerRole[];
   state: number;
   score: number;
-  // current question
   questions: iDeterminationQuestionData[];
-  tips: iDeterminationTipData[];
+  tips: iDeterminationTipData[]; // filter qId length for next option
 }
 //#endregion
 

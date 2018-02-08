@@ -11,7 +11,8 @@ import {
   iQuestionQHostArguments,
   iQuestionQPlayerData,
   Gamemode,
-  iQuestionQGameData
+  iQuestionQGameData,
+  iQuestionQTipData
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
@@ -31,8 +32,6 @@ export class QuestionQCore {
   private _players: QuestionQPlayer[];
   private _questions: iGeneralQuestion[];
   private _gamePhase: QuestionQGamePhase;
-  private _logSilly?: (game: QuestionQCore, toLog: string) => void;
-  private _logInfo?: (game: QuestionQCore, toLog: string) => void;
   private _timers: { [id: string]: NodeJS.Timer } = {};
 
   /**
@@ -45,24 +44,17 @@ export class QuestionQCore {
   /**
    * Creates a new instance of the QuestionQCore-class
    * @param gameId - the game's id
-   * @param logInfo - method to log magnificient information
-   * @param logSilly - method to log silly information
    * @param questionIds - list of the questions' IDs
    * @param players - list of players that are here from the beginning
    * @param gameArguments - QuestionQ-specific game arguments
    */
   public constructor(
     public gameId: string,
-    logInfo: (game: QuestionQCore, toLog: string) => void,
-    logSilly: (game: QuestionQCore, toLog: string) => void,
     questionIds: string[],
     players?: PlayerBase[],
     gameArguments?: iQuestionQHostArguments
   ) {
     this._gamePhase = QuestionQGamePhase.Setup;
-
-    this._logInfo = logInfo;
-    this._logSilly = logSilly;
 
     this.LoadQuestions(questionIds);
 
@@ -94,6 +86,8 @@ export class QuestionQCore {
             pictureId: question.pictureId
           });
         }
+        const am: ArrayManager = new ArrayManager(this._questions);
+        this._questions = am.ShuffleArray();
         logger.log(
           "silly",
           "Questions (%s) loaded in game %s.",
@@ -104,8 +98,6 @@ export class QuestionQCore {
       .catch((err: any) => {
         logger.log("info", "Could not load questions in %s.", this.gameId);
       });
-    let am: ArrayManager = new ArrayManager(this._questions);
-    this._questions = am.ShuffleArray();
   }
 
   /**
@@ -161,9 +153,6 @@ export class QuestionQCore {
         player.LatestQuestion[0].questionId == question.questionId
       ) {
         // is the question current?
-
-        //player.GetPing();
-
         if (!lastCorrection) {
           if (question.timeCorrection)
             question.timeCorrection += player.Ping / 2;
@@ -202,21 +191,20 @@ export class QuestionQCore {
         // the question has already been answered
       }
     } else {
-      if (this._logSilly)
-        this._logSilly(
-          this,
-          "this should not have happened... (" +
-            JSON.stringify(player) +
-            "; " +
-            JSON.stringify(question) +
-            ")"
-        );
+      this.LogInfo(
+        "this should not have happened... has a question been removed? (" +
+        JSON.stringify(player.GetPlayerData()) +
+        "; " +
+        JSON.stringify(question) +
+        ")"
+      );
     }
   }
 
   /**
-   * Returns a [iQuestionQQuestion, string]-tuple combinig the questioning data with the correct answer's ID.
+   * Generates a QuestionQQuestion out of a JSON implementing the iGeneralQuestion-interface.
    * @param question - the question base's data
+   * @returns - a [iQuestionQQuestion, string]-tuple combinig the questioning data with the correct answer's ID
    */
   public GetQuestionQQuestion(
     question: iGeneralQuestion
@@ -254,8 +242,7 @@ export class QuestionQCore {
       x => x.username == username
     );
     if (!player) {
-      if (this._logInfo)
-        this._logInfo(this, "could not find player '" + username + "'");
+      this.LogInfo("could not find player '" + username + "'");
       return false;
     }
 
@@ -267,35 +254,48 @@ export class QuestionQCore {
    * Disqualifies a player
    * @param player - player to disqualify
    */
-  public DisqualifyPlayer(player: PlayerBase): void {
+  private DisqualifyPlayer(player: QuestionQPlayer): void {
     player.state = PlayerState.Disqualified;
-    //player.StopPing();!!!
+    player.StopPing();
+    const th: Tryharder = new Tryharder();
+    th.Tryhard(
+      () => {
+        return player.Inform(
+          MessageType.QuestionQPlayerData,
+          player.GetPlayerData()
+        );
+      },
+      3000, // delay
+      3 // tries
+    );
     this.CheckForEnd();
   }
 
   /**
-   * Adds a new user to the game when it did not end already.
+   * Adds a new user to the game, if it did not end already.
    * @param player - the player to add
    * @returns - whether the user could be added
    */
   public AddUser(player: PlayerBase): boolean {
-    if (this._gamePhase == QuestionQGamePhase.Setup) {
-      this._players.push(new QuestionQPlayer(player.GetArguments()));
-      return true;
-    }
-    if (this._gamePhase == QuestionQGamePhase.Running) {
-      let newPlayer: QuestionQPlayer = new QuestionQPlayer(
-        player.GetArguments()
-      );
-      this._players.push(newPlayer);
-      if (newPlayer.state == PlayerState.Launch) this.QuestionPlayer(newPlayer);
-      return true;
+    if (this._players && !this._players.find(x => x.username == player.username)) {
+      if (this._gamePhase == QuestionQGamePhase.Setup) {
+        this._players.push(new QuestionQPlayer(player.GetArguments()));
+        return true;
+      }
+      if (this._gamePhase == QuestionQGamePhase.Running) {
+        let newPlayer: QuestionQPlayer = new QuestionQPlayer(
+          player.GetArguments()
+        );
+        this._players.push(newPlayer);
+        if (newPlayer.state == PlayerState.Launch) this.QuestionPlayer(newPlayer);
+        return true;
+      }
     }
     return false;
   }
 
   /**
-   * Starts the game, if all confitions are met.
+   * Starts the game, if all conditions are met.
    * @returns - whether the game has been started
    */
   public Start(): boolean {
@@ -328,9 +328,15 @@ export class QuestionQCore {
    * @returns - the game's data according to the iQuestionQGameData-interface
    */
   public GetGameData(): iQuestionQGameData {
+    const explanations: {questionId: string, explanation: string}[] = [];
+    for (let q of this._questions) {
+      if (q.explanation)
+        explanations.push({questionId: q.questionId, explanation: q.explanation});
+    }
     return {
       gameId: this.gameId,
-      players: this.GetPlayerData()
+      players: this.GetPlayerData(),
+      explanations: explanations
     };
   }
 
@@ -370,15 +376,13 @@ export class QuestionQCore {
         );
         // L-> find a question you cannot find in player.questions
         if (!nextQuestionBase) {
-          if (this._logInfo)
-            this._logInfo(
-              this,
-              "could not find next question in '" +
-                this._questions.toString() +
-                "''" +
-                player.questions.toString() +
-                "'"
-            );
+          this.LogInfo(
+            "could not find next question in '" +
+            this._questions.toString() +
+            "''" +
+            player.questions.toString() +
+            "'"
+          );
           return;
         }
         const nextQuestion: [
@@ -419,7 +423,7 @@ export class QuestionQCore {
       } else {
         // finished
         player.state = PlayerState.Finished;
-        //player.StopPing();!!!
+        player.StopPing();
 
         const th: Tryharder = new Tryharder();
         if (
@@ -442,7 +446,7 @@ export class QuestionQCore {
   }
 
   /**
-   * Processes a player that is giving a tip.
+   * Processes a 'player that is giving a tip'-action.
    * @param username - the name of the user, who is giving the tip
    * @param tip - the tip that is given
    */
@@ -451,8 +455,7 @@ export class QuestionQCore {
       x => x.username == username
     );
     if (!player) {
-      if (this._logInfo)
-        this._logInfo(this, "could not find player '" + username + "'");
+      this.LogInfo("could not find player '" + username + "'");
       return;
     }
     // only while running and if the player is ingame
@@ -460,8 +463,9 @@ export class QuestionQCore {
       this._gamePhase == QuestionQGamePhase.Running &&
       player.state == PlayerState.Playing
     ) {
+      const givenTip: iQuestionQTipData | undefined = player.tips.find(x => x.tip.questionId == tip.questionId);
       // only the player did not give a tip for this question before
-      if (!player.tips.find(x => x.tip.questionId == tip.questionId)) {
+      if (!givenTip) {
         const PlayerQuestionTuple:
           | [iQuestionQQuestion, string]
           | undefined = player.questions.find(
@@ -469,26 +473,20 @@ export class QuestionQCore {
         );
         // if the player has not been asked this question
         if (!PlayerQuestionTuple) {
-          const th: Tryharder = new Tryharder();
-          if (
-            !th.Tryhard(
-              () => {
-                return player.Inform(
-                  MessageType.PlayerInputError,
-                  "You were not asked this question >:c"
-                );
-              },
-              3000, // delay
-              3 // tries
-            )
-          ) {
-            //this.DisqualifyPlayer(player);
-          }
+          // process error
+          const errorMessage: iGeneralPlayerInputError = {
+              message: "You were not asked this question >:c",
+              data: {
+                  currentQuestionId: (player.LatestQuestion || [{ questionId: "none" }])[0].questionId,
+                  tip: tip
+              }
+          };
+          this.ProcessPlayerInputError(player, errorMessage);
           return;
         }
 
         const duration: number =
-          new Date().getTime() -
+          (new Date()).getTime() -
           PlayerQuestionTuple[0].questionTime.getTime() -
           (PlayerQuestionTuple[0].timeCorrection || 0);
         let points: number = 0;
@@ -501,6 +499,9 @@ export class QuestionQCore {
           score: 0,
           message: "unset"
         };
+
+        if (duration < 0) return; //!!! duration = PlayerQuestionTuple[0].timeLimit
+
         // if the in time
         if (duration < PlayerQuestionTuple[0].timeLimit) {
           // if correct
@@ -543,43 +544,60 @@ export class QuestionQCore {
         //add to playertipdata
         this.QuestionPlayer(player);
       } else {
-        const message: iGeneralPlayerInputError = {
-          message: "You already gave a tip for this question",
-          data: { QuestionId: tip.questionId }
+        // process error
+        const errorMessage: iGeneralPlayerInputError = {
+            message: "You already gave a tip for this answer of this question",
+            data: {
+                givenTip: givenTip,
+                currentTip: tip
+            }
         };
-
-        const th: Tryharder = new Tryharder();
-        if (
-          !th.Tryhard(
-            () => {
-              return player.Inform(MessageType.PlayerInputError, message);
-            },
-            3000, // delay
-            3 // tries
-          )
-        ) {
-          //this.DisqualifyPlayer(player);
-          return;
-        }
+        this.ProcessPlayerInputError(player, errorMessage);
       }
     } else {
-      const message: iGeneralPlayerInputError = {
-        message: "You are not allowed to give a tip",
-        data: { GamePhase: this._gamePhase, PlayerState: player.state }
+      // process error
+      const errorMessage: iGeneralPlayerInputError = {
+          message: "You are not allowed to give a tip",
+          data: {
+              playerState: player.state,
+              gamePhase: this._gamePhase
+          }
       };
-      const th: Tryharder = new Tryharder();
-      if (
-        !th.Tryhard(
-          () => {
-            return player.Inform(MessageType.PlayerInputError, message);
-          },
-          3000, // delay
-          3 // tries
-        )
-      ) {
-        //this.DisqualifyPlayer(player);
-        return;
-      }
+      this.ProcessPlayerInputError(player, errorMessage);
+      return;
     }
+  }
+
+  /**
+   * Processes a player caused error.
+   * @param player - the player who caused the error
+   * @param errorMessage - error data implementing the iGeneralPlayerInputError-interface
+   */
+  private ProcessPlayerInputError(player: QuestionQPlayer, errorMessage: iGeneralPlayerInputError) {
+      const th: Tryharder = new Tryharder();
+      if (!th.Tryhard(() => {
+          return player.Inform(MessageType.PlayerInputError, errorMessage);
+      }, 3000, // delay
+          3 // tries
+      )) {
+          //this.DisqualifyPlayer(player);
+      }
+      this.LogInfo(JSON.stringify(errorMessage));
+  }
+
+  /**
+   * Logs magnificient information.
+   * @param toLog - information that is to log
+   */
+  private LogInfo(toLog: string) {
+      logger.log("info", this.gameId + " - " + toLog);
+  }
+
+  /**
+   * Logs less unique information.
+   * @param toLog - information that is to log
+   */
+  private LogSilly(toLog: string) {
+      logger.log("silly", this.gameId + " - " + toLog);
   }
 }
