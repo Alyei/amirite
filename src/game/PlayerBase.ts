@@ -26,7 +26,6 @@ export class PlayerBase {
 
   get Ping(): number {
     this.GetPingAverage();
-    console.log("this.Ping(): " + this.ping);
     return this.ping;
   }
 
@@ -88,7 +87,6 @@ export class PlayerBase {
    * an intervalTimer for `this.PingLogic()` for the specified inter
    */
   private GetPing(): void {
-    console.log("GetPing()");
     const interval: number = 2000; //Move to conf
 
     this.pingIntervalTimer = global.setInterval(
@@ -116,14 +114,7 @@ export class PlayerBase {
    * and pushes it to this.pingArray.
    */
   private OnClack(): void {
-    console.log("Starttime: " + this.startTime);
     this.endTime = process.hrtime(this.startTime);
-    logger.log(
-      "silly",
-      "Ending latency of %s: %s",
-      this.username,
-      this.endTime
-    );
     this.RefreshPingArray(this.endTime[1]);
   }
 
