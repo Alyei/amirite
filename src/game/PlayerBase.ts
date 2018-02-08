@@ -24,6 +24,7 @@ export class PlayerBase {
   private endTime: [number, number];
 
   get Ping(): number {
+    this.GetPingAverage();
     return this.ping;
   }
 
@@ -132,7 +133,7 @@ export class PlayerBase {
       sum += this.pingArray[i];
     }
     console.log("Array length: " + this.pingArray.length);
-    this.ping = Math.floor(sum / this.pingArray.length);
+    this.ping = Math.floor(sum / this.pingArray.length / 1000000);
   }
 
   private listener: any;
