@@ -26,6 +26,7 @@ export class PlayerBase {
 
   get Ping(): number {
     this.GetPingAverage();
+    console.log("this.Ping(): " + this.ping);
     return this.ping;
   }
 
@@ -84,7 +85,7 @@ export class PlayerBase {
 
   /**
    * Starts the pingcheck to the client by reading the interval from `server.conf`, and creating
-   * an intervalTimer for `this.PingLogic()` for the specified interval.
+   * an intervalTimer for `this.PingLogic()` for the specified inter
    */
   private GetPing(): void {
     console.log("GetPing()");
@@ -124,8 +125,6 @@ export class PlayerBase {
       this.endTime
     );
     this.RefreshPingArray(this.endTime[1]);
-    this.GetPingAverage();
-    console.log("Average: " + this.ping);
   }
 
   /**
@@ -149,10 +148,11 @@ export class PlayerBase {
     for (let i = 0; i < this.pingArray.length; i++) {
       sum += this.pingArray[i];
     }
-    console.log("SUM: " + sum);
-    console.log("ARRAY: " + this.pingArray);
-    console.log("Array length: " + this.pingArray.length);
-    this.ping = Math.floor(sum / this.pingArray.length / 1000000);
+    if (this.pingArray.length > 0) {
+      this.ping = Math.floor(sum / this.pingArray.length / 1000000);
+    } else {
+      this.ping = 0;
+    }
   }
 
   /**
