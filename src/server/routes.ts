@@ -33,13 +33,13 @@ export class Https {
     this.app.get("/", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "index.ejs"));
     });
-    /*
+
     this.app.get("/login", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "login.ejs"), {
         message: req.flash("login")
       });
     });
-*/
+
     this.app.get("/api/signup", (req: any, res: any) => {
       res.render("signup");
     });
