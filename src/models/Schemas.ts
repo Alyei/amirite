@@ -73,6 +73,10 @@ let Question: mongoose.Schema = new mongoose.Schema({
   explanation: {
     type: String,
     required: true
+  },
+  genre: {
+    type: [String],
+    required: false
   }
 });
 
