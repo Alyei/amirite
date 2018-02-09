@@ -10,7 +10,7 @@ class HostGame extends React.Component {
         this.state = {
             gamemodes: ["QuestionQ", "Determination"],
             selectedMode: "",
-            username:"thisName"//change to cookies
+            username:"alyei"//change to cookies
         }
         console.log(this.props);
         this.handleGameSelection = this.handleGameSelection.bind(this);
