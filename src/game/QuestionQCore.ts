@@ -12,7 +12,8 @@ import {
   iQuestionQPlayerData,
   Gamemode,
   iQuestionQGameData,
-  iQuestionQTipData
+  iQuestionQTipData,
+  iSpectatingData
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
@@ -64,6 +65,30 @@ export class QuestionQCore {
         this._players.push(new QuestionQPlayer(player.GetArguments()));
       }
     }
+  }
+
+  /**
+   * Sends the passed data to the player and all spectators
+   * @param player - the main target for the data
+   * @param msgType - defines the data's type
+   * @param data - the data that is to be sent
+   * @returns - whether no error happened
+   */
+  private InformPlayer(player: PlayerBase, msgType: MessageType, data: any): boolean {
+    const result: boolean = player.Inform(msgType, data);
+
+    const specData: iSpectatingData = {
+      targetUsername: player.username,
+      msgType: msgType,
+      data: data
+    };
+
+    const spectators: PlayerBase[] = this.Players.filter(x => x.state == PlayerState.Spectating && x.username != player.username);
+    for (let spec of spectators) {
+      spec.Inform(MessageType.SpectatingData, specData);
+    }
+
+    return result;
   }
 
   /**
@@ -123,7 +148,7 @@ export class QuestionQCore {
       if (
         !th.Tryhard(
           () => {
-            return player.Inform(MessageType.QuestionQGameData, gameData);
+            return this.InformPlayer(player, MessageType.QuestionQGameData, gameData);
           },
           3000, // delay
           3 // tries
@@ -260,7 +285,8 @@ export class QuestionQCore {
     const th: Tryharder = new Tryharder();
     th.Tryhard(
       () => {
-        return player.Inform(
+        return this.InformPlayer(
+          player,
           MessageType.QuestionQPlayerData,
           player.GetPlayerData()
         );
@@ -351,7 +377,8 @@ export class QuestionQCore {
       for (let player of this._players) {
         if (
           player.state != PlayerState.Finished &&
-          player.state != PlayerState.Disqualified
+          player.state != PlayerState.Disqualified &&
+          player.state != PlayerState.Spectating
         )
           allFinished = false;
       }
@@ -395,7 +422,8 @@ export class QuestionQCore {
         if (
           !th.Tryhard(
             () => {
-              return player.Inform(
+              return this.InformPlayer(
+                player,
                 MessageType.QuestionQQuestion,
                 nextQuestion[0]
               );
@@ -429,7 +457,8 @@ export class QuestionQCore {
         if (
           !th.Tryhard(
             () => {
-              return player.Inform(
+              return this.InformPlayer(
+                player,
                 MessageType.QuestionQPlayerData,
                 player.GetPlayerData()
               );
@@ -527,7 +556,7 @@ export class QuestionQCore {
         if (
           !th.Tryhard(
             () => {
-              return player.Inform(MessageType.QuestionQTipFeedback, feedback);
+              return this.InformPlayer(player, MessageType.QuestionQTipFeedback, feedback);
             },
             3000, // delay
             3 // tries
@@ -577,7 +606,7 @@ export class QuestionQCore {
   private ProcessPlayerInputError(player: QuestionQPlayer, errorMessage: iGeneralPlayerInputError) {
       const th: Tryharder = new Tryharder();
       if (!th.Tryhard(() => {
-          return player.Inform(MessageType.PlayerInputError, errorMessage);
+          return this.InformPlayer(player, MessageType.PlayerInputError, errorMessage);
       }, 3000, // delay
           3 // tries
       )) {

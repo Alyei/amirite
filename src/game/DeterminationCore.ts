@@ -14,7 +14,8 @@ import {
   iDeterminationPlayerData,
   Gamemode,
   iDeterminationGameData,
-  iDeterminationTipData
+  iDeterminationTipData,
+  iSpectatingData
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { DeterminationPlayer } from "./DeterminationPlayer";
@@ -69,6 +70,30 @@ export class DeterminationCore {
             this._players.push(new DeterminationPlayer(player.GetArguments()));
           }
         }
+    }
+
+    /**
+     * Sends the passed data to the player and all spectators
+     * @param player - the main target for the data
+     * @param msgType - defines the data's type
+     * @param data - the data that is to be sent
+     * @returns - whether no error happened
+     */
+    private InformPlayer(player: PlayerBase, msgType: MessageType, data: any): boolean {
+      const result: boolean = player.Inform(msgType, data);
+  
+      const specData: iSpectatingData = {
+        targetUsername: player.username,
+        msgType: msgType,
+        data: data
+      };
+  
+      const spectators: PlayerBase[] = this.Players.filter(x => x.state == PlayerState.Spectating && x.username != player.username);
+      for (let spec of spectators) {
+        spec.Inform(MessageType.SpectatingData, specData);
+      }
+  
+      return result;
     }
 
     /**
@@ -128,7 +153,7 @@ export class DeterminationCore {
         if (
           !th.Tryhard(
             () => {
-              return player.Inform(MessageType.QuestionQGameData, gameData);
+              return this.InformPlayer(player, MessageType.QuestionQGameData, gameData);
             },
             3000, // delay
             3 // tries
@@ -217,17 +242,18 @@ export class DeterminationCore {
         let am: ArrayManager = new ArrayManager(this.OptionIds);
         const letters: string[] = am.ShuffleArray();
 
-        let answers: [string, string][] = [];
-        answers.push([letters[0], question.answer]);
+        let answers: iDeterminationOption[] = [];
+        answers.push({
+          answerId: letters[0],
+          answer: question.answer
+        });
         for (let i: number = 1; i < letters.length; i++) {
-            answers.push([letters[i], question.otherOptions[i - 1]]);
+            answers.push({
+              answerId: letters[i],
+              answer: question.otherOptions[i - 1] // other options goes from 0 to 2 (letters from 0 to 3)
+            });
         }
-        answers.sort((a, b) => a[0].charCodeAt(0) - b[0].charCodeAt(0));
-
-        let optionsd: { [id: string]: string } = {};
-        for (let o of answers) {
-            optionsd[o[0]] = o[1];
-        }
+        answers.sort((a, b) => a.answerId.charCodeAt(0) - b.answerId.charCodeAt(0));
 
         am.collection = answers;
         return {
@@ -238,7 +264,7 @@ export class DeterminationCore {
                 pictureId: question.pictureId,
                 question: question.question,
             },
-            options: optionsd,
+            options: answers,
             correct: letters[0]
         };
     }
@@ -269,7 +295,8 @@ export class DeterminationCore {
     const th: Tryharder = new Tryharder();
     th.Tryhard(
       () => {
-        return player.Inform(
+        return this.InformPlayer(
+          player,
           MessageType.DeterminationPlayerData,
           player.GetPlayerData()
         );
@@ -409,34 +436,20 @@ export class DeterminationCore {
                     correct: nextQuestionBase.correct,
                     explanation: nextQuestionBase.explanation,
                     questionTime: new Date(),
-                    timeCorrection: player.Ping / 2
+                    timeCorrection: player.Ping / 2,
                 };
+
+                nextQuestion.question.firstOption = nextQuestion.options[0]; // or "A"
 
                 // send nextQuestion to Username
                 const th: Tryharder = new Tryharder();
                 if (
                   !th.Tryhard(
                     () => {
-                      return player.Inform(
+                      return this.InformPlayer(
+                        player,
                         MessageType.DeterminationQuestion,
                         nextQuestion.question
-                      );
-                    },
-                    3000, // delay
-                    3 // tries
-                  )
-                ) {
-                  this.DisqualifyPlayer(player);
-                  return;
-                }
-
-                // send first option to the player
-                if (
-                  !th.Tryhard(
-                    () => {
-                      return player.Inform(
-                        MessageType.DeterminationOption,
-                        nextQuestion.options[0] // or "A"
                       );
                     },
                     3000, // delay
@@ -458,7 +471,8 @@ export class DeterminationCore {
                 if (
                   !th.Tryhard(
                     () => {
-                      return player.Inform(
+                      return this.InformPlayer(
+                        player,
                         MessageType.DeterminationPlayerData,
                         player.GetPlayerData()
                       );
@@ -605,18 +619,15 @@ export class DeterminationCore {
             playerQuestion.timeCorrection += player.Ping / 2;
 
             // index of the next option
-            const index: number = this.OptionIds.findIndex(x => tip.answerId == x) + 1;
-            if (index > 0 && index < this.OptionIds.length) {
-                feedback.nextOption = {
-                    questionId: playerQuestion.question.questionId,
-                    option: [this.OptionIds[index], playerQuestion.options[this.OptionIds[index]]]
-                };
+            const index: number = playerQuestion.options.findIndex(x => tip.answerId == x.answerId) + 1;
+            if (index > 0 && index < playerQuestion.options.length) {
+                feedback.nextOption = playerQuestion.options[index];
             } else {
                 // process error
                 const errorMessage: iGeneralPlayerInputError = {
                     message: "Something went wrong with your answering options...",
                     data: {
-                        optionIds: JSON.stringify(this.OptionIds),
+                        optionIds: JSON.stringify(playerQuestion.options),
                         tip: tip
                     }
                 };
@@ -646,7 +657,8 @@ export class DeterminationCore {
         if (
             !th.Tryhard(
                 () => {
-                    return player.Inform(
+                    return this.InformPlayer(
+                        player,
                         MessageType.DeterminationTipFeedback,
                         feedback
                     );
@@ -670,7 +682,7 @@ export class DeterminationCore {
     private ProcessPlayerInputError(player: DeterminationPlayer, errorMessage: iGeneralPlayerInputError) {
         const th: Tryharder = new Tryharder();
         if (!th.Tryhard(() => {
-            return player.Inform(MessageType.PlayerInputError, errorMessage);
+            return this.InformPlayer(player, MessageType.PlayerInputError, errorMessage);
         }, 3000, // delay
             3 // tries
         )) {

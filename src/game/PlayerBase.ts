@@ -9,12 +9,11 @@ import { logger } from "../server/logging";
 export interface iPlayerBaseArguments {
   username: string;
   socket: SocketIO.Socket;
-  roles: PlayerRole[];
+  role: PlayerRole;
   state: PlayerState;
 }
 
 export class PlayerBase {
-  public roles: PlayerRole[];
   public state: PlayerState;
   private ping: number;
   public performPing: boolean = false;
@@ -33,28 +32,27 @@ export class PlayerBase {
    * Initializes PlayerBase with the passed arguments.
    * @param username - defines the player's username
    * @param socket - the socket that is used to communicate with the player
-   * @param role - optional
+   * @param role - optional role the player has
    */
   constructor(
     public username: string,
     protected socket: SocketIO.Socket,
-    role?: PlayerRole[]
+    public role: PlayerRole
   ) {
-    this.ping = 0;
-    this.roles = role || [];
-
-    this.state = PlayerState.Disqualified;
-    if (this.roles.find(x => x == PlayerRole.Player))
+    this.state = PlayerState.Spectating;
+    
+    // player
+    if (this.role == PlayerRole.Player)
       this.state = PlayerState.Launch;
   }
 
   /**
    * Uses the object's socket to emit the passed data with the message type as socket event.
    * @param messageType - socket event / data format
-   * @param data - data
+   * @param data - to be sent
    * @returns - whether no error happened
    */
-  public Inform(messageType: MessageType, data: {}): boolean {
+  public Inform(messageType: MessageType, data: any): boolean {
     try {
       logger.log("silly", messageType.toString());
       logger.log("silly", JSON.stringify(data, null, 0));
@@ -78,7 +76,7 @@ export class PlayerBase {
     return {
       username: this.username,
       socket: this.socket,
-      roles: this.roles,
+      role: this.role,
       state: this.state
     };
   }

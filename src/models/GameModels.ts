@@ -1,3 +1,5 @@
+import { exec } from "child_process";
+
 //#region OverAll
 export interface iGeneralQuestion {
   questionId: string;
@@ -46,6 +48,12 @@ export interface iGeneralHostArguments {
   questionIds: string[];
 }
 
+export interface iSpectatingData {
+  msgType: MessageType;
+  data: any;
+  targetUsername: string;
+}
+
 export enum Gamemode {
   QuestionQ = 0,
   Determination,
@@ -57,13 +65,15 @@ export enum PlayerState {
   Playing,
   Paused,
   Finished,
-  Disqualified
+  Disqualified,
+  Spectating
 }
 
 export enum PlayerRole {
   Host = 0,
   Mod,
-  Player
+  Player,
+  Spectator
 }
 
 export enum JokerType {
@@ -75,19 +85,28 @@ export enum JokerType {
 
 // every possible message has its own entry here
 export enum MessageType {
-  PlayerInputError = 0,
-  QuestionQQuestion,
+  // general
+  PlayerInputError = 100,
+  SpectatingData,
+
+  // QuestionQ
+  QuestionQQuestion = 1,
   QuestionQTipFeedback,
   QuestionQPlayerData,
   QuestionQTip,
   QuestionQGameData,
   QuestionQHostArguments,
-  DeterminationPlayerData,
-  DeterminationQuestion,
-  DeterminationTip,
-  DeterminationOption,
+
+  // Determination
+  DeterminationQuestion = 10,
   DeterminationTipFeedback,
-  MillionaireSpectateData,
+  DeterminationPlayerData,
+  DeterminationTip,
+  DeterminationGameData,
+  DeterminationHostArguments,
+
+  // Millionaire
+  MillionaireSpectateData = 20,
   MillionaireQuestion,
   MillionaireTip,
   MillionaireTipFeedback,
@@ -175,15 +194,15 @@ export interface iDeterminationQuestion {
 }
 export interface iDeterminationQuestionData {
   question: iDeterminationQuestion;
-  options: { [id: string]: string };
+  options: iDeterminationOption[];
   correct: string;
   questionTime?: Date;
   explanation?: string;
   timeCorrection?: number;
 }
 export interface iDeterminationOption {
-  questionId: string;
-  option: [string, string];
+  answerId: string;
+  answer: string;
 }
 export interface iDeterminationTipFeedback {
   tip: iDeterminationTip;

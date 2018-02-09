@@ -4,7 +4,8 @@ import {
   MessageType,
   iGeneralQuestion,
   iStartGame,
-  iQuestionQTip
+  iQuestionQTip,
+  PlayerRole
 } from "../models/GameModels";
 
 export interface iGame {
@@ -18,7 +19,7 @@ export interface iGame {
   /**
    * Adds a new player to the game.
    */
-  AddPlayer: (username: string, socket: SocketIO.Socket) => any;
+  AddPlayer: (username: string, socket: SocketIO.Socket, role: PlayerRole) => any;
   /**
    * Disqualifies a player from the game.
    */
