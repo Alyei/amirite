@@ -90,6 +90,9 @@ export class PlayerBase {
   private GetPing(): void {
     const interval: number = 2000; //Move to conf
 
+    this.socket.on("clack", (res: any) => {
+      this.OnClack();
+    });
     this.pingIntervalTimer = global.setInterval(
       this.PingLogic.bind(this),
       interval
@@ -104,6 +107,7 @@ export class PlayerBase {
   private PingLogic(obj: any): void {
     if (this.performPing) {
       this.socket.emit("click");
+      console.log("click");
       this.startTime = process.hrtime();
     } else {
       global.clearInterval(this.pingIntervalTimer);
@@ -114,7 +118,7 @@ export class PlayerBase {
    * Takes the second timestamp, calculates `this.endTime-this.startTime` in nanoseconds
    * and pushes it to this.pingArray.
    */
-  private OnClack(): void {
+  private OnClack(): any {
     this.endTime = process.hrtime(this.startTime);
     this.RefreshPingArray(this.endTime[1]);
   }
@@ -153,9 +157,6 @@ export class PlayerBase {
    * `this.GetPing()`.
    */
   public StartPing(): void {
-    this.socketListener = this.socket.on("clack", (res: any) => {
-      this.OnClack();
-    });
     this.performPing = true;
     this.GetPing();
   }
@@ -165,7 +166,6 @@ export class PlayerBase {
    * the listener at `this.socketListener` and setting `this.performPing` to false.
    */
   public StopPing(): void {
-    //this.socket.removeListener("listener removed", this.socketListener);
-    //this.performPing = false;
+    this.performPing = false;
   }
 }
