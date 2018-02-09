@@ -497,7 +497,8 @@ export class QuestionQCore {
           timeCorrection: PlayerQuestionTuple[0].timeCorrection || 0,
           points: 0,
           score: 0,
-          message: "unset"
+          message: "unset",
+          correctAnswer: PlayerQuestionTuple[1]
         };
 
         if (duration < 0) return; //!!! duration = PlayerQuestionTuple[0].timeLimit
