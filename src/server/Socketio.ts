@@ -11,7 +11,8 @@ import {
   iJoinGame,
   iLeaveGame,
   iStartGame,
-  iQuestionQTip
+  iQuestionQTip,
+  PlayerRole
 } from "../models/GameModels";
 import * as GModels from "../models/GameModels";
 
@@ -147,7 +148,7 @@ export class io {
       if (item.GeneralArguments.gameId == opt.gameId) {
         try {
           item
-            .AddPlayer(opt.username, playerSocket)
+            .AddPlayer(opt.username, playerSocket, PlayerRole.Player)
             .then((res: any) => {
               playerSocket.join(item.GeneralArguments.gameId);
               logger.log(
