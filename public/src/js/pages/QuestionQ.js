@@ -23,7 +23,7 @@ class QuestionQ extends React.Component {
             selectedOptionId: ""
         };
         this.AnswClick = this.handleAnswerClick.bind(this);
-        this.Timeout = this.handleTimeout.bind(this);
+        //this.Timeout = this.handleTimeout.bind(this);
         this.handleStartGameClick = this.handleStartGameClick.bind(this);
 
     }
@@ -97,20 +97,23 @@ class QuestionQ extends React.Component {
             })
         );
     }
-  }
   componentWillUnmount() {
-    this.props.socketio.socket.emit("leave game", {
-      gameid: this.props.match.params.gameid,
-      username: this.state.username
-    });
+    this.props.socketio.socket.emit("leave game", 
+    JSON.stringify({
+        "gameid": this.props.match.params.gameid,
+        "username": this.state.username
+    })
+);
     this.props.socketio.socket.off("feedback");
   }
   handleJoinGame() {
     console.log("join game");
-    this.props.socketio.socket.emit("join game", {
-      gameid: this.props.match.params.gameid,
-      username: this.state.username
-    });
+    this.props.socketio.socket.emit("join game", 
+        JSON.stringify({
+            "gameid": this.props.match.params.gameid,
+            "username": this.state.username
+        })
+    );
   }
   sendAnswer(questionId, answerId) {
     this.props.socketio.socket.emit("tip", { questionId, answerId });
@@ -123,10 +126,10 @@ class QuestionQ extends React.Component {
         ReactDOM.findDOMNode(this.refs[event.target.id]).style.color = 'green';
         console.log(ReactDOM.findDOMNode(this.refs[event.target.id]).style.color)
         //console.log(window.getComputedStyle(ReactDOM.findDOMNode(this.refs[event.target.id]).color));
-    }
+    }/*
     handleTimeout() {
         this.sendAnswer(this.state.questionId,0);
-    }
+    }*/
     sendAnswer(questionId,answerId) {
         this.props.socketio.socket.emit('action',
             JSON.stringify({
@@ -162,7 +165,7 @@ class QuestionQ extends React.Component {
             <div>
             <QuestionBox ref={(question) => this.Question = question} id={this.state.questionId} text={this.state.question} pictureId={this.state.pictureId}/>
             {this.printAnswers(this.state.options)}
-            <GameTimer onTimeOut={this.Timeout} timeLimit={this.state.timeLimit}/>
+            <GameTimer timeLimit={this.state.timeLimit}/>
             {this.props.location.host === true ? <Button onClick={this.handleStartGameClick}>Start Game</Button>: null}
             </div>
         )
