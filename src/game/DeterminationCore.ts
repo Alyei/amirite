@@ -387,7 +387,8 @@ export class DeterminationCore {
           for (let player of this._players) {
             if (
               player.state != PlayerState.Finished &&
-              player.state != PlayerState.Disqualified
+              player.state != PlayerState.Disqualified &&
+              player.state != PlayerState.Spectating
             )
               allFinished = false;
           }
