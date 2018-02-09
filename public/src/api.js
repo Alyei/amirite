@@ -1,9 +1,37 @@
 import React from "react";
 import io from "socket.io-client";
 import {Redirect} from "react-router";
+import PropTypes from "prop-types";
 
 
 export const socket = io.connect('https://localhost:443/questionq');
+
+const MessageTypes = {
+    PlayerInputError: "PlayerInputError",
+    QuestionQQuestion: "QuestionQQuestion",
+    QuestionQTipFeedback: "QuestionQTipFeedback",
+    QuestionQPlayerData: "QuestionQPlayerData",
+    QuestionQTip: "QuestionQTip",
+    QuestionQGameData: "QuestionQGameData",
+    QuestionQHostArguments: "QuestionQHostArguments",
+    DeterminationPlayerData: "DeterminationPlayerData",
+    DeterminationQuestion: "DeterminationQuestion",
+    DeterminationTip: "DeterminationTip",
+    DeterminationOption: "DeterminationOption",
+    DeterminationTipFeedback: "DeterminationTipFeedback",
+    MillionaireSpectateData: "MillionaireSpectateData",
+    MillionaireQuestion: "MillionaireQuestion",
+    MillionaireTip: "MillionaireTip",
+    MillionaireTipFeedback: "MillionaireTipFeedback",
+    MillionaireAudienceJokerRequest: "MillionaireAudienceJokerRequest",
+    MillionaireAudienceJokerResponse: "MillionaireAudienceJokerResponse",
+    MillionaireAudienceJokerClue: "MillionaireAudienceJokerClue",
+    MillionairePassRequest: "MillionairePassRequest",
+    MillionairePassResponse: "MillionairePassResponse"
+}
+socket.PropTypes = {
+    MessageType: PropTypes.oneOf(Object.keys(MessageTypes))
+}
 
 export function closeSocket() {
     socket.off();

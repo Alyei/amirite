@@ -138,6 +138,7 @@ export interface iQuestionQTipFeedback {
   points: number;
   score: number;
   message: string;
+  correctAnswer: string;
 }
 export interface iQuestionQPlayerData {
   username: string;
