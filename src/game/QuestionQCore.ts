@@ -34,7 +34,10 @@ export class QuestionQCore {
   private _logSilly?: (game: QuestionQCore, toLog: string) => void;
   private _logInfo?: (game: QuestionQCore, toLog: string) => void;
   private _timers: { [id: string]: NodeJS.Timer } = {};
+<<<<<<< HEAD
   private _questionsLoaded: boolean = false;
+=======
+>>>>>>> 47d9e4f926c9b0046141625442c58f958de617ca
 
   get Players(): QuestionQPlayer[] {
     return this._players;
@@ -57,17 +60,7 @@ export class QuestionQCore {
     this._logInfo = logInfo;
     this._logSilly = logSilly;
 
-    this._questions = [];
-    QuestionModel.find({ id: { $in: questionIds } })
-      .then((res: any) => {
-        let am: ArrayManager = new ArrayManager(res);
-        this._questions = am.ShuffleArray();
-        this._questionsLoaded = true;
-        logger.log("silly", "Questions loaded in game %s.", gameId);
-      })
-      .catch((err: any) => {
-        logger.log("info", "Could not load questions in %s.", gameId);
-      });
+    this.LoadQuestions(questionIds);
 
     this._players = [];
     if (players) {
@@ -77,8 +70,62 @@ export class QuestionQCore {
     }
   }
 
+  private LoadQuestions(questionIds: string[]) {
+    this._questions = [];
+    QuestionModel.find({ id: { $in: questionIds } })
+      .then((res: any) => {
+        for (let question of res) {
+          this._questions.push({
+            questionId: question.id,
+            question: question.question,
+            answer: question.answer,
+            otherOptions: question.otherOptions, // check if undefined
+            timeLimit: question.timeLimit,
+            difficulty: question.difficulty,
+            explanation: question.explanation,
+            pictureId: question.pictureId
+          });
+        }
+        logger.log("silly", "Questions (%s) loaded in game %s.", JSON.stringify(this._questions), this.gameId);
+      })
+      .catch((err: any) => {
+        logger.log("info", "Could not load questions in %s.", this.gameId);
+      });
+    let am: ArrayManager = new ArrayManager(this._questions);
+    this._questions = am.ShuffleArray();
+  }
+
   public GetPlayerData(): iQuestionQPlayerData[] {
-    return this._players;
+    const result: iQuestionQPlayerData[] = [];
+    for (let player of this._players) {
+      result.push(player.GetPlayerData());
+    }
+    return result;
+  }
+
+  /*
+  private SendToRoom(messageType: MessageType, data: {}): void {
+    this.namespace.to(this.GeneralArguments.gameId).emit(MessageType[messageType], JSON.stringify(data))
+  }
+  */
+  // end (add save to DB)
+  private SendGameData(gameData: iQuestionQGameData): void {
+    const players: PlayerBase[] = this.Players;
+    const th: Tryharder = new Tryharder();
+    for (let player of players) {
+      if (
+        !th.Tryhard(
+          () => {
+            return player.Inform(MessageType.QuestionQGameData, gameData);
+          },
+          3000, // delay
+          3 // tries
+        )
+      ) {
+        // player not reachable
+      }
+    }
+    //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }
 
   /*
@@ -158,6 +205,7 @@ export class QuestionQCore {
   public GetQuestionQQuestion(
     question: iGeneralQuestion
   ): [iQuestionQQuestion, string] {
+
     let am: ArrayManager = new ArrayManager("A B C D".split(" "));
     const letters: string[] = am.ShuffleArray();
     let answers: [string, string][] = [];
@@ -167,7 +215,6 @@ export class QuestionQCore {
     }
     answers.sort((a, b) => a[0].charCodeAt(0) - b[0].charCodeAt(0));
 
-    am.collection = answers;
     return [
       {
         questionId: question.questionId,
@@ -217,7 +264,11 @@ export class QuestionQCore {
       );
       this._players.push(newPlayer);
       if (newPlayer.state == PlayerState.Launch) this.QuestionPlayer(newPlayer);
+<<<<<<< HEAD
       return true;
+=======
+        return true;
+>>>>>>> 47d9e4f926c9b0046141625442c58f958de617ca
     }
     return false;
   }
@@ -316,8 +367,7 @@ export class QuestionQCore {
           iQuestionQQuestion,
           string
         ] = this.GetQuestionQQuestion(nextQuestionBase);
-
-        // timer
+        
         // send nextQuestion to Username
         const th: Tryharder = new Tryharder();
         if (
@@ -344,7 +394,11 @@ export class QuestionQCore {
           player.username + ":" + nextQuestion[0].questionId
         ] = global.setTimeout(
           () => {
+<<<<<<< HEAD
             console.log("Start timer");
+=======
+            console.log("Start timer ");
+>>>>>>> 47d9e4f926c9b0046141625442c58f958de617ca
             this.CheckQuestionTime(player, nextQuestion[0]);
           },
           nextQuestion[0].timeLimit // + current ping / 2
@@ -356,7 +410,11 @@ export class QuestionQCore {
         if (
           !th.Tryhard(
             () => {
+<<<<<<< HEAD
               return player.Inform(MessageType.QuestionQPlayerData, player);
+=======
+              return player.Inform(MessageType.QuestionQPlayerData, player.GetPlayerData());
+>>>>>>> 47d9e4f926c9b0046141625442c58f958de617ca
             },
             3000, // delay
             3 // tries
@@ -406,7 +464,7 @@ export class QuestionQCore {
               3 // tries
             )
           ) {
-            this.DisqualifyPlayer(player);
+            //this.DisqualifyPlayer(player);
           }
           return;
         }
@@ -450,7 +508,6 @@ export class QuestionQCore {
           feedback.score = player.score;
           feedback.message = "too slow";
         }
-
         const th: Tryharder = new Tryharder();
         if (
           !th.Tryhard(

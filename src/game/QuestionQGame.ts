@@ -49,23 +49,6 @@ export class QuestionQGame implements iGame {
     );
   }
 
-  private LoadQuestions(): void {
-    // get from mongodb with this.GeneralArguments.questionIds;
-    const result: iGeneralQuestion[] = [];
-
-    QuestionModel.find({
-      id: { $in: this.GeneralArguments.questionIds }
-    })
-      .then((questions: any) => {
-        console.log(questions + "\r\n _________");
-        this.Questions = questions;
-        console.log(this.Questions);
-      })
-      .catch((err: any) => {
-        logger.log("info", err.message);
-      });
-  }
-
   /*
   public PerformAction(actionArguments: any): any {
     if ("gameAction" in actionArguments)

@@ -1,4 +1,4 @@
-import { PlayerState, PlayerRole, MessageType } from "../models/GameModels";
+import { PlayerState, PlayerRole, MessageType, iQuestionQPlayerData } from "../models/GameModels";
 import { logger } from "../server/logging";
 
 export interface iPlayerBaseArguments {

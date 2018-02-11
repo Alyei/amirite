@@ -20,4 +20,15 @@ export class QuestionQPlayer extends PlayerBase implements iQuestionQPlayerData 
         if (this.questions.length > 0)
             return this.questions[this.questions.length - 1];
     }
+
+    public GetPlayerData(): iQuestionQPlayerData {
+      return {
+        username: this.username,
+        roles: this.roles,
+        state: this.state,
+        score: this.score,
+        questions: this.questions,
+        tips: this.tips
+      }
+    }
 }
