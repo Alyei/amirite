@@ -13,6 +13,9 @@ import { io } from "./Socketio";
 import * as ejs from "ejs";
 import { Editor } from "./QuestionEditor";
 import * as cors from "cors";
+import { RunningGames } from "../game/RunningGames";
+import { GameFactory } from "../game/GameFactory";
+import { PlayerCommunication } from "./PlayerCom";
 
 let flash: any = require("connect-flash");
 let MongoStore: any = require("connect-mongo")(session);
@@ -33,6 +36,9 @@ export class server {
   private socketIo: any;
   private QuestionEditor: any;
   private cors: any = require("cors");
+  public GameSessions: RunningGames;
+  public GameFactory: GameFactory;
+  public PlayerComm: PlayerCommunication;
 
   /**
    * Initializes the HTTPS server.
@@ -46,12 +52,12 @@ export class server {
     this.httpsServer = https.createServer(this.certificate, this.app);
     this.passport = pass;
     this.QuestionEditor = new Editor();
+    this.GameSessions = new RunningGames();
+    this.GameFactory = new GameFactory(this.GameSessions);
+    this.PlayerComm = new PlayerCommunication(this.GameSessions);
     this.app.use(function(req: any, res: any, next: any) {
       // Website you wish to allow to connect
-      res.setHeader(
-        "Access-Control-Allow-Origin",
-        "http://localhost:3000"
-      );
+      res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 
       // Request methods you wish to allow
       res.setHeader(
@@ -92,7 +98,12 @@ export class server {
     this.app.use(flash());
     this.app.use(body.json());
     this.app.use(body.urlencoded({ extended: true }));
-    this.socketIo = new io(this.httpsServer);
+    this.socketIo = new io(
+      this.httpsServer,
+      this.GameSessions,
+      this.GameFactory,
+      this.PlayerComm
+    );
     this.app.set("view engine", "ejs");
   }
 
@@ -104,7 +115,8 @@ export class server {
     let route: any = new ExpressRoutes.Https(
       this.app,
       this.passport,
-      this.QuestionEditor
+      this.QuestionEditor,
+      this.GameSessions
     );
     this.httpRedirect();
 

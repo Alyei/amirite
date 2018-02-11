@@ -25,7 +25,12 @@ export class io {
   public GameFactory: GameFactory;
   public PlayerComm: PlayerCommunication;
 
-  constructor(app: any) {
+  constructor(
+    app: any,
+    sessions: RunningGames,
+    factory: GameFactory,
+    playercom: PlayerCommunication
+  ) {
     this.server = socketio.listen(app);
     //Setting up namespaces
     this.QuestionQ = this.server.of("/questionq");
@@ -33,9 +38,9 @@ export class io {
     this.Determination = this.server.of("/determination");
     this.Duel = this.server.of("/duel");
 
-    this.GameSessions = new RunningGames();
-    this.GameFactory = new GameFactory(this.GameSessions);
-    this.PlayerComm = new PlayerCommunication(this.GameSessions);
+    this.GameSessions = sessions;
+    this.GameFactory = factory;
+    this.PlayerComm = playercom;
     this.QuestionQConf();
     this.DeterminationConf();
     //   this.DuelConf();
