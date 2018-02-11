@@ -10,67 +10,105 @@ import { QuestionQGame } from "./QuestionQGame";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "../server/logging";
 import { generateGameId } from "../server/helper";
-import { GameCreationError } from "../server/Errors";
+import {
+  GameCreationError,
+  PlayerAlreadyHostsGame,
+  PlayerCouldNotBeAddedError
+} from "../server/Errors";
 
 export class GameFactory {
   public Sessions: RunningGames;
+
+  /**
+   * Creates a new instance of the GameFactory-class
+   * @param Sessions
+   */
   constructor(Sessions: RunningGames) {
     this.Sessions = Sessions;
   }
+
+  /**
+   * Creates a new instance of iGame according to the arguments
+   * @param generalArguments - general game arguments
+   * @param namespaceSocket - the namespace socket (unused)
+   * @param gameArguments - gamemode-specific arguments
+   */
   public CreateGame(
     generalArguments: iGeneralHostArguments,
     namespaceSocket: SocketIO.Namespace,
     gameArguments?: iQuestionQHostArguments | iDeterminationHostArguments
-  ) {
-    switch (generalArguments.gamemode) {
-      case Gamemode.QuestionQ: {
-        const newGame: QuestionQGame = new QuestionQGame(
+  ): Promise<any> {
+    return new Promise((resolve: any, reject: any) => {
+      try {
+        if (
+          !this.Sessions.Sessions.find(
+            x => x.GeneralArguments.owner == generalArguments.owner
+          )
+        ) {
+          switch (generalArguments.gamemode) {
+            case Gamemode.QuestionQ: {
+              const newGame: QuestionQGame = new QuestionQGame(
+                generalArguments,
+                namespaceSocket,
+                gameArguments
+              );
+              try {
+                newGame
+                  .AddPlayer(
+                    generalArguments.owner,
+                    generalArguments.ownerSocket,
+                    [2]
+                  )
+                  .then((res: any) => {
+                    logger.log(
+                      "info",
+                      "Added owner %s as player to game %s.",
+                      generalArguments.owner,
+                      generalArguments.gameId
+                    );
+                  })
+                  .catch((err: any) => {
+                    logger.log(
+                      "info",
+                      "Adding of player %s to game %s was unsuccessful.",
+                      generalArguments.owner,
+                      generalArguments.gameId
+                    );
+                  });
+                this.Sessions.addRunningGame(newGame)
+                  .then((res: any) => {
+                    logger.log(
+                      "info",
+                      "New QuestionQ game: %s hosted.",
+                      generalArguments.gameId
+                    );
+                    resolve(res);
+                  })
+                  .catch((err: any) => {
+                    logger.log("info", err);
+                    reject(err);
+                  });
+              } catch (e) {
+                logger.log("error", e.message);
+              }
+              break;
+            }
+            /*case Gamemode.Determination: {
+        return new DeterminationGame(
           generalArguments,
           namespaceSocket,
           gameArguments
         );
-        try {
-          newGame
-            .AddPlayer(generalArguments.owner, generalArguments.ownerSocket, [
-              2
-            ])
-            .then((res: any) => {
-              logger.log(
-                "info",
-                "Added owner %s as player to game %s.",
-                generalArguments.owner,
-                generalArguments.gameId
-              );
-            })
-            .catch((err: any) => {
-              logger.log(
-                "info",
-                "Adding of player %s to game %s was unsuccessful.",
-                generalArguments.owner,
-                generalArguments.gameId
-              );
-            });
-          this.Sessions.addRunningGame(newGame);
-          logger.log(
-            "info",
-            "New QuestionQ game: %s hosted.",
-            generalArguments.gameId
-          );
-        } catch (e) {
-          logger.log("error", e.message);
-        }
-        break;
-      }
-      /*case Gamemode.Determination: {
-        return new DeterminationGame(
-          generalArguments,
-          send,
-          gameEnded,
-          gameArguments
-        );
       }*/
-      default:
-        throw new GameCreationError("Invalid gamemode passed.");
-    }
+            default:
+              throw new GameCreationError("Invalid gamemode passed.");
+          }
+        } else {
+          reject("Player already hosts a game");
+        }
+      } catch (err) {
+        throw new Error(err.stack);
+      }
+    });
   }
 }

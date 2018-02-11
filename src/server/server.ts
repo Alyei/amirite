@@ -50,7 +50,7 @@ export class server {
       // Website you wish to allow to connect
       res.setHeader(
         "Access-Control-Allow-Origin",
-        "http://localhost/api/signup"
+        "http://localhost:3000"
       );
 
       // Request methods you wish to allow
@@ -116,10 +116,11 @@ export class server {
           this.port
         );
       });
-    } catch (e) {
+    } catch (err) {
       logger.log(
         "error",
-        "Stopping program execution - server could not start listening: " + e
+        "Stopping program execution - server could not start listening: " +
+          err.stack
       );
       process.exit(-1);
     }

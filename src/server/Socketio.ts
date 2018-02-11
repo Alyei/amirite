@@ -20,7 +20,6 @@ export class io {
   public QuestionQ: SocketIO.Namespace;
   public Millionaire: SocketIO.Namespace;
   public Determination: SocketIO.Namespace;
-  public TrivialPursuit: SocketIO.Namespace;
   public Duel: SocketIO.Namespace;
   public GameSessions: RunningGames;
   public GameFactory: GameFactory;
@@ -32,129 +31,218 @@ export class io {
     this.QuestionQ = this.server.of("/questionq");
     this.Millionaire = this.server.of("/millionaire");
     this.Determination = this.server.of("/determination");
-    this.TrivialPursuit = this.server.of("/trivialpursuit");
     this.Duel = this.server.of("/duel");
 
     this.GameSessions = new RunningGames();
     this.GameFactory = new GameFactory(this.GameSessions);
     this.PlayerComm = new PlayerCommunication(this.GameSessions);
-    //   this.InitGame = new GameInit(
-    //     this.QuestionQ,
-    //     this.Millionaire,
-    //     this.Determination,
-    //     this.TrivialPursuit,
-    //     this.Duel,
-    //     this.GameSessions
-    //   );
     this.QuestionQConf();
-    //   this.MillionaireConf();
+    this.DeterminationConf();
     //   this.DuelConf();
-    //   this.DeterminationConf();
-    //   this.TrivialPursuitConf();
-    // }
+    //this.MillionaireConf();
   }
 
-  //On connection wird der Socket übergeben => Socket+Username in array speichern
+  /**
+   *Creates the game by giving it an ID and adding it to the running games.
+   * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
+   * @param {string}username The player's username.
+   */
+  private HostGame(
+    playerSocket: SocketIO.Socket,
+    username: string,
+    gamemode: GModels.Gamemode
+  ): void {
+    let args: iGeneralHostArguments = {
+      gameId: generateGameId(),
+      gamemode: gamemode,
+      owner: username,
+      ownerSocket: playerSocket,
+      questionIds: ["1234567890", "YxUy07SElM"]
+    };
+    try {
+      this.GameFactory.CreateGame(args, this.QuestionQ)
+        .then((res: any) => {
+          playerSocket.join(args.gameId);
+          playerSocket.emit("gameid", args.gameId);
+        })
+        .catch((err: any) => {
+          logger.log("info", err);
+          playerSocket.emit("err", err);
+        });
+    } catch (err) {
+      logger.log("info", err);
+      playerSocket.emit("err");
+    }
+  }
+
+  /**
+   * Disqualifies the user from the specified game.
+   * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
+   * @param {string}optS Options in the format of `iLeaveGame`.
+   */
+  private LeaveGame(playerSocket: SocketIO.Socket, optS: string) {
+    const opt: iLeaveGame = JSON.parse(optS);
+    for (let item of this.GameSessions.Sessions) {
+      if (item.GeneralArguments.gameId == opt.gameId) {
+        item
+          .RemovePlayer(opt.username)
+          .then((res: any) => {
+            playerSocket.emit("success");
+          })
+          .catch((err: any) => {
+            logger.log("info", err.message);
+            playerSocket.emit("err");
+          });
+      }
+    }
+  }
+
+  /**
+   * Starts the specified game by changing it's status to running (Phase 1).
+   * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
+   * @param {string}optS Options in the format of `iStartGame`.
+   */
+  private StartGame(playerSocket: SocketIO.Socket, optS: string) {
+    const opt: iStartGame = JSON.parse(optS);
+    for (let item of this.GameSessions.Sessions) {
+      if (item.GeneralArguments.gameId == opt.gameId) {
+        item
+          .StartGame(opt.username)
+          .then((res: any) => {
+            if (res) {
+              logger.log("info", "Game %s started.", opt.gameId);
+              playerSocket.emit("success");
+            } else {
+              logger.log("info", "Game %s is already running.", opt.gameId);
+            }
+          })
+          .catch((err: any) => {
+            if (err == -1) {
+              logger.log("info", "Non-owner tried to launch a game");
+              playerSocket.emit("err", "permission denied");
+            } else {
+              logger.log(
+                "info",
+                "Something went wrong while starting game %s: " + err.stack,
+                opt.gameId
+              );
+              playerSocket.emit("err");
+            }
+          });
+      } else {
+        logger.log("info", "Can't start game %s. It doesn't exist.");
+        playerSocket.emit("err");
+      }
+    }
+  }
+
+  /**
+   * Adds the player to the specified game's players-array.
+   * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
+   * @param {string}optS Options in the format of `iJoinGame`.
+   */
+  private JoinGame(playerSocket: SocketIO.Socket, optS: string): void {
+    const opt: iJoinGame = JSON.parse(optS);
+    for (let item of this.GameSessions.Sessions) {
+      if (item.GeneralArguments.gameId == opt.gameId) {
+        try {
+          item
+            .AddPlayer(opt.username, playerSocket)
+            .then((res: any) => {
+              playerSocket.join(item.GeneralArguments.gameId);
+              logger.log(
+                "info",
+                "Player %s joing game %s.",
+                opt.username,
+                item.GeneralArguments.gameId
+              );
+            })
+            .catch((err: any) => {
+              logger.log("info", "Error: " + err.message);
+              playerSocket.emit("err");
+            });
+        } catch (err) {
+          logger.error(err.message);
+        }
+      }
+    }
+  }
+
+  /**
+   * Handles the player's game action.
+   * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
+   * @param {string}optS Options in the format of `iPlayerAction`.
+   */
+  private PlayerAction(playerSocket: SocketIO.Socket, msgS: string): void {
+    const msg: iPlayerAction = JSON.parse(msgS);
+    console.log(msgS);
+    for (let item of this.GameSessions.Sessions) {
+      if (item.GeneralArguments.gameId == msg.gameId) {
+        item.ProcessUserInput(
+          msg.username,
+          msg.msgType,
+          JSON.stringify(msg.data)
+        );
+      }
+    }
+  }
+
+  /**
+   * Configures the events for QuestionQ.
+   */
   private QuestionQConf(): void {
     this.QuestionQ.on("connection", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
-      playerSocket.join("test room");
 
       playerSocket.on("host game", (username: string) => {
-        const args: iGeneralHostArguments = {
-          gameId: generateGameId(),
-          gamemode: GModels.Gamemode.QuestionQ,
-          owner: username,
-          ownerSocket: playerSocket,
-          questionIds: ["1234567890", "YxUy07SElM"]
-        };
-
-        this.GameFactory.CreateGame(args, this.QuestionQ);
-
-        playerSocket.emit("gameid", args.gameId);
+        this.HostGame(playerSocket, username, GModels.Gamemode.QuestionQ);
       });
 
-      playerSocket.on("leave game", (opt: iLeaveGame) => {
-        for (let item of this.GameSessions.Sessions) {
-          if (item.GeneralArguments.gameId == opt.gameId) {
-            item
-              .RemovePlayer(opt.username)
-              .then((res: any) => {
-                playerSocket.emit("success");
-              })
-              .catch((err: any) => {
-                logger.log("info", err.message);
-                playerSocket.emit("error");
-              });
-          }
-        }
+      playerSocket.on("leave game", (optS: string) => {
+        this.LeaveGame(playerSocket, optS);
       });
 
       playerSocket.on("start game", (optS: string) => {
-        const opt: iStartGame = JSON.parse(optS);
-        for (let item of this.GameSessions.Sessions) {
-          if (item.GeneralArguments.gameId == opt.gameId) {
-            item
-              .StartGame(opt.username)
-              .then((res: any) => {
-                logger.log("info", "Game %s started.", opt.gameId);
-                playerSocket.emit("success");
-              })
-              .catch((err: any) => {
-                if (err == -1) {
-                  logger.log("info", "Non-owner tried to launch a game");
-                  playerSocket.emit("error", "permission denied");
-                } else {
-                  logger.log(
-                    "info",
-                    "Something went wrong while starting game %s: " + err.stack,
-                    opt.gameId
-                  );
-                  playerSocket.emit("error");
-                }
-              });
-          } else {
-            logger.log("info", "Can't start game %s. It doesn't exist.");
-            playerSocket.emit("error");
-          }
-        }
+        this.StartGame(playerSocket, optS);
       });
 
-      playerSocket.on("join game", (opt: iJoinGame) => {
-        for (let item of this.GameSessions.Sessions) {
-          if (item.GeneralArguments.gameId == opt.gameId) {
-            try {
-              item
-                .AddPlayer(opt.username, playerSocket)
-                .then((res: any) => {
-                  playerSocket.join(item.GeneralArguments.gameId);
-                })
-                .catch((err: any) => {
-                  logger.log("info", "Error: " + err.message);
-                  playerSocket.emit("error");
-                });
-            } catch (err) {
-              logger.error(err.message);
-              playerSocket.emit("error");
-            }
-          }
-        }
+      playerSocket.on("join game", (optS: string) => {
+        this.JoinGame(playerSocket, optS);
       });
 
-      playerSocket.on("action", (msgS: string) => {
-        const msg: iPlayerAction = JSON.parse(msgS);
-        for (let item of this.GameSessions.Sessions) {
-          if (item.GeneralArguments.gameId == msg.gameId) {
-            item.ProcessUserInput(
-              msg.username,
-              msg.msgType,
-              JSON.stringify(msg.data)
-            );
-          }
-        }
+      playerSocket.on("action", (optS: string) => {
+        this.PlayerAction(playerSocket, optS);
       });
     });
   }
+
+  /**
+   * Sets up the events for the determination game.
+   */
+  private DeterminationConf(): void {
+    this.Determination.on("connection", (playerSocket: SocketIO.Socket) => {
+      playerSocket.on("host game", (username: string) => {
+        this.HostGame(playerSocket, username, GModels.Gamemode.Determination);
+      });
+
+      playerSocket.on("join game", (optS: string) => {
+        this.JoinGame(playerSocket, optS);
+      });
+
+      playerSocket.on("start game", (optS: string) => {
+        this.StartGame(playerSocket, optS);
+      });
+
+      playerSocket.on("leave game", (optS: string) => {
+        this.LeaveGame(playerSocket, optS);
+      });
+
+      playerSocket.on("action", (optS: string) => {
+        this.PlayerAction(playerSocket, optS);
+      });
+    });
+  }
+
   //   private MillionaireConf(): void {
   //     this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
   //       playerSocket.on("host game", (username: string) => {
@@ -227,68 +315,6 @@ export class io {
 
   //       playerSocket.on("difficulty", (arg: any) => {
   //         //difficulty
-  //       });
-  //     });
-  //   }
-
-  //   private DeterminationConf(): void {
-  //     this.Determination.on("connection", (playerSocket: SocketIO.Socket) => {
-  //       playerSocket.on("host game", (username: string) => {
-  //         let gameId: string = this.InitGame.HostGame(playerSocket, {
-  //           mode: "determination",
-  //           owner: "alyei" //change
-  //         });
-  //         logger.log(
-  //           "info",
-  //           "New Determination session hosted. ID: %s, Owner: %s",
-  //           gameId,
-  //           username
-  //         );
-  //       });
-
-  //       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
-  //         for (let item of this.GameSessions.Sessions) {
-  //           if (item.id == opt.gameId) {
-  //             item.AddPlayer(opt.username, playerSocket);
-  //           }
-  //         }
-  //       });
-
-  //       playerSocket.on("tip", (arg: any) => {
-  //         //on tip
-  //       });
-  //     });
-  //   }
-
-  //   private TrivialPursuitConf(): void {
-  //     this.TrivialPursuit.on("connection", (playerSocket: SocketIO.Socket) => {
-  //       playerSocket.on("host game", (username: string) => {
-  //         let gameId: string = this.InitGame.HostGame(playerSocket, {
-  //           mode: "trivial pursuit",
-  //           owner: "alyei" //change
-  //         });
-  //         logger.log(
-  //           "info",
-  //           "New Trivial Pursuit session hosted. ID: %s, Owner: %s",
-  //           gameId,
-  //           username
-  //         );
-  //       });
-
-  //       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
-  //         for (let item of this.GameSessions.Sessions) {
-  //           if (item.id == opt.gameId) {
-  //             item.AddPlayer(opt.username, playerSocket);
-  //           }
-  //         }
-  //       });
-
-  //       playerSocket.on("tip", (arg: any) => {
-  //         //on tip
-  //       });
-
-  //       playerSocket.on("category", (arg: any) => {
-  //         //category
   //       });
   //     });
   //   }

@@ -26,14 +26,15 @@ export class RunningGames {
    * @param {IGame} game - The game that should be added to the list of running games.
    * @returns The updated list for the specified gamemode.
    */
-  public addRunningGame(game: iGame): iGame[] {
-    try {
-      this.Sessions.push(game);
-    } catch (err) {
-      console.error(err);
-      throw new GameCouldNotBeAddedError(game.GeneralArguments.gameId);
-    }
-    return this.Sessions;
+  public addRunningGame(game: iGame): Promise<iGame[]> {
+    return new Promise((resolve: any, reject: any) => {
+      try {
+        this.Sessions.push(game);
+        resolve(this.Sessions);
+      } catch (err) {
+        reject("Game " + game.GeneralArguments.gameId + " could not be added.");
+      }
+    });
   }
 }
 

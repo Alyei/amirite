@@ -1,10 +1,10 @@
-import { iQuestionQPlayerData, PlayerRole, PlayerState, iQuestionQQuestion, iQuestionQTipData } from "../models/GameModels";
+import { iDeterminationPlayerData, PlayerRole, PlayerState, iDeterminationQuestionData, iDeterminationTipData } from "../models/GameModels";
 import { PlayerBase, iPlayerBaseArguments } from "./PlayerBase";
 
-export class QuestionQPlayer extends PlayerBase implements iQuestionQPlayerData {
+export class DeterminationPlayer extends PlayerBase implements iDeterminationPlayerData {
     score: number;
-    questions: [iQuestionQQuestion, string][];
-    tips: iQuestionQTipData[];
+    questions: iDeterminationQuestionData[];
+    tips: iDeterminationTipData[];
 
     /**
      * Creates an instance of the QuestionQPlayer class.
@@ -24,7 +24,7 @@ export class QuestionQPlayer extends PlayerBase implements iQuestionQPlayerData 
      * Returns the question the player has been asked most recently.
      * @returns - either an [(question) iQuestionQQuestion, (id of the correct answer) string]-tuple or undefined
      */
-    get LatestQuestion(): [iQuestionQQuestion, string] | undefined {
+    get LatestQuestion(): iDeterminationQuestionData | undefined {
         if (this.questions.length > 0)
             return this.questions[this.questions.length - 1];
     }
@@ -33,7 +33,7 @@ export class QuestionQPlayer extends PlayerBase implements iQuestionQPlayerData 
      * Returns the player's data as a new JSON.
      * @returns - player data according to the iQuestionQPlayerData-interface
      */
-    public GetPlayerData(): iQuestionQPlayerData {
+    public GetPlayerData(): iDeterminationPlayerData {
       return {
         username: this.username,
         roles: this.roles,

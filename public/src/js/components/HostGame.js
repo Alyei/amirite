@@ -1,40 +1,54 @@
 import React from "react";
-import {Button, Checkbox} from "react-bootstrap";
+import {Button} from "react-bootstrap";
+import {withRouter} from "react-router-dom";
 
 //import {handleHostGameClick} from "../../api";
 
-export default class HostGame extends React.Component {
-    constructor() {
-        super();
+class HostGame extends React.Component {
+    constructor(props) {
+        super(props);
         this.state = {
             gamemodes: ["QuestionQ", "Determination"],
-            selectedMode: ""
+            selectedMode: "",
+            username:"thisName"//change to cookies
         }
+        console.log(this.props);
+        this.handleGameSelection = this.handleGameSelection.bind(this);
+        this.handleHostGameClick = this.handleHostGameClick.bind(this);
     }
     handleGameSelection(event) {
-        this.setState({selectedMode: [event.target.value]});
+        this.setState({selectedMode: event.target.value});
     }
     handleHostGameClick() {
-        console.log("hostgameclick");
+        this.props.socketio.socket.emit('host game', this.state.username);
+        this.props.socketio.socket.on('gameid',(gameid) => {
+            console.log("got game with id", gameid);
+            this.props.history.push({
+                pathname: "/game/"+gameid,
+                host: true
+            })
+        })
     }
     renderGamemodes() {
-            var Radiolist = this.state.gamemodes.map(function(element){
+        return(   
+                this.state.gamemodes.map(function(element){
                 return(
-                <label>
-                <input type="radio" value={element.toString()} checked={this.state.selectedMode === {element}} onChange={this.handleGameSelection}/>
+                <label key={element}>
+                <input type="radio" 
+                value={element} 
+                checked={this.state.selectedMode === {element}} 
+                onChange={this.handleGameSelection}/>
                 {element}
                 </label>
-                )
-            })
-            return(
-                {Radiolist}
+                );
+            },this)
         )
     }
 
     render() {
         return(
             <div>
-            <renderGamemodes/>
+            {this.renderGamemodes()}
             <Button onClick={this.handleHostGameClick}>
                 Host Game
             </Button>
@@ -42,3 +56,5 @@ export default class HostGame extends React.Component {
         )
     }    
 }
+
+export default withRouter(HostGame);

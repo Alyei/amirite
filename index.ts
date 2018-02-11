@@ -18,8 +18,11 @@ let creds: object = {
 };
 let pass: any = new userauth.Authentication();
 
+Error.stackTraceLimit = 2;
+
 let serverano = new server(creds, pass.passport);
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 let app: any = express();
 serverano.StartListening();
 

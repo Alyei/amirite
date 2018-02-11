@@ -42,6 +42,18 @@ export class GameCouldNotBeAddedError extends Error {
   }
 }
 
+export class PlayerAlreadyHostsGame extends Error {
+  /**
+   * @param username The player's username.
+   */
+  constructor(username: string) {
+    super(
+      "The player with the username " + username + " already hosts a game."
+    );
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
 export class PlayerCouldNotBeAddedError extends Error {
   /**
    * @param username The player's username.

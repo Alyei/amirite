@@ -12,21 +12,116 @@
     <button id="host" type="button">Host game</button>
     <button id="join" type="button">Join Game</button>
     <button id="start" type="button">Start Game</button>
-    <button id="sendtip" type="button">Send tip</button>
+
+    <button id="answer_a" type="button">A</button>
+    <button id="answer_b" type="button">B</button>
+    <button id="answer_c" type="button">C</button>
+    <button id="answer_d" type="button">D</button>
+
+    <input type="text" id="questionid" name="data">
+
+    <br>
+
+    <div id="question">
+        <p id="questionident"></p>
+        <p id="questiontext"></p>
+    </div>
+    <p id="answa"></p>
+    <p id="answb"></p>
+    <p id="answc"></p>
+    <p id="answd"></p>
+    <p id="feedback"></p>
+    <p id="score"></p>
 
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
         $(function () {
 
-            var socket = io('/questionq');
-
-            var currentId;
-
             var host = $("#host"),
                 join = $("#join"),
                 start = $("#start"),
-                tip = $("#sendtip");
+                tip = $("#sendtip"),
+                a = $("#answer_a"),
+                b = $("#answer_b"),
+                c = $("#answer_c"),
+                d = $("#answer_d")
+
+            $("#question").css({
+                top: '100px',
+                left: '150px',
+                position: 'absolute'
+            });
+
+            a.css({
+                top: "200px",
+                left: "150px",
+                position: 'absolute'
+            });
+            b.css({
+                top: "220px",
+                left: "150px",
+                position: 'absolute'
+            });
+            c.css({
+                top: "240px",
+                left: "150px",
+                position: 'absolute'
+            });
+            d.css({
+                top: "260px",
+                left: "150px",
+                position: 'absolute'
+            });
+
+            $("#answa").css({
+                top: "185px",
+                left: "200px",
+                position: 'absolute'
+            })
+            $("#answb").css({
+                top: "205px",
+                left: "200px",
+                position: 'absolute'
+            })
+            $("#answc").css({
+                top: "225px",
+                left: "200px",
+                position: 'absolute'
+            })
+            $("#answd").css({
+                top: "245px",
+                left: "200px",
+                position: 'absolute'
+            })
+            $("#feedback").css({
+                top: "280px",
+                left: "170px",
+                position: 'absolute',
+                color: 'red'
+            })
+            $("#score").css({
+                top: "300px",
+                left: "170px",
+                position: 'absolute'
+            })
+
+
+            var socket = io('/questionq');
+
+            var currentId;
+            var answerid;
+            var answa;
+            var answb;
+            var answc;
+            var answd;
+            var feedback;
+
+
+
+
+
+
 
             host.click(function () {
                 socket.emit("host game", "alyei");
@@ -42,32 +137,94 @@
                 }));
                 return false;
             })
-            tip.click(function () {
+            a.click(function () {
+
                 socket.emit("action", JSON.stringify({
                     "username": "alyei",
                     "gameId": currentId,
-                    "msgType": "QuestionQTip",
+                    "msgType": 4,
                     "data": {
-                        "questionId": "YxUy07SElM",
-                        "answerId": "a"
+                        "questionId": answerid,
+                        "answerId": "A"
+                    }
+                }))
+            })
+            b.click(function () {
+                socket.emit("action", JSON.stringify({
+                    "username": "alyei",
+                    "gameId": currentId,
+                    "msgType": 4,
+                    "data": {
+                        "questionId": answerid,
+                        "answerId": "B"
+                    }
+                }))
+            })
+            c.click(function () {
+                socket.emit("action", JSON.stringify({
+                    "username": "alyei",
+                    "gameId": currentId,
+                    "msgType": 4,
+                    "data": {
+                        "questionId": answerid,
+                        "answerId": "C"
+                    }
+                }))
+            })
+            d.click(function () {
+                socket.emit("action", JSON.stringify({
+                    "username": "alyei",
+                    "gameId": currentId,
+                    "msgType": 4,
+                    "data": {
+                        "questionId": answerid,
+                        "answerId": "D"
                     }
                 }))
             })
 
             socket.on('gameid', function (msg) {
                 currentId = msg;
-                $("#sendtip").prop('value', msg);
+                $("#questiontext").text(msg);
+            })
+
+            socket.on('click', function (msg) {
+                socket.emit("clack");
             })
 
             $('form').submit(function () {
                 socket.emit('host game', 'alyei');
                 return false;
             });
-            socket.on('chat message', function (msg) {
-                $('#messages').append($('<li>').text(msg));
-                window.scrollTo(0, document.body.scrollHeight);
-            });
+            socket.on('1', function (msg) {
+                var message = JSON.parse(msg);
+                $("#questionident").text(message.questionId);
+                answerid = message.questionId;
+                $("#questiontext").text(message.question);
+                changeElements(message);
+            })
+            socket.on('2', function (msg) {
+                var message = JSON.parse(msg);
+                $("#score").text("Score: " + message.score);
+                if (message.correct) {
+                    $("#feedback").text("Correct!").css({
+                        color: 'green'
+                    });
+                } else {
+                    $("#feedback").text("False!").css({
+                        color: 'red'
+                    });
+                }
+
+            })
         });
+
+        function changeElements(msg) {
+            $("#answa").text(msg.options[0][1]);
+            $("#answb").text(msg.options[1][1]);
+            $("#answc").text(msg.options[2][1]);
+            $("#answd").text(msg.options[3][1]);
+        }
     </script>
 </body>
 
