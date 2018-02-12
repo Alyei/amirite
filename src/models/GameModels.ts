@@ -161,7 +161,7 @@ export interface iQuestionQTipFeedback {
 }
 export interface iQuestionQPlayerData {
   username: string;
-  roles: PlayerRole[];
+  role: PlayerRole;
   state: PlayerState;
   score: number;
   questions: [iQuestionQQuestion, string][];
@@ -220,7 +220,7 @@ export interface iDeterminationTipData {
 }
 export interface iDeterminationPlayerData {
   username: string;
-  roles: PlayerRole[];
+  role: PlayerRole;
   state: number;
   score: number;
   questions: iDeterminationQuestionData[];

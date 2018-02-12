@@ -11,7 +11,7 @@ export class DeterminationPlayer extends PlayerBase implements iDeterminationPla
      * @param baseArguments - the arguments that have been returned by the parent's class GetArguments-method
      */
     constructor(baseArguments: iPlayerBaseArguments) {
-        super(baseArguments.username, baseArguments.socket, baseArguments.roles);
+        super(baseArguments.username, baseArguments.socket, baseArguments.role);
         //Object.setPrototypeOf(this, new.target.prototype);
         this.state = baseArguments.state;
 
@@ -36,7 +36,7 @@ export class DeterminationPlayer extends PlayerBase implements iDeterminationPla
     public GetPlayerData(): iDeterminationPlayerData {
       return {
         username: this.username,
-        roles: this.roles,
+        role: this.role,
         state: this.state,
         score: this.score,
         questions: this.questions,
