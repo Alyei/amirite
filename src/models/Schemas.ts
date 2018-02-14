@@ -1,6 +1,8 @@
 import * as mongoose from "mongoose";
 import { generateId } from "../server/helper";
 import { Schema } from "inspector";
+import { Gamemode } from "./GameModels";
+//import { Gamemode, iQuestionQHostArguments } from "./GameModels";
 
 /**
  * The mongoose-schema of the userobject for the database.
@@ -80,6 +82,61 @@ let Question: mongoose.Schema = new mongoose.Schema({
   }
 });
 
+let QuestionQGameData = new mongoose.Schema({
+  gameId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  gamemode: {
+    type: Gamemode, //!!!
+    required: true,
+  },
+  gameArguments: {
+    type: {},
+    required: true
+  },
+  players: {
+    type: [],
+    required: true
+  },
+  explanations: {
+    /* explanations: {
+      questionId: string,
+      explanation: string
+    }[];  */
+    type: [{
+      questionId: String,
+      explanation: String
+    }],
+    required: true
+  }
+});
+
+let DeterminationGameData = new mongoose.Schema({
+ /*  gameId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  gamemode: {
+    type: Gamemode,
+    required: true,
+  },
+  gameArguments: {
+    type: {
+      pointBase: Number,
+      pointBaseWrongAnswerIdentified: Number,
+      interQuestionGap: Number,
+    },
+    required: true
+  },
+  players: {
+    type: [],
+    required: true
+  } */
+});
+
 let Room: mongoose.Schema = new mongoose.Schema({
   id: {
     type: String,
@@ -107,9 +164,12 @@ const QuestionModel: any = mongoose.model("question", Question);
 
 const UserModel: any = mongoose.model("user", userSchema);
 
+const QuestionQGameDataModel: any = mongoose.model("questionQGameData", QuestionQGameData)
+const DeterminationGameDataModel: any = mongoose.model("determinationGameData", DeterminationGameData)
+
 const RoomModel: any = mongoose.model("room", Room);
 
 /**
  * @returns The usermodel.
  */
-export { UserModel, QuestionModel, RoomModel };
+export { UserModel, QuestionModel, RoomModel, QuestionQGameDataModel };

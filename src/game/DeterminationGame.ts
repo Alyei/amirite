@@ -41,7 +41,11 @@ export class DeterminationGame implements iGame {
       this.GeneralArguments.gameId,
       this.GeneralArguments.questionIds,
       [],
-      this._gameCoreArguments
+      this._gameCoreArguments || {
+        pointBase: 100,
+        pointBaseWrongAnswerIdentified: 33,
+        interQuestionGap: 3000
+      }
     );
   }
 

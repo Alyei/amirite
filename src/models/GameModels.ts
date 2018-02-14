@@ -126,9 +126,14 @@ export enum GameAction {
 //#endregion
 
 //#region QuestionQ
-export interface iQuestionQHostArguments {}
+export interface iQuestionQHostArguments {
+  pointBase: number; // pointBase x difficulty = min points for the correctly answered question
+  interQuestionGap: number; // minimum time in milliseconds between questions
+}
 export interface iQuestionQGameData {
   gameId: string;
+  gamemode: Gamemode;
+  gameArguments: iQuestionQHostArguments;
   players: iQuestionQPlayerData[];
   explanations: {
     questionId: string,
@@ -157,7 +162,7 @@ export interface iQuestionQTipFeedback {
   points: number;
   score: number;
   message: string;
-  correctAnswer: string;
+  correctAnswer: string; // answerId
 }
 export interface iQuestionQPlayerData {
   username: string;
@@ -174,9 +179,15 @@ export interface iQuestionQTipData {
 //#endregion
 
 //#region Determination
-export interface iDeterminationHostArguments {}
+export interface iDeterminationHostArguments {
+  pointBase: number; // pointBase x difficulty = min points for the correctly answered question
+  pointBaseWrongAnswerIdentified: number; // pointBase x difficulty = min points for the correctly identified wrong answer
+  interQuestionGap: number; // minimum time in milliseconds between questions
+}
 export interface iDeterminationGameData {
   gameId: string;
+  gamemode: Gamemode;
+  gameArguments: iDeterminationHostArguments;
   players: iDeterminationPlayerData[];
 }
 export interface iDeterminationTip {
@@ -212,6 +223,7 @@ export interface iDeterminationTipFeedback {
   points: number;
   score: number;
   message: string;
+  correctAnswer?: iDeterminationOption;
   nextOption?: iDeterminationOption;
 }
 export interface iDeterminationTipData {

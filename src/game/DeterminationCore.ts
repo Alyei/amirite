@@ -56,8 +56,8 @@ export class DeterminationCore {
     public constructor(
         public gameId: string,
         questionIds: string[],
-        players?: PlayerBase[],
-        gameArguments?: iDeterminationHostArguments
+        players: PlayerBase[],
+        readonly gameArguments: iDeterminationHostArguments
     ) {
         this._gamePhase = DeterminationGamePhase.Setup;
         this._timers = {};
@@ -372,6 +372,8 @@ export class DeterminationCore {
     public GetGameData(): iDeterminationGameData {
       return {
         gameId: this.gameId,
+        gamemode: Gamemode.Determination,
+        gameArguments: this.gameArguments,
         players: this.GetPlayerData()
       };
     }
@@ -441,6 +443,14 @@ export class DeterminationCore {
                 };
 
                 nextQuestion.question.firstOption = nextQuestion.options[0]; // or "A"
+
+                // start timer
+                this._timers[
+                  "questionTimeout;" + player.username + ";" + nextQuestion.question.questionId
+                ] = global.setTimeout(
+                  () => { this.CheckQuestionTime(player, nextQuestion); },
+                  nextQuestion.question.timeLimit + (nextQuestion.timeCorrection || 0)
+                );
 
                 // send nextQuestion to Username
                 const th: Tryharder = new Tryharder();
@@ -569,6 +579,11 @@ export class DeterminationCore {
             playerQuestion.questionTime.getTime() -
             (playerQuestion.timeCorrection || 0);
 
+        if (duration < 0) { //!!!
+          duration = 0;
+          logger.log("info", "duration < 0 (%s, %s, %s)", JSON.stringify(player), JSON.stringify(playerQuestion), JSON.stringify(tip));
+        }
+
         let points: number = 0;
         let questionPlayer: boolean = true;
         const feedback: iDeterminationTipFeedback = {
@@ -590,7 +605,7 @@ export class DeterminationCore {
             feedback.correct = true;
             feedback.message = "q:correct/t:correct";
 
-            points = Math.floor(playerQuestion.question.difficulty * (playerQuestion.question.timeLimit / (1 + duration) + 100));
+            points = Math.floor(playerQuestion.question.difficulty * (playerQuestion.question.timeLimit / (1 + duration) + this.gameArguments.pointBase));
         }
         // answer correct & tip not correct
         else if (tip.answerId == playerQuestion.correct && !tip.correct) {
@@ -599,6 +614,7 @@ export class DeterminationCore {
         // answer not correct & tip correct
         else if (tip.correct) {
             feedback.message = "q:wrong/t:correct";
+            feedback.correctAnswer = playerQuestion.options.find(x => x.answerId == playerQuestion.correct);
         }
         // answer not correct & tip not correct
         else {
@@ -609,7 +625,13 @@ export class DeterminationCore {
 
             // add ping to timeCorrection /2 before /2 after point calculation & feedback actualization
             duration -= player.Ping / 2;
-            points = Math.floor(playerQuestion.question.difficulty * (playerQuestion.question.timeLimit / (1 + duration) + 25));
+
+            if (duration < 0) { //!!!
+              duration = 0;
+              logger.log("info", "duration < 0 (%s, %s, %s)", JSON.stringify(player), JSON.stringify(playerQuestion), JSON.stringify(tip));
+            }
+
+            points = Math.floor(playerQuestion.question.difficulty * (playerQuestion.question.timeLimit / (1 + duration) + this.gameArguments.pointBaseWrongAnswerIdentified));
 
             if (!playerQuestion.timeCorrection) playerQuestion.timeCorrection = 0;
             playerQuestion.timeCorrection += feedback.duration - duration;
@@ -672,7 +694,15 @@ export class DeterminationCore {
         }
 
         // ask next question, if not q:wrong/t:wrong
-        if (questionPlayer) this.QuestionPlayer(player);
+        if (questionPlayer) {
+          // ask next question (delayed)
+          this._timers[
+            "nextQuestion;" + player.username + ";" + playerQuestion.question.questionId
+          ] = global.setTimeout(
+            () => { this.QuestionPlayer(player) },
+            Math.max(this.gameArguments.interQuestionGap - (player.Ping / 2), 0)
+          );
+        }
     }
 
     /**

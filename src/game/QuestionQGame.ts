@@ -40,7 +40,10 @@ export class QuestionQGame implements iGame {
       this.GeneralArguments.gameId,
       this.GeneralArguments.questionIds,
       [],
-      this._gameCoreArguments
+      this._gameCoreArguments || {
+        pointBase: 100,
+        interQuestionGap: 3000
+      }
     );
   }
 

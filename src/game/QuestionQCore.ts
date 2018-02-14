@@ -19,7 +19,7 @@ import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
 import { Tryharder } from "./Tryharder";
 import { platform } from "os";
-import { QuestionModel } from "../models/Schemas";
+import { QuestionModel, QuestionQGameDataModel/* , PlayerDataModel */ } from "../models/Schemas";
 import { logger } from "../server/logging";
 
 export enum QuestionQGamePhase {
@@ -52,9 +52,14 @@ export class QuestionQCore {
   public constructor(
     public gameId: string,
     questionIds: string[],
-    players?: PlayerBase[],
-    gameArguments?: iQuestionQHostArguments
+    players: PlayerBase[],
+    readonly gameArguments: iQuestionQHostArguments
   ) {
+      /* {
+        pointBase: 100,
+        interQuestionGap: 3000
+      }; */
+
     this._gamePhase = QuestionQGamePhase.Setup;
 
     this.LoadQuestions(questionIds);
@@ -89,6 +94,21 @@ export class QuestionQCore {
     }
 
     return result;
+  }
+
+  /**
+   * Saves the game's data into the DB
+   */
+  public Save(): void {
+    const gameData = this.GetGameData();
+    const gameDataModel = new QuestionQGameDataModel(gameData);
+    gameDataModel.save((err: any) => {
+      if (err) {
+        logger.log("info", "failed to save game (%s); error: %s", gameData, err);
+        return;
+      }
+      this.LogSilly("the game has been saved")
+    });
   }
 
   /**
@@ -346,7 +366,7 @@ export class QuestionQCore {
 
     this.SendGameData();
 
-    //!!! save game to database
+    this.Save();
   }
 
   /**
@@ -361,6 +381,8 @@ export class QuestionQCore {
     }
     return {
       gameId: this.gameId,
+      gamemode: Gamemode.QuestionQ,
+      gameArguments: this.gameArguments,
       players: this.GetPlayerData(),
       explanations: explanations
     };
@@ -417,6 +439,17 @@ export class QuestionQCore {
           string
         ] = this.GetQuestionQQuestion(nextQuestionBase);
 
+        // set time correction
+        nextQuestion[0].timeCorrection = player.Ping / 2;
+
+        // start timer
+        this._timers[
+          "questionTimeout;" + player.username + ";" + nextQuestion[0].questionId
+        ] = global.setTimeout(
+          () => { this.CheckQuestionTime(player, nextQuestion[0]); },
+          nextQuestion[0].timeLimit + (nextQuestion[0].timeCorrection || 0)
+        );
+
         // send nextQuestion to Username
         const th: Tryharder = new Tryharder();
         if (
@@ -436,18 +469,9 @@ export class QuestionQCore {
           return;
         }
 
-        // set time correction
-        nextQuestion[0].timeCorrection = player.Ping / 2;
-
         // add question to the player's questions
         player.questions.push(nextQuestion);
 
-        // start timer
-        this._timers[
-          player.username + ":" + nextQuestion[0].questionId
-        ] = global.setTimeout(() => {
-          this.CheckQuestionTime(player, nextQuestion[0]);
-        }, nextQuestion[0].timeLimit);
       } else {
         // finished
         player.state = PlayerState.Finished;
@@ -514,12 +538,12 @@ export class QuestionQCore {
           return;
         }
 
-        const duration: number =
+        let duration: number =
           (new Date()).getTime() -
           PlayerQuestionTuple[0].questionTime.getTime() -
           (PlayerQuestionTuple[0].timeCorrection || 0);
         let points: number = 0;
-        let feedback: iQuestionQTipFeedback = {
+        const feedback: iQuestionQTipFeedback = {
           questionId: tip.questionId,
           correct: false,
           duration: duration,
@@ -530,7 +554,10 @@ export class QuestionQCore {
           correctAnswer: PlayerQuestionTuple[1]
         };
 
-        if (duration < 0) return; //!!! duration = PlayerQuestionTuple[0].timeLimit
+        if (duration < 0) { //!!!
+          duration = 0;
+          logger.log("info", "duration < 0 (%s, %s, %s)", JSON.stringify(player), JSON.stringify(PlayerQuestionTuple), JSON.stringify(tip));
+        }
 
         // if the in time
         if (duration < PlayerQuestionTuple[0].timeLimit) {
@@ -538,7 +565,7 @@ export class QuestionQCore {
           if (tip.answerId == PlayerQuestionTuple[1]) {
             points = Math.floor(
               PlayerQuestionTuple[0].difficulty *
-                (PlayerQuestionTuple[0].timeLimit / (1 + duration) + 100)
+                (PlayerQuestionTuple[0].timeLimit / (1 + duration) + this.gameArguments.pointBase)
             ); // points = difficulty * (timeLimit / (1 + answerDuration) + 100)
             player.score += points;
 
@@ -566,13 +593,19 @@ export class QuestionQCore {
           //return;
         }
 
+        //add to playertipdata
         player.tips.push({
           tip: tip,
           feedback: feedback
         });
 
-        //add to playertipdata
-        this.QuestionPlayer(player);
+        // ask next question (delayed)
+        this._timers[
+          "nextQuestion;" + player.username + ";" + PlayerQuestionTuple[0].questionId
+        ] = global.setTimeout(
+          () => { this.QuestionPlayer(player) },
+          Math.max(this.gameArguments.interQuestionGap - (player.Ping / 2), 0)
+        );
       } else {
         // process error
         const errorMessage: iGeneralPlayerInputError = {
