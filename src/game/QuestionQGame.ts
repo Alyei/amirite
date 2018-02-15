@@ -36,7 +36,7 @@ export class QuestionQGame implements iGame {
     readonly GeneralArguments: iGeneralHostArguments,
     public namespace: SocketIO.Namespace,
     private _gameCoreArguments?: iQuestionQHostArguments,
-    private runningGames: RunningGames;
+    private runningGames: RunningGames
   ) {
     this.GameCore = new QuestionQCore(
       this.GeneralArguments.gameId,
@@ -61,8 +61,9 @@ export class QuestionQGame implements iGame {
     data: string
   ): void {
     let msgType: number | undefined;
-    try { msgType = +messageType; }
-    catch (err) {
+    try {
+      msgType = +messageType;
+    } catch (err) {
       let errorMessage: iGeneralPlayerInputError = {
         message: "invalid message type",
         data: { username: username, msgType: messageType }
@@ -75,7 +76,7 @@ export class QuestionQGame implements iGame {
         try {
           this.GameCore.PlayerGivesTip(username, JSON.parse(data));
         } catch (err) {
-          this.ProcessUserError(username, { message: err.message, data: err});
+          this.ProcessUserError(username, { message: err.message, data: err });
         }
         break;
       }
@@ -95,18 +96,23 @@ export class QuestionQGame implements iGame {
    * @param username - the user who caused the error
    * @param errorMessage - the error's error message
    */
-  private ProcessUserError(username: string, errorMessage: iGeneralPlayerInputError): void {
+  private ProcessUserError(
+    username: string,
+    errorMessage: iGeneralPlayerInputError
+  ): void {
     this.LogInfo(JSON.stringify(errorMessage));
-    const user: PlayerBase | undefined = this.GameCore.Players.find(x => x.username == username);
+    const user: PlayerBase | undefined = this.GameCore.Players.find(
+      x => x.username == username
+    );
     if (user) {
-        const th: Tryharder = new Tryharder();
-        th.Tryhard(
-            () => {
-                return user.Inform(MessageType.PlayerInputError, errorMessage);
-            },
-            3000,
-            3
-        );
+      const th: Tryharder = new Tryharder();
+      th.Tryhard(
+        () => {
+          return user.Inform(MessageType.PlayerInputError, errorMessage);
+        },
+        3000,
+        3
+      );
     }
   }
 
@@ -157,7 +163,8 @@ export class QuestionQGame implements iGame {
         );
         if (
           username == this.GeneralArguments.owner ||
-          (player && [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
+          (player &&
+            [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
         ) {
           resolve(this.GameCore.Start());
         } else {
@@ -174,13 +181,7 @@ export class QuestionQGame implements iGame {
    * @param toLog - the information to log
    */
   private LogInfo(toLog: string) {
-    logger.log(
-      "info",
-        "Game: " +
-        this.GeneralArguments.gameId +
-        " - " +
-        toLog
-    );
+    logger.log("info", "Game: " + this.GeneralArguments.gameId + " - " + toLog);
   }
 
   /**
@@ -190,20 +191,15 @@ export class QuestionQGame implements iGame {
   private LogSilly(toLog: string) {
     logger.log(
       "silly",
-        "Game: " +
-        this.GeneralArguments.gameId +
-        " - " +
-        toLog
+      "Game: " + this.GeneralArguments.gameId + " - " + toLog
     );
-
-    
   }
-  private EndGame(){
-      for(let game of this.runningGames.Sessions){
-        if (game.GeneralArguments.gameId == this.GeneralArguments.gameId){
-          let gameIndex = this.runningGames.Sessions.indexOf(game);
-          this.runningGames.Sessions.splice(gameIndex, 1);
-        }
+  private EndGame() {
+    for (let game of this.runningGames.Sessions) {
+      if (game.GeneralArguments.gameId == this.GeneralArguments.gameId) {
+        let gameIndex = this.runningGames.Sessions.indexOf(game);
+        this.runningGames.Sessions.splice(gameIndex, 1);
       }
     }
+  }
 }
