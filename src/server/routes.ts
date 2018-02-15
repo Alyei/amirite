@@ -72,9 +72,21 @@ export class Https {
       res.render(path.join(__dirname, "..", "..", "public", "question.ejs"));
     });
 
-    this.app.post("/api/signup", this.passport.authenticate("local-signup"));
+    this.app.post(
+      "/api/signup",
+      this.passport.authenticate("local-signup"),
+      (req: any, res: any) => {
+        res.redirect("/login");
+      }
+    );
 
-    this.app.post("/signup", this.passport.authenticate("local-signup"));
+    this.app.post(
+      "/signup",
+      this.passport.authenticate("local-signup"),
+      (req: any, res: any) => {
+        res.redirect("/login");
+      }
+    );
 
     /*this.app.post("/api/signup", (req: any, res: any) => {
       console.log("THIS COMING IN");
@@ -89,9 +101,21 @@ export class Https {
       failureFlash: true //Allow flash messages.
       });*/
 
-    this.app.post("/api/login", this.passport.authenticate("local-login"));
+    this.app.post(
+      "/api/login",
+      this.passport.authenticate("local-login"),
+      (req: any, res: any) => {
+        res.redirect("/socket");
+      }
+    );
 
-    this.app.post("/login", this.passport.authenticate("local-login"));
+    this.app.post(
+      "/login",
+      this.passport.authenticate("local-login"),
+      (req: any, res: any) => {
+        res.redirect("/socket");
+      }
+    );
 
     this.app.post("/question", (req: any, res: any) => {
       this.questEdit
