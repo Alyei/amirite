@@ -14,7 +14,11 @@ export interface iGame {
    * @param msgType - the type of the action
    * @param data - the action's data
    */
-  ProcessUserInput: (username: string, msgType: MessageType, data: string) => any;
+  ProcessUserInput: (
+    username: string,
+    msgType: MessageType,
+    data: string
+  ) => any;
   /**
    * Adds a new player to the game.
    */
@@ -27,6 +31,10 @@ export interface iGame {
    * Starts the game.
    */
   StartGame: (username: string) => any;
+  /**
+   * Removes the game from the list of running games.
+   */
+  EndGame: () => any;
   /**
    * The namespace socket
    */

@@ -21,6 +21,7 @@ import {
   QuestionCouldNotBeAddedError
 } from "../server/Errors";
 import { Tryharder } from "./Tryharder";
+import { RunningGames } from "./RunningGames";
 
 export class QuestionQGame implements iGame {
   private GameCore: QuestionQCore;
@@ -34,7 +35,8 @@ export class QuestionQGame implements iGame {
   public constructor(
     readonly GeneralArguments: iGeneralHostArguments,
     public namespace: SocketIO.Namespace,
-    private _gameCoreArguments?: iQuestionQHostArguments
+    private _gameCoreArguments?: iQuestionQHostArguments,
+    private runningGames: RunningGames;
   ) {
     this.GameCore = new QuestionQCore(
       this.GeneralArguments.gameId,
@@ -191,5 +193,15 @@ export class QuestionQGame implements iGame {
         " - " +
         toLog
     );
+
+    
   }
+  private EndGame(){
+      for(let game of this.runningGames.Sessions){
+        if (game.GeneralArguments.gameId == this.GeneralArguments.gameId){
+          let gameIndex = this.runningGames.Sessions.indexOf(game);
+          this.runningGames.Sessions.splice(gameIndex, 1);
+        }
+      }
+    }
 }
