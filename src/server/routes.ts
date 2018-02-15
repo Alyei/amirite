@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as dotenv from "dotenv";
 import { Editor } from "./QuestionEditor";
+import { RunningGames } from "../game/RunningGames";
 
 /**
  * HTTPS server's routing.
@@ -10,6 +11,7 @@ export class Https {
   private app: any;
   private passport: any;
   private questEdit: Editor;
+  private sessions: RunningGames;
 
   /**
    * Sets up the routes.
@@ -17,10 +19,11 @@ export class Https {
    * @param app Express server.
    * @param pass Passport object.
    */
-  constructor(app: any, pass: any, questEdit: Editor) {
+  constructor(app: any, pass: any, questEdit: Editor, running: RunningGames) {
     this.app = app;
     this.passport = pass;
     this.questEdit = questEdit;
+    this.sessions = running;
     this.setRoutes();
   }
 
@@ -150,6 +153,15 @@ export class Https {
       console.log(req.body.data + "API");
 
       res.send("test");
+    });
+
+    this.app.post("/game", this.IsAuthenticated, (req: any, res: any) => {
+      const msg = req.body.data;
+      for (let game of this.sessions.Sessions) {
+        if (game.GeneralArguments.gameId == msg.gameId) {
+          res.send(game.GeneralArguments.gamemode);
+        }
+      }
     });
   }
 

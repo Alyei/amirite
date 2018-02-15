@@ -19,7 +19,10 @@ import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
 import { Tryharder } from "./Tryharder";
 import { platform } from "os";
-import { QuestionModel, QuestionQGameDataModel/* , PlayerDataModel */ } from "../models/Schemas";
+import {
+  QuestionModel,
+  QuestionQGameDataModel /* , PlayerDataModel */
+} from "../models/Schemas";
 import { logger } from "../server/logging";
 
 export enum QuestionQGamePhase {
@@ -55,7 +58,7 @@ export class QuestionQCore {
     players: PlayerBase[],
     readonly gameArguments: iQuestionQHostArguments
   ) {
-      /* {
+    /* {
         pointBase: 100,
         interQuestionGap: 3000
       }; */
@@ -79,7 +82,11 @@ export class QuestionQCore {
    * @param data - the data that is to be sent
    * @returns - whether no error happened
    */
-  private InformPlayer(player: PlayerBase, msgType: MessageType, data: any): boolean {
+  private InformPlayer(
+    player: PlayerBase,
+    msgType: MessageType,
+    data: any
+  ): boolean {
     const result: boolean = player.Inform(msgType, data);
 
     const specData: iSpectatingData = {
@@ -88,7 +95,9 @@ export class QuestionQCore {
       data: data
     };
 
-    const spectators: PlayerBase[] = this.Players.filter(x => x.state == PlayerState.Spectating && x.username != player.username);
+    const spectators: PlayerBase[] = this.Players.filter(
+      x => x.state == PlayerState.Spectating && x.username != player.username
+    );
     for (let spec of spectators) {
       spec.Inform(MessageType.SpectatingData, specData);
     }
@@ -104,10 +113,15 @@ export class QuestionQCore {
     const gameDataModel = new QuestionQGameDataModel(gameData);
     gameDataModel.save((err: any) => {
       if (err) {
-        logger.log("info", "failed to save game (%s); error: %s", gameData, err);
+        logger.log(
+          "info",
+          "failed to save game (%s); error: %s",
+          gameData,
+          err
+        );
         return;
       }
-      this.LogSilly("the game has been saved")
+      this.LogSilly("the game has been saved");
     });
   }
 
@@ -168,7 +182,11 @@ export class QuestionQCore {
       if (
         !th.Tryhard(
           () => {
-            return this.InformPlayer(player, MessageType.QuestionQGameData, gameData);
+            return this.InformPlayer(
+              player,
+              MessageType.QuestionQGameData,
+              gameData
+            );
           },
           3000, // delay
           3 // tries
@@ -238,10 +256,10 @@ export class QuestionQCore {
     } else {
       this.LogInfo(
         "this should not have happened... has a question been removed? (" +
-        JSON.stringify(player.GetPlayerData()) +
-        "; " +
-        JSON.stringify(question) +
-        ")"
+          JSON.stringify(player.GetPlayerData()) +
+          "; " +
+          JSON.stringify(question) +
+          ")"
       );
     }
   }
@@ -323,7 +341,10 @@ export class QuestionQCore {
    * @returns - whether the user could be added
    */
   public AddUser(player: PlayerBase): boolean {
-    if (this._players && !this._players.find(x => x.username == player.username)) {
+    if (
+      this._players &&
+      !this._players.find(x => x.username == player.username)
+    ) {
       if (this._gamePhase == QuestionQGamePhase.Setup) {
         this._players.push(new QuestionQPlayer(player.GetArguments()));
         return true;
@@ -333,7 +354,8 @@ export class QuestionQCore {
           player.GetArguments()
         );
         this._players.push(newPlayer);
-        if (newPlayer.state == PlayerState.Launch) this.QuestionPlayer(newPlayer);
+        if (newPlayer.state == PlayerState.Launch)
+          this.QuestionPlayer(newPlayer);
         return true;
       }
     }
@@ -345,7 +367,13 @@ export class QuestionQCore {
    * @returns - whether the game has been started
    */
   public Start(): boolean {
-    if (this._gamePhase == QuestionQGamePhase.Setup && this._players && this._players.length > 0 && this._questions && this._questions.length > 0) {
+    if (
+      this._gamePhase == QuestionQGamePhase.Setup &&
+      this._players &&
+      this._players.length > 0 &&
+      this._questions &&
+      this._questions.length > 0
+    ) {
       this._gamePhase = QuestionQGamePhase.Running;
       for (let player of this._players) {
         if (player.state == PlayerState.Launch) {
@@ -374,10 +402,13 @@ export class QuestionQCore {
    * @returns - the game's data according to the iQuestionQGameData-interface
    */
   public GetGameData(): iQuestionQGameData {
-    const explanations: {questionId: string, explanation: string}[] = [];
+    const explanations: { questionId: string; explanation: string }[] = [];
     for (let q of this._questions) {
       if (q.explanation)
-        explanations.push({questionId: q.questionId, explanation: q.explanation});
+        explanations.push({
+          questionId: q.questionId,
+          explanation: q.explanation
+        });
     }
     return {
       gameId: this.gameId,
@@ -427,10 +458,10 @@ export class QuestionQCore {
         if (!nextQuestionBase) {
           this.LogInfo(
             "could not find next question in '" +
-            this._questions.toString() +
-            "''" +
-            player.questions.toString() +
-            "'"
+              this._questions.toString() +
+              "''" +
+              player.questions.toString() +
+              "'"
           );
           return;
         }
@@ -444,11 +475,13 @@ export class QuestionQCore {
 
         // start timer
         this._timers[
-          "questionTimeout;" + player.username + ";" + nextQuestion[0].questionId
-        ] = global.setTimeout(
-          () => { this.CheckQuestionTime(player, nextQuestion[0]); },
-          nextQuestion[0].timeLimit + (nextQuestion[0].timeCorrection || 0)
-        );
+          "questionTimeout;" +
+            player.username +
+            ";" +
+            nextQuestion[0].questionId
+        ] = global.setTimeout(() => {
+          this.CheckQuestionTime(player, nextQuestion[0]);
+        }, nextQuestion[0].timeLimit + (nextQuestion[0].timeCorrection || 0));
 
         // send nextQuestion to Username
         const th: Tryharder = new Tryharder();
@@ -471,7 +504,6 @@ export class QuestionQCore {
 
         // add question to the player's questions
         player.questions.push(nextQuestion);
-
       } else {
         // finished
         player.state = PlayerState.Finished;
@@ -516,7 +548,9 @@ export class QuestionQCore {
       this._gamePhase == QuestionQGamePhase.Running &&
       player.state == PlayerState.Playing
     ) {
-      const givenTip: iQuestionQTipData | undefined = player.tips.find(x => x.tip.questionId == tip.questionId);
+      const givenTip: iQuestionQTipData | undefined = player.tips.find(
+        x => x.tip.questionId == tip.questionId
+      );
       // only the player did not give a tip for this question before
       if (!givenTip) {
         const PlayerQuestionTuple:
@@ -528,18 +562,20 @@ export class QuestionQCore {
         if (!PlayerQuestionTuple) {
           // process error
           const errorMessage: iGeneralPlayerInputError = {
-              message: "You were not asked this question >:c",
-              data: {
-                  currentQuestionId: (player.LatestQuestion || [{ questionId: "none" }])[0].questionId,
-                  tip: tip
-              }
+            message: "You were not asked this question >:c",
+            data: {
+              currentQuestionId: (player.LatestQuestion || [
+                { questionId: "none" }
+              ])[0].questionId,
+              tip: tip
+            }
           };
           this.ProcessPlayerInputError(player, errorMessage);
           return;
         }
 
         let duration: number =
-          (new Date()).getTime() -
+          new Date().getTime() -
           PlayerQuestionTuple[0].questionTime.getTime() -
           (PlayerQuestionTuple[0].timeCorrection || 0);
         let points: number = 0;
@@ -554,9 +590,16 @@ export class QuestionQCore {
           correctAnswer: PlayerQuestionTuple[1]
         };
 
-        if (duration < 0) { //!!!
+        if (duration < 0) {
+          //!!!
           duration = 0;
-          logger.log("info", "duration < 0 (%s, %s, %s)", JSON.stringify(player), JSON.stringify(PlayerQuestionTuple), JSON.stringify(tip));
+          logger.log(
+            "info",
+            "duration < 0 (%s, %s, %s)",
+            JSON.stringify(player),
+            JSON.stringify(PlayerQuestionTuple),
+            JSON.stringify(tip)
+          );
         }
 
         // if the in time
@@ -565,7 +608,8 @@ export class QuestionQCore {
           if (tip.answerId == PlayerQuestionTuple[1]) {
             points = Math.floor(
               PlayerQuestionTuple[0].difficulty *
-                (PlayerQuestionTuple[0].timeLimit / (1 + duration) + this.gameArguments.pointBase)
+                (PlayerQuestionTuple[0].timeLimit / (1 + duration) +
+                  this.gameArguments.pointBase)
             ); // points = difficulty * (timeLimit / (1 + answerDuration) + 100)
             player.score += points;
 
@@ -583,7 +627,11 @@ export class QuestionQCore {
         if (
           !th.Tryhard(
             () => {
-              return this.InformPlayer(player, MessageType.QuestionQTipFeedback, feedback);
+              return this.InformPlayer(
+                player,
+                MessageType.QuestionQTipFeedback,
+                feedback
+              );
             },
             3000, // delay
             3 // tries
@@ -601,30 +649,32 @@ export class QuestionQCore {
 
         // ask next question (delayed)
         this._timers[
-          "nextQuestion;" + player.username + ";" + PlayerQuestionTuple[0].questionId
-        ] = global.setTimeout(
-          () => { this.QuestionPlayer(player) },
-          Math.max(this.gameArguments.interQuestionGap - (player.Ping / 2), 0)
-        );
+          "nextQuestion;" +
+            player.username +
+            ";" +
+            PlayerQuestionTuple[0].questionId
+        ] = global.setTimeout(() => {
+          this.QuestionPlayer(player);
+        }, Math.max(this.gameArguments.interQuestionGap - player.Ping / 2, 0));
       } else {
         // process error
         const errorMessage: iGeneralPlayerInputError = {
-            message: "You already gave a tip for this answer of this question",
-            data: {
-                givenTip: givenTip,
-                currentTip: tip
-            }
+          message: "You already gave a tip for this answer of this question",
+          data: {
+            givenTip: givenTip,
+            currentTip: tip
+          }
         };
         this.ProcessPlayerInputError(player, errorMessage);
       }
     } else {
       // process error
       const errorMessage: iGeneralPlayerInputError = {
-          message: "You are not allowed to give a tip",
-          data: {
-              playerState: player.state,
-              gamePhase: this._gamePhase
-          }
+        message: "You are not allowed to give a tip",
+        data: {
+          playerState: player.state,
+          gamePhase: this._gamePhase
+        }
       };
       this.ProcessPlayerInputError(player, errorMessage);
       return;
@@ -636,16 +686,27 @@ export class QuestionQCore {
    * @param player - the player who caused the error
    * @param errorMessage - error data implementing the iGeneralPlayerInputError-interface
    */
-  private ProcessPlayerInputError(player: QuestionQPlayer, errorMessage: iGeneralPlayerInputError) {
-      const th: Tryharder = new Tryharder();
-      if (!th.Tryhard(() => {
-          return this.InformPlayer(player, MessageType.PlayerInputError, errorMessage);
-      }, 3000, // delay
-          3 // tries
-      )) {
-          //this.DisqualifyPlayer(player);
-      }
-      this.LogInfo(JSON.stringify(errorMessage));
+  private ProcessPlayerInputError(
+    player: QuestionQPlayer,
+    errorMessage: iGeneralPlayerInputError
+  ) {
+    const th: Tryharder = new Tryharder();
+    if (
+      !th.Tryhard(
+        () => {
+          return this.InformPlayer(
+            player,
+            MessageType.PlayerInputError,
+            errorMessage
+          );
+        },
+        3000, // delay
+        3 // tries
+      )
+    ) {
+      //this.DisqualifyPlayer(player);
+    }
+    this.LogInfo(JSON.stringify(errorMessage));
   }
 
   /**
@@ -653,7 +714,7 @@ export class QuestionQCore {
    * @param toLog - information that is to log
    */
   private LogInfo(toLog: string) {
-      logger.log("info", this.gameId + " - " + toLog);
+    logger.log("info", this.gameId + " - " + toLog);
   }
 
   /**
@@ -661,6 +722,6 @@ export class QuestionQCore {
    * @param toLog - information that is to log
    */
   private LogSilly(toLog: string) {
-      logger.log("silly", this.gameId + " - " + toLog);
+    logger.log("silly", this.gameId + " - " + toLog);
   }
 }
