@@ -57,7 +57,7 @@ export class GameFactory {
                   .AddPlayer(
                     generalArguments.owner,
                     generalArguments.ownerSocket,
-                    [2]
+                    2
                   )
                   .then((res: any) => {
                     logger.log(
