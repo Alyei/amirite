@@ -33,10 +33,6 @@ export interface iGame {
    */
   StartGame: (username: string) => any;
   /**
-   * Removes the game from the list of running games.
-   */
-  EndGame: () => any;
-  /**
    * The namespace socket
    */
   namespace: SocketIO.Namespace;

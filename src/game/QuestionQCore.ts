@@ -24,6 +24,7 @@ import {
   QuestionQGameDataModel /* , PlayerDataModel */
 } from "../models/Schemas";
 import { logger } from "../server/logging";
+import { RunningGames } from "./RunningGames";
 
 export enum QuestionQGamePhase {
   Setup = 0,
@@ -56,7 +57,8 @@ export class QuestionQCore {
     public gameId: string,
     questionIds: string[],
     players: PlayerBase[],
-    readonly gameArguments: iQuestionQHostArguments
+    readonly gameArguments: iQuestionQHostArguments,
+    private runningGames: RunningGames
   ) {
     /* {
         pointBase: 100,
@@ -395,6 +397,8 @@ export class QuestionQCore {
     this.SendGameData();
 
     this.Save();
+
+    this.runningGames.Sessions.splice(this.runningGames.Sessions.findIndex(x => x.GeneralArguments.gameId == this.gameId), 1);
   }
 
   /**

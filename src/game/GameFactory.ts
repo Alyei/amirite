@@ -15,6 +15,7 @@ import {
   PlayerAlreadyHostsGame,
   PlayerCouldNotBeAddedError
 } from "../server/Errors";
+import { iGame } from "./iGame";
 
 export class GameFactory {
   public Sessions: RunningGames;
@@ -47,10 +48,14 @@ export class GameFactory {
         ) {
           switch (generalArguments.gamemode) {
             case Gamemode.QuestionQ: {
-              const newGame: QuestionQGame = new QuestionQGame(
+              const newGame: iGame = new QuestionQGame(
                 generalArguments,
                 namespaceSocket,
-                gameArguments
+                gameArguments || {
+                  pointBase: 100,
+                  interQuestionGap: 3000
+                },
+                this.Sessions
               );
               try {
                 newGame

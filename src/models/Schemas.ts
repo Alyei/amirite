@@ -101,10 +101,6 @@ let QuestionQGameData = new mongoose.Schema({
     required: true
   },
   explanations: {
-    /* explanations: {
-      questionId: string,
-      explanation: string
-    }[];  */
     type: [{
       questionId: String,
       explanation: String
@@ -114,7 +110,7 @@ let QuestionQGameData = new mongoose.Schema({
 });
 
 let DeterminationGameData = new mongoose.Schema({
- /*  gameId: {
+  gameId: {
     type: String,
     required: true,
     unique: true
@@ -124,17 +120,13 @@ let DeterminationGameData = new mongoose.Schema({
     required: true,
   },
   gameArguments: {
-    type: {
-      pointBase: Number,
-      pointBaseWrongAnswerIdentified: Number,
-      interQuestionGap: Number,
-    },
+    type: {},
     required: true
   },
   players: {
     type: [],
     required: true
-  } */
+  }
 });
 
 let Room: mongoose.Schema = new mongoose.Schema({
