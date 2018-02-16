@@ -1,9 +1,9 @@
-import React from "react";
-import { Button, Navbar, Nav, NavItem } from "react-bootstrap";
+import React from 'react';
+import { Button, Navbar, Nav, NavItem } from 'react-bootstrap';
 
-import "../../css/navigation.css";
+import '../../css/navigation.css';
 
-import Overlay from "./Overlay.js";
+import Overlay from './Overlay.js';
 
 export default class NavBar extends React.Component {
   constructor() {
@@ -11,7 +11,7 @@ export default class NavBar extends React.Component {
     this.state = {
       showModal: false,
       defTab: 1,
-      prelogin: true
+      prelogin: true,
     };
     this.OpenRegister = this.OpenRegister.bind(this);
     this.OpenLogin = this.OpenLogin.bind(this);
@@ -57,14 +57,10 @@ export default class NavBar extends React.Component {
     const NavElements = (
       <Nav pullRight className="navbar-nav navbar-right">
         <NavItem className="LogRegForm">
-          <label text={this.props.user.username}>
-            
-          </label>
+          <label text={this.props.user.username} />
         </NavItem>
         <NavItem className="LogRegForm">
-          <img src={this.props.user.image}>
-          
-          </img>
+          <img src={this.props.user.image} />
         </NavItem>
       </Nav>
     );
@@ -72,23 +68,28 @@ export default class NavBar extends React.Component {
 
   render() {
     const NavBare = (
-      <Navbar className="MainNavBar" fixedTop inverse collapseOnSelect>
+      <Navbar className="MainNavBar" staticTop inverse collapseOnSelect>
         <Navbar.Header>
           <Navbar.Brand className="MainNavBarBrand">Amirite</Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
         <Navbar.Collapse className="navbar-collapse">
-          {this.state.prelogin === true ? this.MainNavElements() : this.PostLoginNavElements()}
+          {this.state.prelogin === true
+            ? this.MainNavElements()
+            : this.PostLoginNavElements()}
         </Navbar.Collapse>
       </Navbar>
     );
-    return <div>{NavBare}
-      <Overlay
-        defTab={this.state.defTab}
-        showModal={this.state.showModal}
-        overlayClose={this.OverlayClose}
-      />
-      {this.props.children}
-      </div>;
+    return (
+      <div>
+        {NavBare}
+        <Overlay
+          defTab={this.state.defTab}
+          showModal={this.state.showModal}
+          overlayClose={this.OverlayClose}
+        />
+        {this.props.children}
+      </div>
+    );
   }
 }

@@ -1,4 +1,92 @@
-.AnswerBox{
-    color: red;
-    background-color: black;
+html,
+body {
+  height: 100%;
+  height: 100vh;
+}
+
+.QuestionQGrid,
+.GameEndScreenGrid {
+  background: url(https://osu.ppy.sh/images/backgrounds/page-333@2x.png);
+  /*url(https://osu.ppy.sh/images/backgrounds/page-000.png);*/
+  background-attachment: fixed;
+  background-size: cover;
+  height: 100vh;
+  font-size: 250%;
+  height: 100%;
+  align-items: center;
+  cursor: default;
+  vertical-align: bottom;
+  position: "absolute";
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.QuestionBox {
+  text-align: center;
+  border-radius: 20px;
+  padding-top: 10%;
+  padding-bottom: 10%;
+  margin-top: 1.5ex;
+  margin-bottom: 5%;
+  background-color: whitesmoke;
+}
+/*
+.AnsBox {
+  position: relative;
+  width: 100%;
+}
+.AnsBox:before {
+  content: "";
+  display: block;
+  padding-top: 56.25%;
+}
+*/
+.AnswerBox {
+  text-align: center;
+  border-radius: 20px;
+  position: relative;
+
+  padding-top: 1ex;
+  padding-bottom: 1ex;
+
+  margin-bottom: 1ex;
+  background-color: whitesmoke;
+}
+.AnswerBox:hover {
+  background-color: darkgray;
+}
+/*
+.GameTimeCol {
+  position: relative;
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
+*/
+
+.GameTime {
+  position: absolute;
+  border-radius: 0;
+  bottom: 0;
+  width: 16.75ex;
+  height: 3ex;
+  transform: rotate(-90deg) scale(1, -1);
+  transform-origin: 0% 100%;
+}
+.Score {
+  margin-top: 1.5ex;
+  color: whitesmoke;
+}
+.row {
+  display: flex;
+}
+
+.GameEndScreenGrid {
+  color: whitesmoke;
+}
+
+@font-face {
+  font-family: Roboto;
+  src: "https://fonts.googleapis.com/css?family=Roboto:400,400i,700";
 }

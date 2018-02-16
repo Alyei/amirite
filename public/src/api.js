@@ -1,41 +1,71 @@
-import React from "react";
-import io from "socket.io-client";
-import {Redirect} from "react-router";
-import PropTypes from "prop-types";
+import React from 'react';
+import io from 'socket.io-client';
+import { Redirect } from 'react-router';
+import PropTypes from 'prop-types';
 
+export var socket = null; //io.connect('https://localhost:443/');
 
-export const socket = io.connect('https://localhost:443/questionq');
+export function Connect(gamemodeToConnect) {
+  return new Promise((resolve, reject) => {
+    try {
+      socket = io.connect(
+        'https://localhost:443/' + gamemodeToConnect.toLowerCase()
+      );
+
+      socket.PropTypes = {
+        MessageType: PropTypes.oneOf(Object.keys(MessageTypes)),
+        GameMode: PropTypes.oneOf(Object.keys(GameModes)),
+      };
+      socket.MessageType = MessageTypes;
+      socket.GameMode = GameModes;
+      resolve(socket);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
 
 const MessageTypes = {
-    PlayerInputError: "PlayerInputError",
-    QuestionQQuestion: "QuestionQQuestion",
-    QuestionQTipFeedback: "QuestionQTipFeedback",
-    QuestionQPlayerData: "QuestionQPlayerData",
-    QuestionQTip: "QuestionQTip",
-    QuestionQGameData: "QuestionQGameData",
-    QuestionQHostArguments: "QuestionQHostArguments",
-    DeterminationPlayerData: "DeterminationPlayerData",
-    DeterminationQuestion: "DeterminationQuestion",
-    DeterminationTip: "DeterminationTip",
-    DeterminationOption: "DeterminationOption",
-    DeterminationTipFeedback: "DeterminationTipFeedback",
-    MillionaireSpectateData: "MillionaireSpectateData",
-    MillionaireQuestion: "MillionaireQuestion",
-    MillionaireTip: "MillionaireTip",
-    MillionaireTipFeedback: "MillionaireTipFeedback",
-    MillionaireAudienceJokerRequest: "MillionaireAudienceJokerRequest",
-    MillionaireAudienceJokerResponse: "MillionaireAudienceJokerResponse",
-    MillionaireAudienceJokerClue: "MillionaireAudienceJokerClue",
-    MillionairePassRequest: "MillionairePassRequest",
-    MillionairePassResponse: "MillionairePassResponse"
-}
-socket.PropTypes = {
-    MessageType: PropTypes.oneOf(Object.keys(MessageTypes))
-}
+  //general
+  PlayerInputError: '100',
+  SpectatingData: '101',
+
+  //QuestionQ
+  QuestionQQuestion: '1',
+  QuestionQTipFeedback: '2',
+  QuestionQPlayerData: '3',
+  QuestionQTip: '4',
+  QuestionQGameData: '5',
+  QuestionQHostArguments: '6',
+
+  //Determination
+  DeterminationQuestion: '10',
+  DeterminationTipFeedback: '11',
+  DeterminationPlayerData: '12',
+  DeterminationTip: '13',
+  DeterminationGameData: '14',
+  DeterminationHostArguments: '15',
+
+  //Millionaire
+  MillionaireSpectateData: '20',
+  MillionaireQuestion: '21',
+  MillionaireTip: '22',
+  MillionaireTipFeedback: '23',
+  MillionaireAudienceJokerRequest: '24',
+  MillionaireAudienceJokerResponse: '25',
+  MillionaireAudienceJokerClue: '26',
+  MillionairePassRequest: '27',
+  MillionairePassResponse: '28',
+};
+const GameModes = {
+  QuestionQ: '0',
+  Determination: '1',
+  Millionaire: '2',
+};
 
 export function closeSocket() {
-    socket.off();
-    socket.close();
+  socket.off();
+  socket.close();
 }
 /*
 function startGame(username) {

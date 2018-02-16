@@ -1,69 +1,144 @@
-import React from "react";
-import {Button, Label} from "react-bootstrap";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Button, Label } from 'react-bootstrap';
 
-import QuestionBox from "../components/QuestionBox";
-import AnswerBox from "../components/AnswerBox";
+import QuestionBox from '../components/QuestionBox';
+import AnswerBox from '../components/AnswerBox';
 
 export default class Determination extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-                question: {
-                questionid: "",
-                questiontext: "",
-                answers: [],
-                picture: null
-            },
-            currAnswer: 0,
-            solved: false,
-            explanation: ""
+  constructor() {
+    super();
+    this.state = {
+      questionId: '',
+      question: '',
+      pictureId: '',
+      timeLimit: 0,
+      difficulty: null,
+      currOption: [],
+      username: 'alyei', //change to cookies
+      playerState: 0,
+      solved: this.props.socket,
+      correctAnswer: '',
+    };
+    this.Solution = this.Solution.bind(this);
+    this.handleAnswerClick = this.handleAnswerClick.bind(this);
+  }
+  componentDidMount() {
+    this.props.onRef(this);
+    this.setSockets();
+  }
+  componentWillUnmount() {
+    this.props.closeSockets(
+      this.props.match.params.gameid,
+      this.props.username
+    );
+    this.props.onRef(undefined);
+  }
+
+  handleStartGameClick(event) {
+    console.log('start game', this.props);
+    this.state.socket.emit(
+      'start game',
+      JSON.stringify({
+        gameId: this.props.match.params.gameid,
+        username: this.props.username,
+      })
+    );
+    this.setState({ playerState: 1 });
+  }
+
+  setQuestion(jsonQuestion) {
+    var question = JSON.parse(jsonQuestion);
+    console.log('new question', jsonQuestion);
+    this.setState(
+      {
+        questionId: question.questionId,
+        question: question.question,
+        pictureId: question.pictureId,
+        timeLimit: question.timeLimit,
+        difficulty: question.difficulty,
+      },
+      this.setOption(question.firstOption)
+    );
+  }
+  handleFeedback(jsonFeedback) {
+    var feedback = JSON.parse(jsonFeedback);
+    console.log(feedback);
+    if (feedback !== undefined) {
+      if (feedback.questionId === this.state.questionId) {
+        if (feedback.correct === true) {
+          //ReactDOM.findDOMNode(this.refs[this.state.selectedOptionId]).style.color = 'green';
+          this.setState({ selectedOptionId: '' });
+          this.setOption(feedback.nextOption);
+        } else if (this.state.selectedOptionId !== '') {
+          ReactDOM.findDOMNode(
+            this.refs[this.state.selectedOptionId]
+          ).style.color =
+            'red';
+          this.setState({ correctAnswer: feedback.correctAnswer[1] });
         }
-    }
-    handleCurrAnswAdd() {
-        this.setState({currAnswer: this.state.currAnswer+1});        
-    }
-
-    newQuestion() {
-        return(
-            <div>
-            <QuestionBox text={this.state.question.questiontext} />
-            </div>
+        if (feedback.message === 'too slow') {
+          alert(feedback.message);
+          this.setState(
+            { correctAnswer: feedback.correctAnswer[1] },
+            this.setState({ solved: true })
+          );
+        }
+      } else {
+        console.log(
+          'Received questionId:',
+          feedback.questionId,
+          ', but currently hosted question with id:',
+          this.state.questionId
         );
+      }
     }
-    nextAnswer() {
-        return(
-            <div>
-            <AnswerBox text={this.state.question.answers[this.state.currAnswer]} />
-            </div>
-        );
-    }
-    Solution() {
-        return(
-            <Label>{this.explanation}</Label>
-        )
-    }
+  }
+  setOption(receivedDeterminationOption) {
+    this.setState(
+      { currOption: receivedDeterminationOption },
+      console.log('nextOption', receivedDeterminationOption)
+    );
+  }
 
-    handleAnswerClick(event) {
-        feedback: this.props.socket.sendAnswer({
-            tip: {
-                question_id: this.state.question.questionid,
-                answer: this.state.question.answers[this.state.currAnswer],
-                given_answer: [event.target.name] == "Yes" ? true : false
-            }
-        });
-        //{feedback.iscorrect == true ? }
-    }
+  Solution() {
+    return <Label>{this.state.correctAnswer}</Label>;
+  }
 
-    render() {
-        return(
-            <div>
-            <newQuestion/>
-            {/*this.state.solved == true ? */}
-            <nextAnswer name="displayedAnswer"/>
-            <Button name="Yes">Right</Button>
-            <Button name="No">Wrong</Button>
-            <handleCurrAnswAdd/>
-            </div>
-        )
-    }
+  handleAnswerClick(event) {
+    this.socket.emit(
+      'action',
+      JSON.stringify({
+        username: this.state.username,
+        gameId: this.props.match.params.gameid,
+        msgType: this.socket.MessageType.DeterminationTip,
+        data: {
+          questionId: this.state.questionId,
+          answerId: this.state.currOption[0],
+          correct: [event.target.id] === 'Yes' ? true : false,
+        },
+      })
+    );
+    this.setState({ selectedOptionId: event.target.id });
+  }
+
+  render() {
+    return (
+      <div>
+        <QuestionBox text={this.state.question} />
+        {this.state.solved === true ? this.Solution() : null}
+        <AnswerBox
+          ref={this.state.currOption[0]}
+          id={this.state.currOption[0]}
+          text={this.state.currOption[1]}
+        />
+        <Button onClick={this.handleAnswerClick} id="Yes">
+          Right
+        </Button>
+        <Button onClick={this.handleAnswerClick} id="No">
+          Wrong
+        </Button>
+      </div>
+    );
+  }
 }
