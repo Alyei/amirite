@@ -6,4 +6,5 @@ export interface Question {
   answer: string;
   otherOptions: string[];
   explanation: string;
+  image?: Buffer;
 }

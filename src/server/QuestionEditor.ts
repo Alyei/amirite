@@ -18,7 +18,8 @@ export class Editor {
         question: questiondata.question,
         answer: questiondata.answer,
         otherOptions: questiondata.otherOptions,
-        explanation: questiondata.explanation
+        explanation: questiondata.explanation,
+        image: questiondata.image
       });
 
       newQuestion.save((err: any, q: any) => {
