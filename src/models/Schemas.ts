@@ -79,6 +79,10 @@ let Question: mongoose.Schema = new mongoose.Schema({
   genre: {
     type: [String],
     required: false
+  },
+  image: {
+    type: Buffer,
+    required: false
   }
 });
 
@@ -90,7 +94,7 @@ let QuestionQGameData = new mongoose.Schema({
   },
   gamemode: {
     type: Gamemode, //!!!
-    required: true,
+    required: true
   },
   gameArguments: {
     type: {},
@@ -101,10 +105,12 @@ let QuestionQGameData = new mongoose.Schema({
     required: true
   },
   explanations: {
-    type: [{
-      questionId: String,
-      explanation: String
-    }],
+    type: [
+      {
+        questionId: String,
+        explanation: String
+      }
+    ],
     required: true
   }
 });
@@ -117,7 +123,7 @@ let DeterminationGameData = new mongoose.Schema({
   },
   gamemode: {
     type: Gamemode,
-    required: true,
+    required: true
   },
   gameArguments: {
     type: {},
@@ -156,8 +162,14 @@ const QuestionModel: any = mongoose.model("question", Question);
 
 const UserModel: any = mongoose.model("user", userSchema);
 
-const QuestionQGameDataModel: any = mongoose.model("questionQGameData", QuestionQGameData)
-const DeterminationGameDataModel: any = mongoose.model("determinationGameData", DeterminationGameData)
+const QuestionQGameDataModel: any = mongoose.model(
+  "questionQGameData",
+  QuestionQGameData
+);
+const DeterminationGameDataModel: any = mongoose.model(
+  "determinationGameData",
+  DeterminationGameData
+);
 
 const RoomModel: any = mongoose.model("room", Room);
 

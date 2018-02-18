@@ -198,7 +198,7 @@ export class Http {
 
   private httpRedirectRoute(): void {
     this.app.get("*", (req: any, res: any) => {
-      res.redirect("https://192.168.0.15:" + req.url);
+      res.redirect("https://" + req.headers.host + req.url);
     });
   }
 }

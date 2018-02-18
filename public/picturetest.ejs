@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Picupload</title>
+    <style>
+    </style>
+</head>
+
+<body>
+    <input type="file" id="filechooser">
+    <br>
+    <button id="sendpic" type="button">Send Picture</button>
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+        $(function () {
+            $('#sendpic').click(function () {
+                $.ajax({
+                    url: 'https://192.168.0.15:443/picture',
+                    type: 'post',
+                    contentType: 'img/*',
+                    data: JSON.stringify({
+                        test: true
+                    })
+                })
+            })
+        });
+
+        function uploadFile() {
+            var blobFile = $('#filechooser').files[0];
+            var formData = new FormData();
+            formData.append("fileToUpload", blobFile);
+
+            $.ajax({
+                url: 'https://localhost:443/picture',
+                type: 'POST',
+                contentType: 'img/*',
+                data: JSON.stringify({
+                    test: true
+                })
+            })
+        }
+
+        function changeElements(msg) {
+            $("#answa").text(msg.options[0][1]);
+            $("#answb").text(msg.options[1][1]);
+            $("#answc").text(msg.options[2][1]);
+            $("#answd").text(msg.options[3][1]);
+        }
+    </script>
+</body>
+
+</html>
