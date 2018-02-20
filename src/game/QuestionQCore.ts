@@ -398,7 +398,12 @@ export class QuestionQCore {
 
     this.Save();
 
-    this.runningGames.Sessions.splice(this.runningGames.Sessions.findIndex(x => x.GeneralArguments.gameId == this.gameId), 1);
+    this.runningGames.Sessions.splice(
+      this.runningGames.Sessions.findIndex(
+        x => x.GeneralArguments.gameId == this.gameId
+      ),
+      1
+    );
   }
 
   /**
