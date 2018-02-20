@@ -1,6 +1,6 @@
 {
   "name": "amirite",
-  "version": "0.0.1",
+  "version": "0.9.1",
   "description": "Quiz game as final thesis",
   "main": "index.js",
   "scripts": {
@@ -18,11 +18,13 @@
   },
   "homepage": "https://gitlab.com/Alyei/amirite#README",
   "devDependencies": {
+    "@types/bcrypt": "^1.0.0",
     "@types/body-parser": "^1.16.8",
     "@types/connect-flash": "0.0.34",
     "@types/connect-mongo": "0.0.34",
     "@types/cookie-parser": "^1.4.1",
     "@types/cors": "^2.8.3",
+    "@types/dotenv": "^4.0.2",
     "@types/ejs": "^2.5.0",
     "@types/express-session": "^1.15.6",
     "@types/mongoose": "^4.7.32",
@@ -37,8 +39,6 @@
     "typescript": "^2.6.2"
   },
   "dependencies": {
-    "@types/bcrypt": "^1.0.0",
-    "@types/dotenv": "^4.0.2",
     "@types/express": "^4.0.39",
     "bcrypt": "^1.0.3",
     "body-parser": "^1.18.2",

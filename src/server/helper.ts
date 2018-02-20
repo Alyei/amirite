@@ -3,6 +3,8 @@ import * as crypto from "crypto";
 import { Mongoose } from "mongoose";
 import { logger } from "./logging";
 import * as iQuestion from "../models/iQuestion";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 /**
  * Hashes the model's password and saves it to the database.
@@ -55,4 +57,8 @@ let generateGameId = function(): string {
     .replace(/\//g, "x");
 };
 
-export { hashPwAndSave, generateId, generateGameId };
+const settings = JSON.parse(
+  readFileSync(join(__dirname, "..", "..", "config.json")).toString()
+);
+
+export { hashPwAndSave, generateId, generateGameId, settings };

@@ -1,6 +1,5 @@
 import * as express from "express";
 import * as https from "https";
-import * as dotenv from "dotenv";
 import * as ExpressRoutes from "./Routes";
 import * as auth from "./UserManagement";
 import * as http from "http";
@@ -16,6 +15,7 @@ import * as cors from "cors";
 import { RunningGames } from "../game/RunningGames";
 import { GameFactory } from "../game/GameFactory";
 import { PlayerCommunication } from "./PlayerCom";
+import { settings } from "./helper";
 
 let flash: any = require("connect-flash");
 let MongoStore: any = require("connect-mongo")(session);
@@ -25,7 +25,7 @@ let MongoStore: any = require("connect-mongo")(session);
  * @class
  */
 export class server {
-  private port: any = process.env.https_port || 1337;
+  private port: any = settings.server.https_port || 1337;
   private certificate: object;
   private app: any = express();
   private httpsServer: https.Server;
@@ -47,7 +47,6 @@ export class server {
    * @param pass - The passport.js object to be used.
    */
   constructor(certificate: object, pass: any) {
-    this.env = dotenv.config();
     this.certificate = certificate;
     this.httpsServer = https.createServer(this.certificate, this.app);
     this.passport = pass;
@@ -58,23 +57,19 @@ export class server {
     this.app.use(function(req: any, res: any, next: any) {
       // Website you wish to allow to connect
       res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-
       // Request methods you wish to allow
       res.setHeader(
         "Access-Control-Allow-Methods",
         "GET, POST, PUT, PATCH, DELETE"
       );
-
       // Request headers you wish to allow
       res.setHeader(
         "Access-Control-Allow-Headers",
         "X-Requested-With,content-type"
       );
-
       // Set to true if you need the website to include cookies in the requests sent
       // to the API (e.g. in case you use sessions)
       res.setHeader("Access-Control-Allow-Credentials", true);
-
       // Pass to next layer of middleware
       next();
     });
@@ -146,7 +141,7 @@ export class server {
     this.httpExpress = express();
     this.httpServer = http.createServer(this.httpExpress);
     let route: any = new ExpressRoutes.Http(this.httpExpress);
-    this.httpServer.listen(process.env.http_port, (req: any, res: any) => {
+    this.httpServer.listen(settings.server.http_port, (req: any, res: any) => {
       logger.log("info", "HTTP redirect to HTTPS started listening.");
     });
   }

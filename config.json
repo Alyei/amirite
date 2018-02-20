@@ -1,0 +1,9 @@
+{
+  "server": {
+    "tls_cert": "/assets/server.pem",
+    "tls_key": "/assets/server.pem",
+    "https_port": 443,
+    "http_port": 80
+  },
+  "games": {}
+}
