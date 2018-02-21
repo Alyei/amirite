@@ -92,10 +92,11 @@ export enum MessageType {
   // QuestionQ
   QuestionQQuestion = 1,
   QuestionQTipFeedback,
-  QuestionQPlayerData,
+  QuestionQPlayerDataAndExplanations,
   QuestionQTip,
   QuestionQGameData,
   QuestionQHostArguments,
+  QuestionQStartGameData,
 
   // Determination
   DeterminationQuestion = 10,
@@ -130,7 +131,11 @@ export interface iQuestionQHostArguments {
   pointBase: number; // pointBase x difficulty = min points for the correctly answered question
   interQuestionGap: number; // minimum time in milliseconds between questions
 }
-export interface iQuestionQGameData {
+export interface iQuestionQStartGameData {
+  questionAmount: number;
+  gameArguments: iQuestionQHostArguments;
+}
+export interface iQuestionQSaveGameData {
   gameId: string;
   gamemode: Gamemode;
   gameArguments: iQuestionQHostArguments;
@@ -139,6 +144,19 @@ export interface iQuestionQGameData {
     questionId: string,
     explanation: string
   }[];
+}
+export interface iQuestionQGameData {
+  gameId: string;
+  gamemode: Gamemode;
+  gameArguments: iQuestionQHostArguments;
+  playerStatistics: iQuestionQPlayerStatistic[];
+}
+export interface iQuestionQPlayerStatistic {
+  username: string;
+  score: number;
+  correctAnswers: number;
+  totalTime: number;
+  totalTimeCorrection: number;
 }
 export interface iQuestionQTip {
   questionId: string;
@@ -163,6 +181,13 @@ export interface iQuestionQTipFeedback {
   score: number;
   message: string;
   correctAnswer: string; // answerId
+}
+export interface iQuestionQPlayerDataAndExplanations {
+  player: iQuestionQPlayerData;
+  explanations: {
+    questionId: string,
+    explanation: string
+  }[];
 }
 export interface iQuestionQPlayerData {
   username: string;
