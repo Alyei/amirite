@@ -64,11 +64,6 @@ export class QuestionQCore {
     readonly gameArguments: iQuestionQHostArguments,
     private runningGames: RunningGames
   ) {
-    /* {
-        pointBase: 100,
-        interQuestionGap: 3000
-      }; */
-
     this._gamePhase = QuestionQGamePhase.Setup;
 
     this.LoadQuestions(questionIds);
@@ -402,10 +397,10 @@ export class QuestionQCore {
       this._gamePhase = QuestionQGamePhase.Running;
       const startGameData: iQuestionQStartGameData = this.GetStartGameData();
       for (let player of this._players) {
+        player.Inform(MessageType.QuestionQStartGameData, startGameData)
         if (player.state == PlayerState.Launch) {
           player.state = PlayerState.Playing;
           player.StartPing();
-          this.InformPlayer(player, MessageType.QuestionQStartGameData, startGameData)
           this.QuestionPlayer(player);
         }
       }
