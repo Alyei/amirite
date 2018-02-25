@@ -1,4 +1,4 @@
-import { Gamemode, iMillionairePlayerData, iGeneralQuestion, iMillionaireHostArguments, iMillionaireQuestionData, MessageType, iSpectatingData, PlayerState, iMillionaireGameData, iMillionairePlayerQuestionData, iMillionaireAnswerOption, PlayerRole, iMillionaireStartGameData, iMillionaireChooseMillionaireRequest, iMillionaireChooseMillionaireResponse, iMillionaireActionFeedback, iMillionaireChooseQuestionRequest, iMillionaireTip, iMillionaireTipFeedback, JokerType, iMillionaireFiftyFiftyJokerResponse, iMillionaireAudienceJokerResponse, iMillionaireAudienceJokerRequest, iMillionaireFiftyFiftyJokerRequest, iMillionaireAudienceJokerPlayerClue, iMillionaireCallJokerRequest, iMillionaireCallJokerResponse, iMillionaireCallJokerCallRequest, iMillionaireCallJokerClue } from "../models/GameModels";
+import { Gamemode, iMillionairePlayerData, iGeneralQuestion, iMillionaireHostArguments, iMillionaireQuestionData, MessageType, iSpectatingData, PlayerState, iMillionaireGameData, iMillionairePlayerQuestionData, iMillionaireAnswerOption, PlayerRole, iMillionaireStartGameData, iMillionaireChooseMillionaireRequest, iMillionaireChooseMillionaireResponse, iMillionaireActionFeedback, iMillionaireChooseQuestionRequest, iMillionaireTip, iMillionaireTipFeedback, JokerType, iMillionaireFiftyFiftyJokerResponse, iMillionaireAudienceJokerResponse, iMillionaireAudienceJokerRequest, iMillionaireFiftyFiftyJokerRequest, iMillionaireAudienceJokerPlayerClue, iMillionaireCallJokerRequest, iMillionaireCallJokerResponse, iMillionaireCallJokerCallRequest, iMillionaireCallJokerClue, iMillionaireChooseQuestionResponse, iMillionairePassRequest } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { RunningGames } from "./RunningGames";
 import { QuestionModel, MillionaireGameDataModel } from "../models/Schemas";
@@ -19,7 +19,7 @@ export enum MillionaireGamePhase {
 export class MillionaireCore {
     readonly gamemode: Gamemode = Gamemode.Millionaire;
     private millionaire: MillionairePlayer;
-    private players: MillionairePlayer[];
+    public players: MillionairePlayer[];
     private playerData: iMillionairePlayerData[];
     private questions: iMillionaireQuestionData[];
     private gamePhase: MillionaireGamePhase;
@@ -30,6 +30,9 @@ export class MillionaireCore {
         private gameArguments?: iMillionaireHostArguments,
         questionIds?: string[]
     ) {
+        this.players = [];
+        this.playerData = [];
+
         if (!this.gameArguments) {
             this.LoadGame(this.gameId);
         } else {
@@ -162,7 +165,12 @@ export class MillionaireCore {
     public Save(): void {
         const gameData: iMillionaireGameData = this.GetGameData();
 
-        this.playerData = gameData.players;
+        this.playerData = this.playerData.filter(x =>
+                !gameData.players.find(y =>
+                    x.username == y.username
+                )
+            )
+            .concat(gameData.players);
 
         const gameDataModel = new MillionaireGameDataModel(gameData);
         gameDataModel.save((err: any) => {
@@ -251,7 +259,8 @@ export class MillionaireCore {
                 difficulty: question.difficulty,
             },
             correctAnswer: letters[0],
-            questionTime: new Date()
+            questionTime: new Date(),
+            explanation: question.explanation
         };
     }
 
@@ -364,15 +373,23 @@ export class MillionaireCore {
         }
     }
 
-    public ChooseMillionaire(username: string) {
-        this.millionaire = this.players.find(player => player.username == username);
+    public ChooseMillionaire(username: string, choice: iMillionaireChooseMillionaireResponse) {
+        const mod: PlayerBase = this.players.find(mod => mod.username == username);
+        if (!mod) {
+            return; // user not found
+        }
+        if (![PlayerRole.Host, PlayerRole.Mod].find(role => role == mod.role)) {
+            return; // not permitted
+        }
+
+        this.millionaire = this.players.find(player => player.username == choice.username);
         if (!this.millionaire || this.millionaire.role != PlayerRole.Player || this.millionaire.state == PlayerState.Disqualified) {
             this.millionaire = undefined;
             const reply: iMillionaireActionFeedback = {
                 requestType: MessageType.MillionaireChooseMillionaireResponse,
                 response: {
                     errorMsg: "millionaire did not match the conditions",
-                    username: username,
+                    username: choice.username,
                     playerData: this.GetPlayerData(this.players)
                 }
             };
@@ -399,7 +416,15 @@ export class MillionaireCore {
         this.InformMods(MessageType.MillionaireChooseQuestionRequest, questionRange);
     }
 
-    public ChooseQuestion(questionId: string) {
+    public ChooseQuestion(username: string, choice: iMillionaireChooseQuestionResponse) {
+        const mod: PlayerBase = this.players.find(mod => mod.username == username);
+        if (!mod) {
+            return; // user not found
+        }
+        if (![PlayerRole.Host, PlayerRole.Mod].find(role => role == mod.role)) {
+            return; // not permitted
+        }
+
         if (!this.millionaire) {
             return; // no millionaire
         }
@@ -408,7 +433,7 @@ export class MillionaireCore {
             //return; // unanswered question remaining
         }
 
-        const questionBase: undefined | iMillionaireQuestionData = this.questions.find(q => q.questionId == questionId);
+        const questionBase: undefined | iMillionaireQuestionData = this.questions.find(q => q.questionId == choice.questionId);
         if (!questionBase) {
             return; // question not found
         }
@@ -436,6 +461,10 @@ export class MillionaireCore {
         for (let player of this.players.filter(p => p.role == PlayerRole.Player && p.state != PlayerState.Disqualified)) {
             player.state = PlayerState.Launch;
         }
+        this.millionaire.scoreArchive.push({
+            score: this.millionaire.score,
+            date: new Date()
+        });
         this.millionaire.score = 0;
         this.millionaire.checkpoint = 0;
         this.millionaire.currentQuestion = undefined;
@@ -451,6 +480,20 @@ export class MillionaireCore {
             ),
             1
         );
+    }
+
+    public MillionairePasses(username: string, passRequest: iMillionairePassRequest) {
+        if (!this.millionaire) {
+            return; // no millionaire
+        }
+        if (username != this.millionaire.username) {
+            return; // not the millionaire
+        }
+        if (this.millionaire.currentQuestion) {
+            return; // question to answer
+        }
+
+        this.EndOfMillionaire();
     }
 
     public MillionaireGivesTip(username: string, tip: iMillionaireTip) {
@@ -478,14 +521,17 @@ export class MillionaireCore {
             points: 0,
             score: this.millionaire.score,
             checkpoint: this.millionaire.checkpoint,
-            message: "invalid"
+            message: "invalid",
+            correctAnswer: this.millionaire.currentQuestion.correctAnswer,
+            explanation: this.millionaire.currentQuestion.explanation
         };
 
 
         if (tip.answerId == this.millionaire.currentQuestion.correctAnswer) {
             feedback.correct = true;
             feedback.message = "correct";
-            feedback.points = (this.millionaire.questionData.length + this.gameArguments.scoreCalcA) * this.gameArguments.scoreCalcB;
+            // score formula
+            feedback.points = (this.millionaire.score + this.gameArguments.scoreCalcA) * this.gameArguments.scoreCalcB;
 
             this.millionaire.score += feedback.points;
             feedback.score = this.millionaire.score;
@@ -504,26 +550,6 @@ export class MillionaireCore {
 
         this.millionaire.currentQuestion.feedback = feedback;
 
-        let player: undefined | MillionairePlayer;
-        let multiplier: number = 1; //!!!
-        for (let clue of this.millionaire.currentQuestion.audienceJokerData.playerClues) {
-            if (clue.clue.answerId == tip.answerId)
-                multiplier = 2; //!!!
-            else
-                multiplier = 1; //!!!
-
-            if (clue.clue.answerId == this.millionaire.currentQuestion.correctAnswer)
-                clue.karmaPoints = multiplier * 10; //!!!
-            else
-                clue.karmaPoints = multiplier * -10; //!!!
-            
-            player = this.players.find(p => p.username == clue.username);
-            if (player) {
-                player.karmaScore += clue.karmaPoints;
-                player.Inform(MessageType.MillionaireAudienceJokerClueFeedback, clue);
-            }
-        }
-
         this.millionaire.questionData.push(this.millionaire.currentQuestion);
 
         const th: Tryharder = new Tryharder();
@@ -541,6 +567,28 @@ export class MillionaireCore {
             this.DisqualifyPlayer(this.millionaire);
             return; // unreachable
         }
+
+        let player: undefined | MillionairePlayer;
+        let multiplier: number = 1; //!!!
+        for (let clue of this.millionaire.currentQuestion.audienceJokerData.playerClues) {
+            if (clue.clue.answerId == tip.answerId)
+                multiplier = 2; //!!!
+            else
+                multiplier = 1; //!!!
+
+            if (clue.clue.answerId == this.millionaire.currentQuestion.correctAnswer)
+                clue.karmaPoints = multiplier * 10; //!!!
+            else
+                clue.karmaPoints = multiplier * -10; //!!!
+            
+            player = this.players.find(p => p.username == clue.username);
+            if (player) {
+                player.karmaScore += clue.karmaPoints;
+                player.Inform(MessageType.MillionaireAudienceJokerClueFeedback, clue);
+            } else clue.karmaPoints = 0;
+        }
+
+        this.millionaire.currentQuestion = undefined;
 
         if (feedback.correct) {
             this.GetNextQuestion();

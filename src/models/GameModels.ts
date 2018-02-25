@@ -284,7 +284,7 @@ export interface iMillionaireHostArguments {
   // questionsPerDifficulty: number; // amount of questions per difficulty
   checkpoints: number[]; // score checkpoints
   jokers: JokerType[]; // jokers per player ??per millionaire??
-  scoreCalcA: number; // (amount of already answered questions + scoreCalcA) * scoreCalcB = points for a correctly answered question
+  scoreCalcA: number; // (current score + scoreCalcA) * scoreCalcB = points for a correctly answered question
   scoreCalcB: number;
 }
 export interface iMillionaireGameData {
@@ -314,7 +314,11 @@ export interface iMillionairePlayerData {
   questionData: iMillionairePlayerQuestionData[];
   karmaScore: number;
   millionaireCounter: number;
-  totalScore: number;
+  scoreArchive: iMillionaireScoreEntry[];
+}
+export interface iMillionaireScoreEntry {
+  score: number;
+  date: Date;
 }
 export interface iMillionairePlayerQuestion {
   questionId: string;
@@ -336,6 +340,7 @@ export interface iMillionairePlayerQuestionData {
   fiftyFiftyJokerData?: iMillionaireFiftyFiftyJokerData;
   callJokerData?: iMillionaireCallJokerData;
   feedback?: iMillionaireTipFeedback;
+  explanation?: string;
 }
 export interface iMillionaireQuestionData {
   questionId: string;
@@ -407,6 +412,8 @@ export interface iMillionaireTipFeedback {
   score: number;
   checkpoint: number;
   message: string;
+  correctAnswer: string;
+  explanation?: string;
 }
 // --> Server
 export interface iMillionairePassRequest { }

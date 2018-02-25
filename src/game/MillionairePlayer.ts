@@ -1,4 +1,4 @@
-import { iMillionairePlayerData, PlayerRole, PlayerState, JokerType, iMillionairePlayerQuestionData } from "../models/GameModels";
+import { iMillionairePlayerData, PlayerRole, PlayerState, JokerType, iMillionairePlayerQuestionData, iMillionaireScoreEntry } from "../models/GameModels";
 import { PlayerBase, iPlayerBaseArguments } from "./PlayerBase";
 
 export class MillionairePlayer extends PlayerBase implements iMillionairePlayerData {
@@ -11,7 +11,7 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
     questionData: iMillionairePlayerQuestionData[];
     karmaScore: number;
     score: number;
-    totalScore: number;
+    scoreArchive: iMillionaireScoreEntry[];
     millionaireCounter: number;
 
     /**
@@ -27,9 +27,9 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
         this.karmaScore = 0;
         this.millionaireCounter = 0;
         this.checkpoint = 0;
-        this.totalScore = 0;
+        this.scoreArchive = [];
         this.questionData = [];
-        this.jokers = [];
+        this.jokers = jokers || [];
     }
 
     public ApplyData(playerData: iMillionairePlayerData): void {
@@ -40,7 +40,7 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
         this.jokers = playerData.jokers;
         this.questionData = playerData.questionData;
         this.karmaScore = playerData.karmaScore;
-        this.totalScore = playerData.totalScore;
+        this.scoreArchive = playerData.scoreArchive;
         this.millionaireCounter = playerData.millionaireCounter;
         //this.score = playerData.score;
     }
@@ -60,7 +60,7 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
             karmaScore: this.karmaScore,
             checkpoint: this.checkpoint,
             millionaireCounter: this.millionaireCounter,
-            totalScore: this.totalScore
+            scoreArchive: this.scoreArchive
         }
     }
 }
