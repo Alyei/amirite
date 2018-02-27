@@ -85,6 +85,8 @@ body {
 .GameEndScreenGrid {
   color: whitesmoke;
 }
+.GameEndRow {
+}
 
 @font-face {
   font-family: Roboto;

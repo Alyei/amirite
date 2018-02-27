@@ -12,15 +12,15 @@ export default class QuestionQ extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      questionId: '12345',
-      question: 'Question',
+      questionId: '',
+      question: '',
       pictureId: '',
-      options: [['A', 'ansA'], ['B', 'ansB'], ['C', 'ansC'], ['D', 'ansD']],
-      timeLimit: 180000,
+      options: [],
+      timeLimit: 0,
       difficulty: null,
-      questionTime: '2018-02-15T20:53:27.576Z',
+      questionTime: '',
       selectedOptionId: '',
-      playerState: 1,
+      playerState: 0,
       playerScore: 0,
       playerData: null,
       socket: this.props.socket,
@@ -31,6 +31,8 @@ export default class QuestionQ extends React.Component {
     this.setQuestion = this.setQuestion.bind(this);
     //this.setSockets = this.props.setSockets.bind(this);
     //this.closeSockets = this.props.closeSockets.bind(this);
+    this.handlePlayerFinished = this.handlePlayerFinished.bind(this);
+    this.handleGameFinished = this.handleGameFinished.bind(this);
   }
 
   componentDidMount() {
@@ -40,7 +42,7 @@ export default class QuestionQ extends React.Component {
   componentWillUnmount() {
     //leave game
     this.props.closeSockets(
-      this.props.match.params.gameid,
+      this.props.match.params.gameid.split('?')[0],
       this.props.username
     );
     this.props.onRef(undefined);
@@ -107,7 +109,7 @@ export default class QuestionQ extends React.Component {
     this.state.socket.emit(
       'start game',
       JSON.stringify({
-        gameId: this.props.match.params.gameid,
+        gameId: this.props.match.params.gameid.split('?')[0],
         username: this.props.username,
       })
     );
@@ -124,7 +126,7 @@ export default class QuestionQ extends React.Component {
       'action',
       JSON.stringify({
         username: this.props.username,
-        gameId: this.props.match.params.gameid,
+        gameId: this.props.match.params.gameid.split('?')[0],
         msgType: this.state.socket.MessageType.QuestionQTip,
         data: {
           questionId: questionId,
@@ -135,6 +137,8 @@ export default class QuestionQ extends React.Component {
   }
   handlePlayerFinished(jsonPlayerData) {
     var playerData = JSON.parse(jsonPlayerData);
+    console.log(playerData);
+    console.log(this.props);
     if (this.props.username === playerData.username) {
       this.setState({ playerData: playerData, playerState: playerData.state });
     } else {
@@ -143,7 +147,7 @@ export default class QuestionQ extends React.Component {
   }
   handleGameFinished(jsonGameData) {
     var gameData = JSON.parse(jsonGameData);
-    this.EndScreen.printLeaderboard(gameData);
+    this.EndScreen.handleGameFinished(gameData);
   }
   //#region Display
   printQuestion(questionId) {
@@ -238,8 +242,8 @@ export default class QuestionQ extends React.Component {
                   <GameTime
                     className="GameTime"
                     onRef={(pBar) => (this.ProgBar = pBar)}
-                    startTime={this.state.questionTime}
-                    timeLimit={this.state.timeLimit}
+                    starttime={this.state.questionTime}
+                    timelimit={this.state.timeLimit}
                   />
                 ) : null}
               </Col>

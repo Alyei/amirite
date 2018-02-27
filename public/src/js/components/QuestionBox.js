@@ -17,8 +17,9 @@ export default class QuestionBox extends React.Component {
     this.props.onRef(undefined);
   }
   render() {
+    const { onRef, ...other } = this.props;
     return (
-      <div {...this.props}>
+      <div {...other}>
         {this.props.text}
         {this.props.image !== '' ? this.props.image : ''}
       </div>

@@ -1,46 +1,76 @@
-import React from "react";
-import { Button, FormGroup, FormControl } from "react-bootstrap";
+import React from 'react';
+import { Button, FormGroup, FormControl } from 'react-bootstrap';
 
 export default class Form extends React.Component {
   constructor() {
     super();
     this.state = {
-      username: "",
-      password: "",
-      repassword: "",
-      email: ""
+      username: '',
+      password: '',
+      repassword: '',
+      email: '',
     };
     this.handleValueChange = this.handleValueChange.bind(this);
-    this.onSubmit = this.handleFormSubmit.bind(this);
+    this.onSignup = this.handleSignup.bind(this);
+    this.onLogin = this.handleLogin.bind(this);
   }
 
-  handleFormSubmit(event) {
+  handleSignup(event) {
     event.preventDefault();
-    fetch("https://localhost:443/api/signup", {
-      method: "POST",
+    fetch('https://localhost:443/api/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
       body: JSON.stringify({
         username: this.state.username,
-        email: this.state.email,
-        password: this.state.password
-      })
+        password: this.state.password,
+        email: this.state.email
+      }),
     })
-      .then(res => {
+      .then((res) => {
         console.log(res);
         if (res.status === 200) return res.json();
         else return { status: res.status };
       })
-      .then(responseJson => {
+      .then((responseJson) => {
+        console.log(responseJson);
+      });
+  }
+  handleLogin(event) {
+    console.log(event);
+    event.preventDefault();
+    fetch('https://localhost:443/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      }),
+    })
+      .then((res) => {
+        console.log(res.body);
+        if (res.status === 200) return res.json();
+        else return { status: res.status };
+      })
+      .then((responseJson) => {
         console.log(responseJson.status);
       });
   }
+
   handleValueChange(event) {
     this.setState({ [event.target.name]: event.target.value });
   }
 
   render() {
-    if (this.props.formType === "register") {
+    //#region Signup
+    if (this.props.formType === 'register') {
       return (
-        <form action="/api/signup" onSubmit={this.onSubmit}>
+        <form onSubmit={this.onSignup}>
           <FormGroup id="formControlsUsername">
             <label>Username</label>
             <FormControl
@@ -81,15 +111,16 @@ export default class Form extends React.Component {
           <Button type="submit">Register</Button>
         </form>
       );
-    } else if (this.props.formType === "login") {
+      //#endregion Signup
+    } else if (this.props.formType === 'login') {
       return (
-        <form action="/api/login" method="post">
+        <form onSubmit={this.onLogin}>
           <FormGroup id="formControlsUsername">
             <label>Username</label>
             <FormControl
+              value={this.state.username}
               name="username"
               onChange={this.handleValueChange}
-              value={this.state.username}
               type="text"
               placeholder="Enter Username"
             />
@@ -97,9 +128,9 @@ export default class Form extends React.Component {
           <FormGroup id="formControlsPassword">
             <label>Password</label>
             <FormControl
+              value={this.state.password}
               name="password"
               onChange={this.handleValueChange}
-              value={this.state.password}
               type="password"
               placeholder="Enter Password"
             />

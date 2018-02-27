@@ -73,6 +73,7 @@ export default class GameModeManager extends React.Component {
         console.log(response);
         return response.gamemode;
       }); //change to response.gamemode
+      
   }
   setSockets() {
     console.log(this.state.socket.MessageType.QuestionQQuestion);

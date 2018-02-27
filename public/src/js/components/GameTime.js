@@ -31,7 +31,7 @@ export default class GameTime extends React.Component {
   setPercentageTimeNow() {
     this.setState({
       percTimeNow:
-        Math.round(this.state.timeNow / this.props.timeLimit * 100 * 100) / 100,
+        Math.round(this.state.timeNow / this.props.timelimit * 100 * 100) / 100,
     });
   }
 
@@ -53,9 +53,10 @@ export default class GameTime extends React.Component {
     }
   }
   render() {
+    const { onRef, ...other } = this.props;
     return (
       <ProgressBar
-        {...this.props}
+        {...other}
         now={100 - this.state.percTimeNow}
         onChange={this.checkTimeOut()}
       />

@@ -25,7 +25,8 @@ class HostGame extends React.Component {
     this.setState({ selectedMode: event.target.value });
   }
   handleHostGameClick() {
-    console.log(this.props);
+    const params = new URLSearchParams(this.props.location.search);
+    this.setState({ username: params.get('username') });
     Socket.Connect(this.state.selectedMode)
       .then((sock) => {
         console.log(sock);
@@ -36,7 +37,8 @@ class HostGame extends React.Component {
           console.log('got game with id', gameid);
           console.log(this.state.socket);
           this.props.history.push({
-            pathname: '/game/' + gameid + '?username=' + this.state.username,
+            pathname: '/game/' + gameid,
+            search: '?username=' + this.state.username,
             host: true,
             socketio: this.state.socket,
           });
