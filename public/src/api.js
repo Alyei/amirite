@@ -1,9 +1,7 @@
-import React from 'react';
 import io from 'socket.io-client';
-import { Redirect } from 'react-router';
 import PropTypes from 'prop-types';
 
-export var socket = null; //io.connect('https://localhost:443/');
+export var socket = null;
 
 export function Connect(gamemodeToConnect) {
   return new Promise((resolve, reject) => {
