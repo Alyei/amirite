@@ -13,7 +13,11 @@ import {
   Gamemode,
   iQuestionQGameData,
   iQuestionQTipData,
-  iSpectatingData
+  iSpectatingData,
+  iQuestionQPlayerDataAndExplanations,
+  iQuestionQPlayerStatistic,
+  iQuestionQSaveGameData,
+  iQuestionQStartGameData
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
@@ -60,11 +64,6 @@ export class QuestionQCore {
     readonly gameArguments: iQuestionQHostArguments,
     private runningGames: RunningGames
   ) {
-    /* {
-        pointBase: 100,
-        interQuestionGap: 3000
-      }; */
-
     this._gamePhase = QuestionQGamePhase.Setup;
 
     this.LoadQuestions(questionIds);
@@ -107,11 +106,22 @@ export class QuestionQCore {
     return result;
   }
 
+  public GetSaveGameData(): iQuestionQSaveGameData {
+    const result: iQuestionQSaveGameData = {
+      gameId: this.gameId,
+      gamemode: this.Gamemode,
+      gameArguments: this.gameArguments,
+      players: this.GetPlayerData(),
+      explanations: this.GetExplanations()
+    };
+    return result;
+  }
+
   /**
    * Saves the game's data into the DB
    */
   public Save(): void {
-    const gameData = this.GetGameData();
+    const gameData: iQuestionQSaveGameData = this.GetSaveGameData();
     const gameDataModel = new QuestionQGameDataModel(gameData);
     gameDataModel.save((err: any) => {
       if (err) {
@@ -322,13 +332,18 @@ export class QuestionQCore {
   private DisqualifyPlayer(player: QuestionQPlayer): void {
     player.state = PlayerState.Disqualified;
     player.StopPing();
+
+    const data: iQuestionQPlayerDataAndExplanations = {
+      player: player.GetPlayerData(),
+      explanations: this.GetExplanations()
+    }
     const th: Tryharder = new Tryharder();
     th.Tryhard(
       () => {
         return this.InformPlayer(
           player,
-          MessageType.QuestionQPlayerData,
-          player.GetPlayerData()
+          MessageType.QuestionQPlayerDataAndExplanations,
+          data
         );
       },
       3000, // delay
@@ -357,7 +372,10 @@ export class QuestionQCore {
         );
         this._players.push(newPlayer);
         if (newPlayer.state == PlayerState.Launch)
+        {
+          this.InformPlayer(newPlayer, MessageType.QuestionQStartGameData, this.GetStartGameData())
           this.QuestionPlayer(newPlayer);
+        }
         return true;
       }
     }
@@ -377,7 +395,9 @@ export class QuestionQCore {
       this._questions.length > 0
     ) {
       this._gamePhase = QuestionQGamePhase.Running;
+      const startGameData: iQuestionQStartGameData = this.GetStartGameData();
       for (let player of this._players) {
+        player.Inform(MessageType.QuestionQStartGameData, startGameData)
         if (player.state == PlayerState.Launch) {
           player.state = PlayerState.Playing;
           player.StartPing();
@@ -386,6 +406,14 @@ export class QuestionQCore {
       }
       return true;
     } else return false;
+  }
+
+  public GetStartGameData(): iQuestionQStartGameData {
+    const startGameData: iQuestionQStartGameData = {
+      questionAmount: this._questions.length,
+      gameArguments: this.gameArguments
+    };
+    return startGameData;
   }
 
   /**
@@ -406,12 +434,58 @@ export class QuestionQCore {
     );
   }
 
+  public GetPlayerStatistics(): iQuestionQPlayerStatistic[] {
+    const players = this.GetPlayerData();
+    const result: iQuestionQPlayerStatistic[] = [];
+    for (let player of players) {
+      result.push({
+        username: player.username,
+        score: player.score,
+        correctAnswers: player.tips.filter(x => x.feedback.correct).length,
+        totalTime: this.GetSum(
+          player.tips.map(
+            (value: iQuestionQTipData, index: number, array: iQuestionQTipData[]) => {
+              return value.feedback.duration;
+            })
+        ),
+        totalTimeCorrection: this.GetSum(
+          player.tips.map(
+            (value: iQuestionQTipData, index: number, array: iQuestionQTipData[]) => {
+              return value.feedback.timeCorrection;
+            })
+        )
+      });
+    }
+    return result;
+  }
+
+  public GetSum(numberArray: number[]): number {
+    let result: number = 0;
+    for (let j of numberArray)
+    {
+      result += j;
+    }
+    return result;
+  }
+
   /**
    * Returns the game's data
    * @returns - the game's data according to the iQuestionQGameData-interface
    */
   public GetGameData(): iQuestionQGameData {
-    const explanations: { questionId: string; explanation: string }[] = [];
+    return {
+      gameId: this.gameId,
+      gamemode: Gamemode.QuestionQ,
+      gameArguments: this.gameArguments,
+      playerStatistics: this.GetPlayerStatistics(),
+    };
+  }
+
+  private GetExplanations() {
+    const explanations: {
+      questionId: string;
+      explanation: string;
+    }[] = [];
     for (let q of this._questions) {
       if (q.explanation)
         explanations.push({
@@ -419,13 +493,7 @@ export class QuestionQCore {
           explanation: q.explanation
         });
     }
-    return {
-      gameId: this.gameId,
-      gamemode: Gamemode.QuestionQ,
-      gameArguments: this.gameArguments,
-      players: this.GetPlayerData(),
-      explanations: explanations
-    };
+    return explanations;
   }
 
   /**
@@ -518,21 +586,22 @@ export class QuestionQCore {
         player.state = PlayerState.Finished;
         player.StopPing();
 
-        const th: Tryharder = new Tryharder();
-        if (
-          !th.Tryhard(
-            () => {
-              return this.InformPlayer(
-                player,
-                MessageType.QuestionQPlayerData,
-                player.GetPlayerData()
-              );
-            },
-            3000, // delay
-            3 // tries
-          )
-        ) {
+        const data: iQuestionQPlayerDataAndExplanations = {
+          player: player.GetPlayerData(),
+          explanations: this.GetExplanations()
         }
+        const th: Tryharder = new Tryharder();
+        th.Tryhard(
+          () => {
+            return this.InformPlayer(
+              player,
+              MessageType.QuestionQPlayerDataAndExplanations,
+              data
+            );
+          },
+          3000, // delay
+          3 // tries
+        );
 
         this.CheckForEnd();
       }

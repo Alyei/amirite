@@ -15,7 +15,7 @@ export interface iGeneralQuestion {
 export interface iPlayerAction {
   username: string;
   gameId: string;
-  msgType: MessageType; //myb msgType?
+  msgType: MessageType;
   data: any;
 }
 
@@ -92,10 +92,11 @@ export enum MessageType {
   // QuestionQ
   QuestionQQuestion = 1,
   QuestionQTipFeedback,
-  QuestionQPlayerData,
+  QuestionQPlayerDataAndExplanations,
   QuestionQTip,
   QuestionQGameData,
   QuestionQHostArguments,
+  QuestionQStartGameData,
 
   // Determination
   DeterminationQuestion = 10,
@@ -106,15 +107,28 @@ export enum MessageType {
   DeterminationHostArguments,
 
   // Millionaire
-  MillionaireSpectateData = 20,
-  MillionaireQuestion,
+  MillionaireQuestion = 20,
   MillionaireTip,
   MillionaireTipFeedback,
   MillionaireAudienceJokerRequest,
   MillionaireAudienceJokerResponse,
   MillionaireAudienceJokerClue,
+  MillionaireAudienceJokerClueFeedback,
+  MillionaireFiftyFiftyJokerRequest,
+  MillionaireFiftyFiftyJokerResponse,
+  MillionaireCallJokerRequest,
+  MillionaireCallJokerResponse,
+  MillionaireCallJokerCallRequest,
+  MillionaireCallJokerClue,
+  MillionaireChooseMillionaireRequest,
+  MillionaireChooseMillionaireResponse,
+  MillionaireChooseQuestionRequest,
+  MillionaireChooseQuestionResponse,
   MillionairePassRequest,
-  MillinairePassResponse //...
+  MillinairePassResponse,
+  MillionaireGameData,
+  MillionairePlayerData,
+  MillionaireActionFeedback,
 }
 export enum GameAction {
   Start = 0,
@@ -130,7 +144,11 @@ export interface iQuestionQHostArguments {
   pointBase: number; // pointBase x difficulty = min points for the correctly answered question
   interQuestionGap: number; // minimum time in milliseconds between questions
 }
-export interface iQuestionQGameData {
+export interface iQuestionQStartGameData {
+  questionAmount: number;
+  gameArguments: iQuestionQHostArguments;
+}
+export interface iQuestionQSaveGameData {
   gameId: string;
   gamemode: Gamemode;
   gameArguments: iQuestionQHostArguments;
@@ -139,6 +157,19 @@ export interface iQuestionQGameData {
     questionId: string,
     explanation: string
   }[];
+}
+export interface iQuestionQGameData {
+  gameId: string;
+  gamemode: Gamemode;
+  gameArguments: iQuestionQHostArguments;
+  playerStatistics: iQuestionQPlayerStatistic[];
+}
+export interface iQuestionQPlayerStatistic {
+  username: string;
+  score: number;
+  correctAnswers: number;
+  totalTime: number;
+  totalTimeCorrection: number;
 }
 export interface iQuestionQTip {
   questionId: string;
@@ -163,6 +194,13 @@ export interface iQuestionQTipFeedback {
   score: number;
   message: string;
   correctAnswer: string; // answerId
+}
+export interface iQuestionQPlayerDataAndExplanations {
+  player: iQuestionQPlayerData;
+  explanations: {
+    questionId: string,
+    explanation: string
+  }[];
 }
 export interface iQuestionQPlayerData {
   username: string;
@@ -242,85 +280,158 @@ export interface iDeterminationPlayerData {
 
 //#region Millionaire
 export interface iMillionaireHostArguments {
-  maxQuestions: number;
-  questionsPerDifficulty: number;
-  checkpoints: number[];
+  maxQuestions: number; // maximum amount of questions per player
+  // questionsPerDifficulty: number; // amount of questions per difficulty
+  checkpoints: number[]; // score checkpoints
+  jokers: JokerType[]; // jokers per player ??per millionaire??
+  scoreCalcA: number; // (current score + scoreCalcA) * scoreCalcB = points for a correctly answered question
+  scoreCalcB: number;
 }
 export interface iMillionaireGameData {
   gameId: string;
-  players: iMillionairePlayer;
+  gamemode: Gamemode;
+  gameArguments: iMillionaireHostArguments;
+  questions: iMillionaireQuestionData[];
+  players: iMillionairePlayerData[];
+}
+export interface iMillionaireStartGameData {
+  possibleCheckpoints: number[];
+  gameArguments: iMillionaireHostArguments;
+  players: iMillionairePlayerData;
 }
 export interface iMillionaireTip {
   questionId: string;
   answerId: string;
 }
-export interface iMillionairePlayer {
+export interface iMillionairePlayerData {
   username: string;
-  state: number;
+  state: PlayerState;
+  role: PlayerRole;
   score: number;
   checkpoint: number;
   jokers: JokerType[];
-  activeJokers?: JokerType[];
-  currentQuestion?: iMillionaireQuestionData;
-  questionData: iMillionaireQuestionData[];
+  currentQuestion?: iMillionairePlayerQuestionData;
+  questionData: iMillionairePlayerQuestionData[];
   karmaScore: number;
+  millionaireCounter: number;
+  scoreArchive: iMillionaireScoreEntry[];
 }
-export interface iMillionaireQuestion {
+export interface iMillionaireScoreEntry {
+  score: number;
+  date: Date;
+}
+export interface iMillionairePlayerQuestion {
   questionId: string;
   question: string;
   pictureId?: string;
-  options: [string, string][];
+  options: iMillionaireAnswerOption[];
   difficulty: number;
 }
-export interface iMillionaireQuestionData {
-  question: iMillionaireQuestion;
+export interface iMillionaireAnswerOption {
+  answerId: string;
+  answer: string;
+}
+export interface iMillionairePlayerQuestionData {
+  question: iMillionairePlayerQuestion;
   correctAnswer: string;
+  questionTime: Date;
   tip?: iMillionaireTip;
-  audienceJokerData?: iMillionaireAudienceJokerData; // mehrere?
-  //fiftyFiftyJokerData?:   iMillionaireFiftyFiftyJokerData; // mehrere?
+  audienceJokerData?: iMillionaireAudienceJokerData;
+  fiftyFiftyJokerData?: iMillionaireFiftyFiftyJokerData;
+  callJokerData?: iMillionaireCallJokerData;
   feedback?: iMillionaireTipFeedback;
+  explanation?: string;
+}
+export interface iMillionaireQuestionData {
+  questionId: string;
+  question: string;
+  pictureId?: string;
+  answer: string;
+  otherOptions: string[];
+  difficulty: number;
+  explanation?: string;
+  questionCounter: number;
+}
+
+// sent to inform about AudienceJoker
+export interface iMillionaireAudienceJokerRequest {
+  questionId: string;
+}
+export interface iMillionaireAudienceJokerResponse {
+  possibleResponses: number;
 }
 export interface iMillionaireAudienceJokerData {
-  // username, clue
-  playerClues: { [id: string]: iMillionaireAudienceJokerPlayerClue };
+  playerClues: iMillionaireAudienceJokerPlayerClueData[];
+  response: iMillionaireAudienceJokerResponse;
 }
-// sent to inform about AudienceJoker
-export interface iMillionaireAudienceJokerActive {}
+export interface iMillionaireAudienceJokerPlayerClueData {
+  username: string;
+  clue: iMillionaireAudienceJokerPlayerClue;
+  karmaPoints?: number;
+}
 // sent from audience and to the player
 export interface iMillionaireAudienceJokerPlayerClue {
   questionId: string;
   answerId: string;
 }
-/*export interface iMillionaireJokerRequest {
-    questionId: string;
-    jokerId:    JokerType;
-    arguments:  string[];
+export interface iMillionaireFiftyFiftyJokerRequest {
+  questionId: string;
 }
-// for every joker
-export interface iMillionaireJokerResponse {
-    questionId: string;
-    jokerId:    JokerType;
-    answerId:   string;
-}*/
+export interface iMillionaireFiftyFiftyJokerResponse {
+  remainingOptions: string[]; // answerIds
+}
+export interface iMillionaireFiftyFiftyJokerData {
+  response: iMillionaireFiftyFiftyJokerResponse;
+}
+
+export interface iMillionaireCallJokerRequest {
+  questionId: string;
+}
+export interface iMillionaireCallJokerResponse {
+  questionId: string;
+  callOptions: iMillionairePlayerData[];
+}
+export interface iMillionaireCallJokerCallRequest {
+  questionId: string;
+  username: string;
+}
+export interface iMillionaireCallJokerClue {
+  questionId: string;
+  answerId: string;
+}
+export interface iMillionaireCallJokerData {
+  callOptions: string[]; // usernames
+  call?: string; // username
+  clue?: iMillionaireCallJokerClue;
+}
+
 export interface iMillionaireTipFeedback {
   questionId: string;
   correct: boolean;
   points: number;
   score: number;
+  checkpoint: number;
   message: string;
-}
-export interface iMillionaireSpectateData {
-  type: MessageType;
-  data: {};
-}
-// --> Client
-export interface iMillionairePassRequest {
-  currentCheckpoint: number;
-  possibleCheckpoints: number[];
+  correctAnswer: string;
+  explanation?: string;
 }
 // --> Server
-export interface iMillionairePassResponse {
-  giveUp: boolean;
+export interface iMillionairePassRequest { }
+export interface iMillionaireChooseMillionaireRequest {
+  players: iMillionairePlayerData[];
+}
+export interface iMillionaireChooseMillionaireResponse {
+  username: string;
+}
+export interface iMillionaireChooseQuestionRequest {
+  questions: iMillionaireQuestionData[];
+}
+export interface iMillionaireChooseQuestionResponse {
+  questionId: string;
+}
+export interface iMillionaireActionFeedback {
+  requestType: MessageType;
+  response: any;
 }
 //#endregion
 
