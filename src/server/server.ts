@@ -78,7 +78,7 @@ export class server {
     this.app.use(
       session({
         secret: "AlternativeGraphicalCatdog", //probably change sessionsecret
-        name: "test",
+        name: "session",
         store: new MongoStore({
           url: "mongodb://localhost:27017/amirite",
           ttl: 14 * 24 * 60 * 60
