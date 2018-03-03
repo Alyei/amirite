@@ -6,6 +6,7 @@ import {
   iDeterminationHostArguments
 } from "../models/GameModels";
 import { QuestionQGame } from "./QuestionQGame";
+import { MillionaireGame } from "./MillionaireGame";
 //import { DeterminationGame } from "./DeterminationGame";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "../server/logging";
@@ -51,10 +52,55 @@ export class GameFactory {
               const newGame: iGame = new QuestionQGame(
                 generalArguments,
                 namespaceSocket,
-                gameArguments || {
-                  pointBase: 100,
-                  interQuestionGap: 3000
-                },
+                gameArguments || { pointBase: 100, interQuestionGap: 3000 },
+                this.Sessions
+              );
+              try {
+                newGame
+                  .AddPlayer(
+                    generalArguments.owner,
+                    generalArguments.ownerSocket,
+                    2
+                  )
+                  .then((res: any) => {
+                    logger.log(
+                      "info",
+                      "Added owner %s as player to game %s.",
+                      generalArguments.owner,
+                      generalArguments.gameId
+                    );
+                  })
+                  .catch((err: any) => {
+                    logger.log(
+                      "info",
+                      "Adding of player %s to game %s was unsuccessful.",
+                      generalArguments.owner,
+                      generalArguments.gameId
+                    );
+                  });
+                this.Sessions.addRunningGame(newGame)
+                  .then((res: any) => {
+                    logger.log(
+                      "info",
+                      "New QuestionQ game: %s hosted.",
+                      generalArguments.gameId
+                    );
+                    resolve(res);
+                  })
+                  .catch((err: any) => {
+                    logger.log("info", err);
+                    reject(err);
+                  });
+              } catch (e) {
+                logger.log("error", e.message);
+              }
+              break;
+            }
+            case Gamemode.Millionaire: {
+              const newGame: iGame = new MillionaireGame(
+                generalArguments,
+                namespaceSocket,
+                gameArguments || { pointBase: 100, interQuestionGap: 3000 },
                 this.Sessions
               );
               try {

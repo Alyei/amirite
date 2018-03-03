@@ -44,8 +44,8 @@ export class io {
     this.PlayerComm = playercom;
     this.QuestionQConf();
     this.DeterminationConf();
+    this.MillionaireConf();
     //   this.DuelConf();
-    //this.MillionaireConf();
   }
 
   /**
@@ -249,79 +249,27 @@ export class io {
     });
   }
 
-  //   private MillionaireConf(): void {
-  //     this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
-  //       playerSocket.on("host game", (username: string) => {
-  //         let gameId: string = this.InitGame.HostGame(playerSocket, {
-  //           mode: "millionaire",
-  //           owner: "alyei" //change
-  //         });
-  //         logger.log(
-  //           "info",
-  //           "New Millionaire session hosted. ID: %s, Owner: %s",
-  //           gameId,
-  //           username
-  //         );
-  //       });
+  private MillionaireConf(): void {
+    this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
+      playerSocket.on("host game", (username: string) => {
+        this.HostGame(playerSocket, username, GModels.Gamemode.Millionaire);
+      });
 
-  //       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
-  //         for (let item of this.GameSessions.Sessions) {
-  //           if (item.id == opt.gameId) {
-  //             item.AddPlayer(opt.username, playerSocket);
-  //           }
-  //         }
-  //       });
+      playerSocket.on("join game", (optS: string) => {
+        this.JoinGame(playerSocket, optS);
+      });
 
-  //       playerSocket.on("tip", (arg: any) => {
-  //         //on tip
-  //       });
+      playerSocket.on("start game", (optS: string) => {
+        this.StartGame(playerSocket, optS);
+      });
 
-  //       playerSocket.on("joker", (arg: any) => {
-  //         //joker
-  //       });
+      playerSocket.on("leave game", (optS: string) => {
+        this.LeaveGame(playerSocket, optS);
+      });
 
-  //       playerSocket.on("clue", (arg: any) => {
-  //         //clue
-  //       });
-  //     });
-
-  //     //place
-  //   }
-
-  //   private DuelConf(): void {
-  //     this.Duel.on("connection", (playerSocket: SocketIO.Socket) => {
-  //       playerSocket.on("host game", (username: string) => {
-  //         let gameId: string = this.InitGame.HostGame(playerSocket, {
-  //           mode: "duel",
-  //           owner: "alyei" //change
-  //         });
-  //         logger.log(
-  //           "info",
-  //           "New Duel session hosted. ID: %s, Owner: %s",
-  //           gameId,
-  //           username
-  //         );
-  //       });
-
-  //       playerSocket.on("join game", (opt: IEvents.IJoinGame) => {
-  //         for (let item of this.GameSessions.Sessions) {
-  //           if (item.id == opt.gameId) {
-  //             item.AddPlayer(opt.username, playerSocket);
-  //           }
-  //         }
-  //       });
-
-  //       playerSocket.on("tip", (arg: any) => {
-  //         //on tip
-  //       });
-
-  //       playerSocket.on("category", (arg: any) => {
-  //         //category
-  //       });
-
-  //       playerSocket.on("difficulty", (arg: any) => {
-  //         //difficulty
-  //       });
-  //     });
-  //   }
+      playerSocket.on("action", (optS: string) => {
+        this.PlayerAction(playerSocket, optS);
+      });
+    });
+  }
 }

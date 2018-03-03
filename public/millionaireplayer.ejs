@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Socket.IO chat</title>
+    <style>
+    </style>
+</head>
+
+<body>
+    <ul id="messages"></ul>
+    <button id="host" type="button">Host game</button>
+    <button id="start" type="button">Start Game</button>
+
+
+    <br>
+
+    <input type="text" id="userid" name="data">
+    <button id="chpl" type="button">Confirm Player</button>
+    <br>
+    <input type="text" id="questionid" name="data">
+    <button id="chqu" type="button">Confirm question</button>
+
+    <br>
+
+    <div id="question">
+        <p id="users"></p>
+        <p id="questions"></p>
+    </div>
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+        $(function () {
+
+            var host = $("#host"),
+                start = $("#start"),
+                chpl = $("#chpl"),
+                chqu = $("#chqu")
+
+            $("#question").css({
+                top: '100px',
+                left: '150px',
+                position: 'absolute'
+            })
+
+            var socket = io('/questionq');
+
+            var currentId;
+            var chosenPlayer;
+            var chosenQuestion;
+
+            host.click(function () {
+                socket.emit("host game", JSON.stringify({
+                    "GeneralArgs": {
+                        "username": "host"
+                    },
+                    "HostData": {
+                        "maxQuestions": 4,
+                        "checkpoint": [0, 2],
+                        "jokers": [],
+                        "scoreCalcA": 100,
+                        "scoreCalcB": 3
+                    }
+                }));
+                return false;
+            })
+            start.click(function () {
+                socket.emit("start game", JSON.stringify({
+                    "gameId": currentId,
+                    "username": "host"
+                }));
+                return false;
+            })
+
+            chpl.click(function () {
+                chosenPlayer = $("#userid").text;
+                socket.emit("action", JSON.stringify({
+                    "username": "host",
+                    "gameId": currentId,
+                    "msgType": 34,
+                    "data": {
+                        "username": "player"
+                    }
+                }))
+            })
+
+            chqu.click(function () {
+                var question = $("#questionid").text
+                socket.emit("action", JSON.stringify({
+                    "username": "host",
+                    "gameId": currentId,
+                    "msgType": 36,
+                    "data": {
+
+                    }
+                }))
+            })
+
+            socket.on('gameid', function (msg) {
+                currentId = msg;
+                $("#questiontext").text(msg);
+            })
+
+            socket.on('click', function (msg) {
+                socket.emit("clack");
+            })
+
+            $('form').submit(function () {
+                socket.emit('host game', 'alyei');
+                return false;
+            });
+            socket.on('33', function (msg) {
+                var message = JSON.parse(msg);
+                $("#userid").text(message.players[0].username);
+            })
+            socket.on('35', function (msg) {
+                var message = JSON.parse(msg);
+                $("#questionid").text(message.questions[0].questionId);
+            })
+        });
+    </script>
+</body>
+
+</html>

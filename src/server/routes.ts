@@ -49,6 +49,12 @@ export class Https {
       });
     });
 
+    this.app.get("/mhost", (req: any, res: any) => {
+      res.render(
+        path.join(__dirname, "..", "..", "public", "millionairehost.ejs")
+      );
+    });
+
     this.app.get("/api/signup", (req: any, res: any) => {
       res.render("signup");
     });

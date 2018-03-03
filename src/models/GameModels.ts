@@ -128,7 +128,7 @@ export enum MessageType {
   MillinairePassResponse,
   MillionaireGameData,
   MillionairePlayerData,
-  MillionaireActionFeedback,
+  MillionaireActionFeedback
 }
 export enum GameAction {
   Start = 0,
@@ -154,8 +154,8 @@ export interface iQuestionQSaveGameData {
   gameArguments: iQuestionQHostArguments;
   players: iQuestionQPlayerData[];
   explanations: {
-    questionId: string,
-    explanation: string
+    questionId: string;
+    explanation: string;
   }[];
 }
 export interface iQuestionQGameData {
@@ -198,8 +198,8 @@ export interface iQuestionQTipFeedback {
 export interface iQuestionQPlayerDataAndExplanations {
   player: iQuestionQPlayerData;
   explanations: {
-    questionId: string,
-    explanation: string
+    questionId: string;
+    explanation: string;
   }[];
 }
 export interface iQuestionQPlayerData {
@@ -416,7 +416,7 @@ export interface iMillionaireTipFeedback {
   explanation?: string;
 }
 // --> Server
-export interface iMillionairePassRequest { }
+export interface iMillionairePassRequest {}
 export interface iMillionaireChooseMillionaireRequest {
   players: iMillionairePlayerData[];
 }
