@@ -135,6 +135,30 @@ let DeterminationGameData = new mongoose.Schema({
   }
 });
 
+let DuelGameData = new mongoose.Schema({
+  gameId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  gamemode: {
+    type: Gamemode,
+    required: true
+  },
+  gameArguments: {
+    type: {},
+    required: true
+  },
+  players: {
+    type: [],
+    required: true
+  },
+  questionBases: {
+    type: {},
+    required: true
+  }
+});
+
 let MillionaireGameData = new mongoose.Schema({
   gameId: {
     type: String,
@@ -198,10 +222,14 @@ const MillionaireGameDataModel: any = mongoose.model(
   "millionaireGameData",
   MillionaireGameData
 );
+const DuelGameDataModel: any = mongoose.model(
+  "duelGameData",
+  DuelGameData
+);
 
 const RoomModel: any = mongoose.model("room", Room);
 
 /**
  * @returns The usermodel.
  */
-export { UserModel, QuestionModel, RoomModel, QuestionQGameDataModel, DeterminationGameDataModel, MillionaireGameDataModel };
+export { UserModel, QuestionModel, RoomModel, QuestionQGameDataModel, DeterminationGameDataModel, MillionaireGameDataModel, DuelGameDataModel };

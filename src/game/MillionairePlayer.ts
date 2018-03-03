@@ -15,7 +15,7 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
     millionaireCounter: number;
 
     /**
-     * Creates an instance of the QuestionQPlayer class.
+     * Creates an instance of the iMillionairePlayerData class.
      * @param baseArguments - the arguments that have been returned by the parent's class GetArguments-method
      */
     constructor(baseArguments: iPlayerBaseArguments, jokers?: JokerType[]) {
@@ -47,7 +47,7 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
 
     /**
      * Returns the player's data as a new JSON.
-     * @returns - player data according to the iQuestionQPlayerData-interface
+     * @returns - player data according to the iMillionairePlayerData-interface
      */
     public GetPlayerData(): iMillionairePlayerData {
         return {
