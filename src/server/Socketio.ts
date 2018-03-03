@@ -55,6 +55,7 @@ export class io {
    */
   private HostGame(
     playerSocket: SocketIO.Socket,
+    gameSocket: SocketIO.Namespace,
     username: string,
     gamemode: GModels.Gamemode
   ): void {
@@ -66,7 +67,7 @@ export class io {
       questionIds: ["1234567890", "YxUy07SElM"]
     };
     try {
-      this.GameFactory.CreateGame(args, this.QuestionQ)
+      this.GameFactory.CreateGame(args, gameSocket)
         .then((res: any) => {
           playerSocket.join(args.gameId);
           playerSocket.emit("gameid", args.gameId);
@@ -108,8 +109,13 @@ export class io {
    * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
    * @param {string}optS Options in the format of `iStartGame`.
    */
-  private StartGame(playerSocket: SocketIO.Socket, optS: string) {
-    const opt: iStartGame = JSON.parse(optS);
+  private StartGame(playerSocket: SocketIO.Socket, optS: any) {
+    let opt: iStartGame;
+    if(typeof optS === "string"){
+      opt = JSON.parse(optS);
+    } else{
+      opt = optS;
+    }
     for (let item of this.GameSessions.Sessions) {
       if (item.GeneralArguments.gameId == opt.gameId) {
         item
@@ -147,8 +153,13 @@ export class io {
    * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
    * @param {string}optS Options in the format of `iJoinGame`.
    */
-  private JoinGame(playerSocket: SocketIO.Socket, optS: string): void {
-    const opt: iJoinGame = JSON.parse(optS);
+  private JoinGame(playerSocket: SocketIO.Socket, optS: any): void {
+    let opt: iJoinGame;
+    if(typeof optS === "string"){
+      opt = JSON.parse(optS);
+    } else{
+      opt = optS;
+    }
     for (let item of this.GameSessions.Sessions) {
       if (item.GeneralArguments.gameId == opt.gameId) {
         try {
@@ -201,7 +212,7 @@ export class io {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
 
       playerSocket.on("host game", (username: string) => {
-        this.HostGame(playerSocket, username, GModels.Gamemode.QuestionQ);
+        this.HostGame(playerSocket, this.QuestionQ, username, GModels.Gamemode.QuestionQ);
       });
 
       playerSocket.on("leave game", (optS: string) => {
@@ -228,7 +239,7 @@ export class io {
   private DeterminationConf(): void {
     this.Determination.on("connection", (playerSocket: SocketIO.Socket) => {
       playerSocket.on("host game", (username: string) => {
-        this.HostGame(playerSocket, username, GModels.Gamemode.Determination);
+        this.HostGame(playerSocket, this.Determination, username, GModels.Gamemode.Determination);
       });
 
       playerSocket.on("join game", (optS: string) => {
@@ -251,20 +262,24 @@ export class io {
 
   private MillionaireConf(): void {
     this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
-      playerSocket.on("host game", (username: string) => {
-        this.HostGame(playerSocket, username, GModels.Gamemode.Millionaire);
+      playerSocket.on("host game", (optS: string) => {
+        const opt: any = JSON.parse(optS);
+        this.HostGame(playerSocket, this.Millionaire, opt.GeneralArgs.username, GModels.Gamemode.Millionaire);
       });
 
       playerSocket.on("join game", (optS: string) => {
-        this.JoinGame(playerSocket, optS);
+        const opt: any = JSON.parse(optS);
+        this.JoinGame(playerSocket, opt);
       });
 
       playerSocket.on("start game", (optS: string) => {
-        this.StartGame(playerSocket, optS);
+        const opt: any = JSON.parse(optS);
+        this.StartGame(playerSocket, opt);
       });
 
       playerSocket.on("leave game", (optS: string) => {
-        this.LeaveGame(playerSocket, optS);
+        const opt: any = JSON.parse(optS);
+        this.LeaveGame(playerSocket, opt);
       });
 
       playerSocket.on("action", (optS: string) => {

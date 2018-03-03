@@ -3,7 +3,8 @@ import {
   MessageType,
   iQuestionQHostArguments,
   Gamemode,
-  iDeterminationHostArguments
+  iDeterminationHostArguments,
+  iMillionaireHostArguments
 } from "../models/GameModels";
 import { QuestionQGame } from "./QuestionQGame";
 import { MillionaireGame } from "./MillionaireGame";
@@ -17,6 +18,7 @@ import {
   PlayerCouldNotBeAddedError
 } from "../server/Errors";
 import { iGame } from "./iGame";
+import { MillionaireGameDataModel } from "../models/Schemas";
 
 export class GameFactory {
   public Sessions: RunningGames;
@@ -38,7 +40,8 @@ export class GameFactory {
   public CreateGame(
     generalArguments: iGeneralHostArguments,
     namespaceSocket: SocketIO.Namespace,
-    gameArguments?: iQuestionQHostArguments | iDeterminationHostArguments
+    gameArguments?: iQuestionQHostArguments | iDeterminationHostArguments,
+    millionaireArguments?: iMillionaireHostArguments
   ): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
@@ -100,8 +103,12 @@ export class GameFactory {
               const newGame: iGame = new MillionaireGame(
                 generalArguments,
                 namespaceSocket,
-                gameArguments || { pointBase: 100, interQuestionGap: 3000 },
-                this.Sessions
+                this.Sessions,
+                millionaireArguments || {maxQuestions: 14, 
+                checkpoints: [2,4,8],
+                jokers: [],
+                scoreCalcA: 200,
+                scoreCalcB: 2}
               );
               try {
                 newGame
@@ -130,7 +137,7 @@ export class GameFactory {
                   .then((res: any) => {
                     logger.log(
                       "info",
-                      "New QuestionQ game: %s hosted.",
+                      "New Millionaire game: %s hosted.",
                       generalArguments.gameId
                     );
                     resolve(res);
