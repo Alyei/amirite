@@ -471,7 +471,11 @@ export interface iDuelHostArguments {
   pointDeductionBase: number;
   pointDeductionBase2: number;
   poindDetuctionWhenTooSlow: number;
-  postfeedbackGap: number; // ms
+  postfeedbackGap: number; // ms to next question
+  choosingTime1: number;
+  choosingTime2: number;
+  maxCategoryChoiceRange: number;
+  maxDifficultyChoiceRange: number;
 }
 export interface iDuelPlayerData {
   username: string;

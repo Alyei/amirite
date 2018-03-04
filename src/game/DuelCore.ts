@@ -1,6 +1,6 @@
 import { logger } from "../server/logging";
 import { RunningGames } from "./RunningGames";
-import { Gamemode, iDuelQuestionBase, iDuelHostArguments, MessageType, iSpectatingData, PlayerState, iDuelEndGameData, iDuelPlayerData, iDuelPlayerQuestionData, iDuelAnswerOption, iDuelTimeCorrection, iDuelStartGameData, iDuelTip, iDuelTipFeedback, iDuelTipData, iDuelScoringData } from "../models/GameModels";
+import { Gamemode, iDuelQuestionBase, iDuelHostArguments, MessageType, iSpectatingData, PlayerState, iDuelEndGameData, iDuelPlayerData, iDuelPlayerQuestionData, iDuelAnswerOption, iDuelTimeCorrection, iDuelStartGameData, iDuelTip, iDuelTipFeedback, iDuelTipData, iDuelScoringData, iDuelChooseChoiceReply, DuelChoice, iDuelChooseCategoryRequest, iDuelChooseDifficultyRequest, iDuelChooseDifficultyReply, iDuelChooseCategoryReply } from "../models/GameModels";
 import { DuelPlayer } from "./DuelPlayer";
 import { PlayerBase } from "./PlayerBase";
 import { QuestionModel, DuelGameDataModel } from "../models/Schemas";
@@ -21,7 +21,14 @@ export class DuelCore {
     private currentQuestion?: iDuelPlayerQuestionData;
     private gamePhase: DuelGamePhase;
     private timers: { [id: string]: NodeJS.Timer } = {};
-    private minimumQuestionCounter: number;
+
+    private difficultyChooser?: DuelPlayer;
+    private categoryChooser?: DuelPlayer;
+    private choiceChooser?: DuelPlayer;
+    private difficultyRequest?: iDuelChooseDifficultyRequest;
+    private difficultyReply?: iDuelChooseDifficultyReply;
+    private categoryRequest?: iDuelChooseCategoryRequest;
+    private categoryReply?: iDuelChooseCategoryReply;
 
     /**
      * Creates a new instance of the QuestionQCore-class
@@ -37,7 +44,6 @@ export class DuelCore {
         questionIds: string[]
     ) {
         this.gamePhase = DuelGamePhase.Setup;
-        this.minimumQuestionCounter = 0;
         this.questions = [];
         this.players = [];
 
@@ -83,6 +89,23 @@ export class DuelCore {
             playerData: this.players.map(player => player.GetPlayerData()),
             questionBases: this.questionBases,
         } as iDuelEndGameData;
+    }
+
+    /**
+     * Adds a new user to the game, if it did not end already.
+     * @param player - the player to add
+     * @returns - whether the user could be added
+     */
+    public AddUser(player: PlayerBase): boolean {
+        if (this.players.find(p => p.username == player.username)) {
+            return false; // player already joined
+        }
+        if (this.gamePhase == DuelGamePhase.Setup) {
+            this.players.push(new DuelPlayer(player.GetArguments()));
+            player.state = PlayerState.Launch;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -214,7 +237,6 @@ export class DuelCore {
         question: iDuelQuestionBase
     ): iDuelPlayerQuestionData {
         question.questionCounter++;
-        this.minimumQuestionCounter = Math.min(...this.questionBases.map(qb => qb.questionCounter));
 
         const am: ArrayManager = new ArrayManager("A B C D".split(" "));
         const letters: string[] = am.ShuffleArray();
@@ -333,7 +355,8 @@ export class DuelCore {
      * Checks whether the game end's conditions are met and, if so, ends the game.
      * This has to be executed whenever a player is disqualified and whenever a player finishes.
      */
-    public CheckForEnd(): void {
+    public CheckForEnd(): boolean {
+        let result = false;
         if (this.gamePhase == DuelGamePhase.Running) {
             for (let player of this.players) {
                 if (player.score >= this.gameArguments.scoreGoal)
@@ -343,18 +366,36 @@ export class DuelCore {
             }
             if (this.players.find(player =>
                 [PlayerState.Disqualified, PlayerState.Finished].find(state => state == player.state) != undefined
-            )) this.Stop();
+            )) {
+                result = true;
+                this.Stop();
+            }
         }
+        return result;
     }
 
     /**
      * Questions the passed player or processes that they finished.
      * @param player - the player to be questioned
      */
-    private AskQuestion(difficulty?: number, category?: string): void {
+    private AskQuestion(): void {
         this.currentQuestion = undefined;
         this.CheckForEnd();
-        const questionBase: iDuelQuestionBase | undefined = this.questionBases.find(q => q.questionCounter <= this.minimumQuestionCounter);
+
+        if (!this.difficultyReply)
+            this.difficultyReply = { difficulty: -1 }
+        if (!this.categoryReply)
+            this.categoryReply = { category: "none" }
+
+        this.questionBases.sort((a, b) => a.questionCounter - b.questionCounter);
+
+        let questionBase: iDuelQuestionBase | undefined = this.questionBases.find(q =>
+            q.categories.find(c => c == this.categoryReply.category) != undefined // question has category
+            && q.difficulty == this.difficultyReply.difficulty // question has difficulty
+        );
+        if (!questionBase && this.questionBases.length > 0)
+            questionBase = this.questionBases[0];
+        
         if (!questionBase) {
             this.Stop();
             return; // no valid questionBase found
@@ -479,17 +520,196 @@ export class DuelCore {
 
         this.currentQuestion = undefined;
 
-        //!!! get next question process
+        
+        if (this.CheckForEnd()) {
+            return; // game over
+        }
 
-        /*// ask next question (delayed)
+        // next question
+        if (player.score != opponent.score) {
+            const leadingScore: number = Math.max(...this.players.map(p => p.score));
+            for (let p of this.players) {
+                if (p.score == leadingScore) {
+                    this.choiceChooser = p;
+                    this.InformPlayer(
+                        p,
+                        MessageType.DuelChoiceRequest,
+                        {}
+                    );
+                    this.timers[
+                        "chooseChoice"
+                    ] = global.setTimeout(
+                        () => {
+                            this.ChooseChoice(
+                                p.username,
+                                {
+                                    choiceChoice: Math.floor(Math.random() * 3) // random choice DuelChoice
+                                }
+                            );
+                        },
+                        this.gameArguments.postfeedbackGap + this.gameArguments.choosingTime1
+                    );
+                }
+            }
+        } else {
+            this.timers[
+                "nextQuestion"
+            ] = global.setTimeout(
+                () => {
+                    this.AskQuestion();
+                },
+                this.gameArguments.postfeedbackGap
+            );
+        }
+    }
+
+    public ChooseChoice(username: string, choiceChoice: iDuelChooseChoiceReply) {
+        if (!this.choiceChooser) {
+            return; // no choice chooser
+        }
+        if (this.choiceChooser.username != username) {
+            return; // not the choice chooser
+        }
+        
+        const opponent: DuelPlayer | undefined = this.players.find(p => p.username != username);
+        if (!opponent) {
+            return; // invalid player data
+        }
+        
+        const choiceChooser: DuelPlayer = this.choiceChooser;
+        this.choiceChooser = undefined;
+
+        const am: ArrayManager = new ArrayManager(this.questionBases);
+        this.questionBases = am.ShuffleArray();
+
+        const categories: string[] = [];
+        for (let i: number = 0; i < this.questionBases.length; i++) {
+            for (let j: number = 0; j < this.questionBases[i].categories.length; j++) {
+                if (!categories.find(dist => dist == this.questionBases[i].categories[j])) {
+                    categories.push(this.questionBases[i].categories[j]);
+                    if (categories.length >= this.gameArguments.maxCategoryChoiceRange) {
+                        j = this.questionBases[i].categories.length;
+                        i = this.questionBases.length;
+                    }
+                }
+            }
+        }
+        const difficulties: number[] = [];
+        for (let i: number = 0; i < this.questionBases.length; i++) {
+            if (!difficulties.find(dist => dist == this.questionBases[i].difficulty)) {
+                difficulties.push(this.questionBases[i].difficulty);
+                if (difficulties.length >= this.gameArguments.maxDifficultyChoiceRange)
+                    i = this.questionBases.length;
+            }
+        }
+
+        this.categoryRequest = {
+            categories: categories
+        };
+        this.difficultyRequest = {
+            difficulties: difficulties
+        };
+
+        switch (choiceChoice.choiceChoice) {
+            case DuelChoice.Category: {
+                this.categoryChooser = choiceChooser;
+                this.difficultyChooser = opponent;
+                break;
+            }
+            case DuelChoice.Difficulty: {
+                this.difficultyChooser = choiceChooser;
+                this.categoryChooser = opponent;
+                break;
+            }
+        }
+
+        this.InformPlayer(
+            this.categoryChooser,
+            MessageType.DuelChooseCategoryRequest,
+            this.categoryRequest
+        );
+        this.InformPlayer(
+            this.categoryChooser,
+            MessageType.DuelChooseDifficultyRequest,
+            this.difficultyRequest
+        );
+
         this.timers[
-            "nextQuestion;" +
-            player.username +
-            ";" +
-            PlayerQuestionTuple[0].questionId
-        ] = global.setTimeout(() => {
-            this.QuestionPlayer(player);
-        }, Math.max(this.gameArguments.interQuestionGap - player.Ping / 2, 0));*/
+            "chooseDifficulty"
+        ] = global.setTimeout(
+            () => {
+                if (this.difficultyChooser && this.difficultyRequest && this.difficultyRequest.difficulties.length > 0) {
+                    this.ChooseDifficulty(
+                        this.difficultyChooser.username,
+                        {
+                            difficulty: this.difficultyRequest.difficulties[Math.floor(Math.random() * this.difficultyRequest.difficulties.length)]
+                        }
+                    );
+                }
+            },
+            this.gameArguments.choosingTime2
+        );
+        this.timers[
+            "chooseCategory"
+        ] = global.setTimeout(
+            () => {
+                if (this.categoryChooser && this.categoryRequest && this.categoryRequest.categories.length > 0) {
+                    this.ChooseCategory(
+                        this.categoryChooser.username,
+                        {
+                            category: this.categoryRequest.categories[Math.floor(Math.random() * this.categoryRequest.categories.length)]
+                        }
+                    );
+                }
+            },
+            this.gameArguments.choosingTime2
+        );
+    }
+
+    public ChooseDifficulty(username: string, choice: iDuelChooseDifficultyReply) {
+        if (!this.difficultyChooser) {
+            return; // no difficulty chooser
+        }
+        if (this.difficultyChooser.username != username) {
+            return; // not the difficulty chooser
+        }
+        if (this.difficultyReply) {
+            return; // already chosen
+        }
+        if (!this.difficultyRequest.difficulties.find(d => d == choice.difficulty)) {
+            return; // not a valid option
+        }
+
+        const difficultyChooser: DuelPlayer = this.difficultyChooser;
+        this.difficultyChooser = undefined;
+
+        this.difficultyReply = choice;
+
+        if (this.categoryReply)
+            this.AskQuestion();
+    }
+
+    public ChooseCategory(username: string, choice: iDuelChooseCategoryReply) {
+        if (!this.categoryChooser) {
+            return; // no category chooser
+        }
+        if (this.categoryChooser.username != username) {
+            return; // not the category chooser
+        }
+        if (this.categoryReply) {
+            return; // already chosen
+        }
+        if (!this.categoryRequest.categories.find(c => c == choice.category)) {
+            return; // not a valid option
+        }
+
+        const categoryChooser: DuelPlayer = this.categoryChooser;
+        this.categoryChooser = undefined;
+
+        this.categoryReply = choice;
+
+        if (this.difficultyReply)
+            this.AskQuestion();
     }
 
     /**
