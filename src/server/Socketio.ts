@@ -15,6 +15,7 @@ import {
   PlayerRole
 } from "../models/GameModels";
 import * as GModels from "../models/GameModels";
+import { iGame } from "../game/iGame";
 
 export class io {
   public server: SocketIO.Server;
@@ -111,9 +112,9 @@ export class io {
    */
   private StartGame(playerSocket: SocketIO.Socket, optS: any) {
     let opt: iStartGame;
-    if(typeof optS === "string"){
+    if (typeof optS === "string") {
       opt = JSON.parse(optS);
-    } else{
+    } else {
       opt = optS;
     }
     for (let item of this.GameSessions.Sessions) {
@@ -155,11 +156,37 @@ export class io {
    */
   private JoinGame(playerSocket: SocketIO.Socket, optS: any): void {
     let opt: iJoinGame;
-    if(typeof optS === "string"){
+    if (typeof optS === "string") {
       opt = JSON.parse(optS);
-    } else{
+    } else {
       opt = optS;
     }
+    console.log(opt);
+
+    const game: iGame | undefined = this.GameSessions.Sessions.find(
+      x => x.GeneralArguments.gameId == opt.gameId
+    );
+
+    if (game) {
+      game
+        .AddPlayer(opt.username, playerSocket, PlayerRole.Player)
+        .then((res: any) => {
+          playerSocket.join(game.GeneralArguments.gameId);
+          logger.log(
+            "info",
+            "Player %s joined game %s.",
+            opt.username,
+            game.GeneralArguments.gameId
+          );
+        })
+        .catch((err: any) => {
+          logger.log("info", "Error: " + err.message);
+          playerSocket.emit("err");
+        });
+    } else {
+      logger.log("info", "Game could not be found.");
+    }
+    /*
     for (let item of this.GameSessions.Sessions) {
       if (item.GeneralArguments.gameId == opt.gameId) {
         try {
@@ -169,7 +196,7 @@ export class io {
               playerSocket.join(item.GeneralArguments.gameId);
               logger.log(
                 "info",
-                "Player %s joing game %s.",
+                "Player %s joined game %s.",
                 opt.username,
                 item.GeneralArguments.gameId
               );
@@ -179,10 +206,17 @@ export class io {
               playerSocket.emit("err");
             });
         } catch (err) {
-          logger.error(err.message);
+          logger.log("error", err.message);
         }
+      } else {
+        logger.log(
+          "info",
+          "Player %s tried to join not-existing game %s.",
+          opt.username,
+          opt.gameId
+        );
       }
-    }
+    }*/
   }
 
   /**
@@ -212,7 +246,12 @@ export class io {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
 
       playerSocket.on("host game", (username: string) => {
-        this.HostGame(playerSocket, this.QuestionQ, username, GModels.Gamemode.QuestionQ);
+        this.HostGame(
+          playerSocket,
+          this.QuestionQ,
+          username,
+          GModels.Gamemode.QuestionQ
+        );
       });
 
       playerSocket.on("leave game", (optS: string) => {
@@ -238,8 +277,14 @@ export class io {
    */
   private DeterminationConf(): void {
     this.Determination.on("connection", (playerSocket: SocketIO.Socket) => {
+      logger.log("info", "New user connected: %s", playerSocket.client.id);
       playerSocket.on("host game", (username: string) => {
-        this.HostGame(playerSocket, this.Determination, username, GModels.Gamemode.Determination);
+        this.HostGame(
+          playerSocket,
+          this.Determination,
+          username,
+          GModels.Gamemode.Determination
+        );
       });
 
       playerSocket.on("join game", (optS: string) => {
@@ -262,12 +307,19 @@ export class io {
 
   private MillionaireConf(): void {
     this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
+      logger.log("info", "New user connected: %s", playerSocket.client.id);
       playerSocket.on("host game", (optS: string) => {
         const opt: any = JSON.parse(optS);
-        this.HostGame(playerSocket, this.Millionaire, opt.GeneralArgs.username, GModels.Gamemode.Millionaire);
+        this.HostGame(
+          playerSocket,
+          this.Millionaire,
+          opt.GeneralArgs.username,
+          GModels.Gamemode.Millionaire
+        );
       });
 
       playerSocket.on("join game", (optS: string) => {
+        console.log(optS);
         const opt: any = JSON.parse(optS);
         this.JoinGame(playerSocket, opt);
       });

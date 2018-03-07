@@ -55,6 +55,12 @@ export class Https {
       );
     });
 
+    this.app.get("/mplayer", (req: any, res: any) => {
+      res.render(
+        path.join(__dirname, "..", "..", "public", "millionaireplayer.ejs")
+      );
+    });
+
     this.app.get("/api/signup", (req: any, res: any) => {
       res.render("signup");
     });

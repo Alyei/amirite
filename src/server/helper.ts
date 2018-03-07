@@ -54,7 +54,8 @@ let generateGameId = function(): string {
     .toString("base64")
     .slice(0, 6)
     .replace(/\+/g, "3")
-    .replace(/\//g, "x");
+    .replace(/\//g, "x")
+    .toUpperCase();
 };
 
 const settings = JSON.parse(
