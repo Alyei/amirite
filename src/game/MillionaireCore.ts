@@ -372,7 +372,7 @@ export class MillionaireCore {
 
     private InformMods(msgType: MessageType, data: any) {
         const mods: PlayerBase[] = this.players.filter(player =>
-            [PlayerRole.Host, PlayerRole.Mod].find(modRole => player.role == modRole)
+            undefined == [PlayerRole.Host, PlayerRole.Mod].find(modRole => player.role == modRole)
         );
         for (let mod of mods) {
             mod.Inform(msgType, data);
@@ -384,7 +384,7 @@ export class MillionaireCore {
         if (!mod) {
             return; // user not found
         }
-        if (![PlayerRole.Host, PlayerRole.Mod].find(role => role == mod.role)) {
+        if (undefined == [PlayerRole.Host, PlayerRole.Mod].find(role => role == mod.role)) {
             return; // not permitted
         }
 
@@ -427,7 +427,7 @@ export class MillionaireCore {
         if (!mod) {
             return; // user not found
         }
-        if (![PlayerRole.Host, PlayerRole.Mod].find(role => role == mod.role)) {
+        if (undefined == [PlayerRole.Host, PlayerRole.Mod].find(role => role == mod.role)) {
             return; // not permitted
         }
 

@@ -232,7 +232,7 @@ export class DeterminationGame implements iGame {
                 );
                 if (
                     username == this.GeneralArguments.owner ||
-                    (player && [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
+                    (player && undefined == [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
                 ) {
                     resolve(this.GameCore.Start());
                 } else {
