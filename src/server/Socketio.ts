@@ -186,37 +186,6 @@ export class io {
     } else {
       logger.log("info", "Game could not be found.");
     }
-    /*
-    for (let item of this.GameSessions.Sessions) {
-      if (item.GeneralArguments.gameId == opt.gameId) {
-        try {
-          item
-            .AddPlayer(opt.username, playerSocket, PlayerRole.Player)
-            .then((res: any) => {
-              playerSocket.join(item.GeneralArguments.gameId);
-              logger.log(
-                "info",
-                "Player %s joined game %s.",
-                opt.username,
-                item.GeneralArguments.gameId
-              );
-            })
-            .catch((err: any) => {
-              logger.log("info", "Error: " + err.message);
-              playerSocket.emit("err");
-            });
-        } catch (err) {
-          logger.log("error", err.message);
-        }
-      } else {
-        logger.log(
-          "info",
-          "Player %s tried to join not-existing game %s.",
-          opt.username,
-          opt.gameId
-        );
-      }
-    }*/
   }
 
   /**

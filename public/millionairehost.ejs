@@ -110,13 +110,13 @@
                 socket.emit('host game', 'alyei');
                 return false;
             });
-            socket.on('33', function (msg) {
+            socket.on('39', function (msg) {
                 var message = JSON.parse(msg);
-                $("#userid").text(message.players[0].username);
+                $("#users").text(message.players[1].username);
             })
             socket.on('35', function (msg) {
                 var message = JSON.parse(msg);
-                $("#questionid").text(message.questions[0].questionId);
+                $("#questions").text(message.questions[0].questionId);
             })
         });
     </script>

@@ -43,6 +43,7 @@
                 c = $("#answer_c"),
                 d = $("#answer_d")
 
+            //#region css
             $("#question").css({
                 top: '100px',
                 left: '150px',
@@ -101,7 +102,7 @@
                 left: "170px",
                 position: 'absolute'
             })
-
+            //#endregion
 
             var socket = io('/millionaire');
 
@@ -180,9 +181,9 @@
                 socket.emit('host game', 'alyei');
                 return false;
             });
-            socket.on('1', function (msg) {
+            socket.on('39', function (msg) {
                 var message = JSON.parse(msg);
-                $("#questionident").text(message.questionId);
+                $("#questionident").text(message.players[1].username);
                 answerid = message.questionId;
                 $("#questiontext").text(message.question);
                 changeElements(message);
