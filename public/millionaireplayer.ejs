@@ -184,6 +184,7 @@
             socket.on('39', function (msg) {
                 var message = JSON.parse(msg);
                 $("#questionident").text(message.players[1].username);
+                currentId = message.players[1].username;
                 answerid = message.questionId;
                 $("#questiontext").text(message.question);
                 changeElements(message);

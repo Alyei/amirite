@@ -23,6 +23,7 @@ export interface iPlayerAction {
 export interface iJoinGame {
   gameId: string;
   username: string;
+  role: number;
 }
 
 export interface iLeaveGame {

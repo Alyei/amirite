@@ -4,7 +4,8 @@ import {
   iQuestionQHostArguments,
   Gamemode,
   iDeterminationHostArguments,
-  iMillionaireHostArguments
+  iMillionaireHostArguments,
+  PlayerRole
 } from "../models/GameModels";
 import { QuestionQGame } from "./QuestionQGame";
 import { MillionaireGame } from "./MillionaireGame";
@@ -63,7 +64,7 @@ export class GameFactory {
                   .AddPlayer(
                     generalArguments.owner,
                     generalArguments.ownerSocket,
-                    2
+                    PlayerRole.Host
                   )
                   .then((res: any) => {
                     logger.log(
@@ -104,18 +105,20 @@ export class GameFactory {
                 generalArguments,
                 namespaceSocket,
                 this.Sessions,
-                millionaireArguments || {maxQuestions: 14, 
-                checkpoints: [2,4,8],
-                jokers: [],
-                scoreCalcA: 200,
-                scoreCalcB: 2}
+                millionaireArguments || {
+                  maxQuestions: 14,
+                  checkpoints: [2, 4, 8],
+                  jokers: [],
+                  scoreCalcA: 200,
+                  scoreCalcB: 2
+                }
               );
               try {
                 newGame
                   .AddPlayer(
                     generalArguments.owner,
                     generalArguments.ownerSocket,
-                    2
+                    PlayerRole.Host
                   )
                   .then((res: any) => {
                     logger.log(

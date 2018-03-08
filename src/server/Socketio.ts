@@ -277,6 +277,7 @@ export class io {
   private MillionaireConf(): void {
     this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
+      
       playerSocket.on("host game", (optS: string) => {
         const opt: any = JSON.parse(optS);
         this.HostGame(
