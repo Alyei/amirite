@@ -331,7 +331,13 @@ export class MillionaireCore {
                 newPlayer.ApplyData(playerData);
 
             if (player.state != PlayerState.Disqualified) {
-                this.InformPlayer(newPlayer, MessageType.MillionaireGameData, this.GetGameData());
+                const startGameData: iMillionaireStartGameData = {
+                    gameArguments: this.gameArguments,
+                    players: this.GetPlayerData(this.players),
+                };
+                if (this.millionaire)
+                    startGameData.millionaire = this.millionaire.GetPlayerData();
+                this.InformPlayer(newPlayer, MessageType.MillionaireGameData, startGameData);
 
                 if (player.role == PlayerRole.Player) {
                     player.state = PlayerState.Launch;

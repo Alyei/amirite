@@ -310,9 +310,9 @@ export interface iMillionaireGameData {
   players: iMillionairePlayerData[];
 }
 export interface iMillionaireStartGameData {
-  possibleCheckpoints: number[];
   gameArguments: iMillionaireHostArguments;
-  players: iMillionairePlayerData;
+  players: iMillionairePlayerData[];
+  millionaire?: iMillionairePlayerData;
 }
 export interface iMillionaireTip {
   questionId: string;
