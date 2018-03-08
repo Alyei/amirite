@@ -116,6 +116,7 @@
 
 
             join.click(function () {
+                currentId = $('#gameid').val();
                 socket.emit("join game", JSON.stringify({
                     "gameId": $('#gameid').val(),
                     "username": "player"
@@ -125,52 +126,47 @@
             a.click(function () {
 
                 socket.emit("action", JSON.stringify({
-                    "username": "alyei",
+                    "username": "player",
                     "gameId": currentId,
-                    "msgType": 4,
+                    "msgType": 21,
                     "data": {
-                        "questionId": answerid,
+                        "questionId": "1234567890",
                         "answerId": "A"
                     }
                 }))
             })
             b.click(function () {
                 socket.emit("action", JSON.stringify({
-                    "username": "alyei",
+                    "username": "player",
                     "gameId": currentId,
-                    "msgType": 4,
+                    "msgType": 21,
                     "data": {
-                        "questionId": answerid,
+                        "questionId": "1234567890",
                         "answerId": "B"
                     }
                 }))
             })
             c.click(function () {
                 socket.emit("action", JSON.stringify({
-                    "username": "alyei",
+                    "username": "player",
                     "gameId": currentId,
-                    "msgType": 4,
+                    "msgType": 21,
                     "data": {
-                        "questionId": answerid,
+                        "questionId": "1234567890",
                         "answerId": "C"
                     }
                 }))
             })
             d.click(function () {
                 socket.emit("action", JSON.stringify({
-                    "username": "alyei",
+                    "username": "player",
                     "gameId": currentId,
-                    "msgType": 4,
+                    "msgType": 21,
                     "data": {
-                        "questionId": answerid,
+                        "questionId": "1234567890",
                         "answerId": "D"
                     }
                 }))
-            })
-
-            socket.on('gameid', function (msg) {
-                currentId = msg;
-                $("#questiontext").text(msg);
             })
 
             socket.on('click', function (msg) {
@@ -184,11 +180,11 @@
             socket.on('39', function (msg) {
                 var message = JSON.parse(msg);
                 $("#questionident").text(message.players[1].username);
-                currentId = message.players[1].username;
                 answerid = message.questionId;
                 $("#questiontext").text(message.question);
                 changeElements(message);
             })
+
             socket.on('2', function (msg) {
                 var message = JSON.parse(msg);
                 $("#score").text("Score: " + message.score);
@@ -203,13 +199,26 @@
                 }
 
             })
+
+            socket.on('20', function (msg) {
+                var message = JSON.parse(msg);
+
+                changeElements(message);
+
+                /*$('#questiontext').text(message.question)
+                $("#answa").text(message.options[0].answer);
+                $("#answb").text(message.options[1].answer);
+                $("#answc").text(message.options[2].answer);
+                $("#answd").text(message.options[3].answer);*/
+            })
         });
 
         function changeElements(msg) {
-            $("#answa").text(msg.options[0][1]);
-            $("#answb").text(msg.options[1][1]);
-            $("#answc").text(msg.options[2][1]);
-            $("#answd").text(msg.options[3][1]);
+            $('#questiontext').text(msg.question)
+            $("#answa").text(msg.options[0].answer);
+            $("#answb").text(msg.options[1].answer);
+            $("#answc").text(msg.options[2].answer);
+            $("#answd").text(msg.options[3].answer);
         }
     </script>
 </body>
