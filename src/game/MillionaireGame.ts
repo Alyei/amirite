@@ -24,7 +24,7 @@ import {
 import { Tryharder } from "./Tryharder";
 import { RunningGames } from "./RunningGames";
 
-export class DeterminationGame implements iGame {
+export class MillionaireGame implements iGame {
     private GameCore: MillionaireCore;
 
     /**
