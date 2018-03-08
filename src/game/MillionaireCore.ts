@@ -576,22 +576,24 @@ export class MillionaireCore {
 
         let player: undefined | MillionairePlayer;
         let multiplier: number = 1; //!!!
-        for (let clue of this.millionaire.currentQuestion.audienceJokerData.playerClues) {
-            if (clue.clue.answerId == tip.answerId)
-                multiplier = 2; //!!!
-            else
-                multiplier = 1; //!!!
+        if (this.millionaire.currentQuestion.audienceJokerData) {
+            for (let clue of this.millionaire.currentQuestion.audienceJokerData.playerClues) {
+                if (clue.clue.answerId == tip.answerId)
+                    multiplier = 2; //!!!
+                else
+                    multiplier = 1; //!!!
 
-            if (clue.clue.answerId == this.millionaire.currentQuestion.correctAnswer)
-                clue.karmaPoints = multiplier * 10; //!!!
-            else
-                clue.karmaPoints = multiplier * -10; //!!!
-            
-            player = this.players.find(p => p.username == clue.username);
-            if (player) {
-                player.karmaScore += clue.karmaPoints;
-                player.Inform(MessageType.MillionaireAudienceJokerClueFeedback, clue);
-            } else clue.karmaPoints = 0;
+                if (clue.clue.answerId == this.millionaire.currentQuestion.correctAnswer)
+                    clue.karmaPoints = multiplier * 10; //!!!
+                else
+                    clue.karmaPoints = multiplier * -10; //!!!
+                
+                player = this.players.find(p => p.username == clue.username);
+                if (player) {
+                    player.karmaScore += clue.karmaPoints;
+                    player.Inform(MessageType.MillionaireAudienceJokerClueFeedback, clue);
+                } else clue.karmaPoints = 0;
+            }
         }
 
         this.millionaire.currentQuestion = undefined;
