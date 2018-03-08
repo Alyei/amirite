@@ -10,6 +10,7 @@ export interface iGeneralQuestion {
   timeLimit: number;
   difficulty: number;
   explanation?: string;
+  categories?: string[];
 }
 
 export interface iPlayerAction {
@@ -57,7 +58,8 @@ export interface iSpectatingData {
 export enum Gamemode {
   QuestionQ = 0,
   Determination,
-  Millionaire
+  Millionaire,
+  Duel
 }
 
 export enum PlayerState {
@@ -128,7 +130,20 @@ export enum MessageType {
   MillinairePassResponse,
   MillionaireGameData,
   MillionairePlayerData,
-  MillionaireActionFeedback
+  MillionaireActionFeedback,
+
+  // Duel
+  DuelQuestion = 50,
+  DuelTip,
+  DuelTipFeedback,
+  DuelStartGameData,
+  DuelEndGameData,
+  DuelChoiceRequest,
+  DuelChoiceReply,
+  DuelChooseDifficultyRequest,
+  DuelChooseDifficultyReply,
+  DuelChooseCategoryRequest,
+  DuelChooseCategoryReply
 }
 export enum GameAction {
   Start = 0,
@@ -295,9 +310,9 @@ export interface iMillionaireGameData {
   players: iMillionairePlayerData[];
 }
 export interface iMillionaireStartGameData {
-  possibleCheckpoints: number[];
   gameArguments: iMillionaireHostArguments;
-  players: iMillionairePlayerData;
+  players: iMillionairePlayerData[];
+  millionaire?: iMillionairePlayerData;
 }
 export interface iMillionaireTip {
   questionId: string;
@@ -435,68 +450,113 @@ export interface iMillionaireActionFeedback {
 }
 //#endregion
 
-//#region Others
-export interface iDuel {}
+//#region duel
+export interface iDuelStartGameData {
+  gameId: string;
+  gameArguments: iDuelHostArguments;
+  players: string[]; // usernames
+}
+export interface iDuelEndGameData {
+  gameId: string;
+  gamemode: Gamemode;
+  gameArguments: iDuelHostArguments;
+  playerData: iDuelPlayerData[];
+  questionBases: iDuelQuestionBase[];
+}
+export interface iDuelHostArguments {
+  scoreGoal: number; // needed points to win
+  scoreMin: number; // losing score
+  pointBase: number; // (pointBase + timeLimit / (duration + pointBase2)) x difficulty = points for the correctly answered question
+  pointBase2: number;
+  pointDeductionBase: number;
+  pointDeductionBase2: number;
+  poindDetuctionWhenTooSlow: number;
+  postfeedbackGap: number; // ms to next question
+  choosingTime1: number;
+  choosingTime2: number;
+  maxCategoryChoiceRange: number;
+  maxDifficultyChoiceRange: number;
+}
+export interface iDuelPlayerData {
+  username: string;
+  state: PlayerState;
+  role: PlayerRole;
+  score: number;
+}
+export interface iDuelQuestionBase extends iGeneralQuestion {
+  questionCounter: number;
+}
+export interface iDuelPlayerQuestion {
+  questionId: string;
+  question: string;
+  pictureId?: string;
+  options: iDuelAnswerOption[];
+  timeLimit: number;
+  difficulty: number;
+}
+export interface iDuelPlayerQuestionData {
+  question: iDuelPlayerQuestion;
+  correctAnswer: string;
+  questionTime: Date;
+  timeCorrections: { [id: string]: number }; // username timeCorrection //[iDuelTimeCorrection, iDuelTimeCorrection];
+  // outOfTime: string[]; // usernames
+  explanation?: string;
+  tip?: iDuelTipData;
+  feedback?: iDuelTipFeedback;
+}
+export interface iDuelAnswerOption {
+  answerId: string;
+  answer: string;
+}
+export interface iDuelTimeCorrection {
+  username: string;
+  timeCorrection: number;
+}
 export interface iDuelTip {
   questionId: string;
   answerId: string;
 }
-export interface iDuelCategoryChoice {
-  category: string;
-}
-export interface iDuelDifficultyChoice {
-  difficulty: number;
-}
-export interface iDuelCategoryOptions {
-  categories: [string, string][];
-}
-export interface iDuelDifficultyOptions {
-  difficulties: number[];
-}
-export interface iDuelQuestion {
-  questionId: string;
-  question: string;
-  options: [string, string][];
-  timeLimit: number;
-  difficulty: number;
+export interface iDuelTipData {
+  username: string;
+  answerId: string;
+  duration: number;
+  timeCorrection: number;
+  correct?: boolean;
+  message?: string;
 }
 export interface iDuelTipFeedback {
   questionId: string;
-  correct: boolean;
+  tip: iDuelTipData;
+  scoring: { [id: string]: iDuelScoringData }; // username scoring data
+  correctAnswer: string;
+  explanation?: string;
+}
+export interface iDuelScoringData {
+  points: number;
   score: number;
-  message: string;
+  state: PlayerState;
 }
 
-export interface iTrivialPursuit {}
-export interface iTrivialPursuitTip {
-  questionId: string;
-  answerId: string;
+export enum DuelChoice {
+  Difficulty = 0,
+  Category
 }
-export interface iTrivialPursuitCategoryChoice {
+export interface iDuelChooseChoiceRequest {}
+export interface iDuelChooseChoiceReply {
+  choiceChoice: DuelChoice;
+}
+
+export interface iDuelChooseDifficultyRequest {
+  difficulties: number[];
+}
+export interface iDuelChooseDifficultyReply {
+  difficulty: number;
+}
+
+export interface iDuelChooseCategoryRequest {
+  categories: string[];
+}
+export interface iDuelChooseCategoryReply {
   category: string;
-}
-export interface iTrivialPursuitCategoryOptions {
-  categories: [string, string][];
-  difficulty: number;
-}
-export interface iTrivialPursuitQuestion {
-  questionId: string;
-  question: string;
-  options: [string, string][];
-  difficulty: number;
-}
-export interface iTrivialPursuitTipFeedback {
-  questionId: string;
-  correct: boolean;
-  score: string[];
-  message: string;
-}
-export interface iTrivialPursuitSpectateInfo {
-  type: string;
-  data:
-    | iTrivialPursuitCategoryOptions
-    | iTrivialPursuitCategoryChoice
-    | iTrivialPursuitQuestion
-    | iTrivialPursuitTipFeedback;
 }
 //#endregion
