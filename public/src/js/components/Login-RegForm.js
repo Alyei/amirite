@@ -26,7 +26,7 @@ export default class Form extends React.Component {
       body: JSON.stringify({
         username: this.state.username,
         password: this.state.password,
-        email: this.state.email
+        email: this.state.email,
       }),
     })
       .then((res) => {
@@ -39,7 +39,6 @@ export default class Form extends React.Component {
       });
   }
   handleLogin(event) {
-    console.log(event);
     event.preventDefault();
     fetch('https://localhost:443/api/login', {
       method: 'POST',
@@ -53,12 +52,12 @@ export default class Form extends React.Component {
       }),
     })
       .then((res) => {
-        console.log(res.body);
         if (res.status === 200) return res.json();
         else return { status: res.status };
       })
       .then((responseJson) => {
-        console.log(responseJson.status);
+        this.props.setAuth(true, responseJson.user.username);
+        this.props.overlayClose();
       });
   }
 

@@ -1,37 +1,27 @@
-import React from "react";
-import { Tab, Tabs, Modal, Button } from "react-bootstrap";
+import React from 'react';
+import { Tab, Tabs, Modal, Button } from 'react-bootstrap';
 
-import RegistForm from "./Login-RegForm.js";
+import RegistForm from './Login-RegForm.js';
 
-import "../../css/overlay.css";
+import '../../css/overlay.css';
 
 export default class Overlay extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
+    const { showModal, defTab, ...props } = this.props;
     const tabsInstance = (
-      <Tabs
-        defaultActiveKey={this.props.defTab}
-        animation={false}
-        id="logRegTab"
-      >
+      <Tabs defaultActiveKey={defTab} animation={false} id="logRegTab">
         <Tab eventKey={1} title="Login">
-          <RegistForm formType="login" />
+          <RegistForm {...props} formType="login" />
         </Tab>
         <Tab eventKey={2} title="Register">
-          <RegistForm formType="register" />
+          <RegistForm {...props} formType="register" />
         </Tab>
       </Tabs>
     );
 
     return (
       <div>
-        <Modal
-          show={this.props.showModal}
-          onHide={this.props.overlayClose}
-        >
+        <Modal show={showModal} onHide={this.props.overlayClose}>
           <Modal.Title>Authentication</Modal.Title>
           <Modal.Body>{tabsInstance}</Modal.Body>
           <Modal.Footer>

@@ -11,7 +11,6 @@ export default class GameModeManager extends React.Component {
       selectedMode: '',
       socket: null,
       openSocketEvents: [],
-      username: 'alyei',
     };
     //#region Binds
     this.getGameType = this.getGameType.bind(this);
@@ -29,9 +28,6 @@ export default class GameModeManager extends React.Component {
   }
   //#region StartUp
   componentWillMount() {
-    const params = new URLSearchParams(this.props.location.search);
-    this.setState({ username: params.get('username') });
-
     this.getGameType(this.props).then((gamemode) => {
       console.log(gamemode);
       if (this.props.location.socketio !== undefined) {
@@ -58,10 +54,17 @@ export default class GameModeManager extends React.Component {
     });
   }
   async getGameType(props) {
+    console.log(props.match.params.gameid);
     return await fetch('https://localhost:443/api/game', {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
       body: JSON.stringify({
-        gameId: props.match.params.gameid,
+        data: {
+          gameId: props.match.params.gameid,
+        },
       }),
     })
       .then((res) => {
@@ -73,10 +76,8 @@ export default class GameModeManager extends React.Component {
         console.log(response);
         return response.gamemode;
       }); //change to response.gamemode
-      
   }
   setSockets() {
-    console.log(this.state.socket.MessageType.QuestionQQuestion);
     this.newSocketEvent(
       'click',
       () =>
@@ -92,7 +93,7 @@ export default class GameModeManager extends React.Component {
       'join game',
       JSON.stringify({
         gameId: this.props.match.params.gameid,
-        username: this.state.username,
+        username: this.props.username,
       })
     );
   }
@@ -129,7 +130,7 @@ export default class GameModeManager extends React.Component {
         socket={this.state.socket}
         setSockets={this.setQuestionQSockets}
         closeSockets={this.closeSockets}
-        username={this.state.username}
+        username={this.props.username}
       />
     );
   }
@@ -161,7 +162,7 @@ export default class GameModeManager extends React.Component {
         socket={this.state.socket}
         setSockets={this.setDeterminationSockets}
         closeSockets={this.closeSockets}
-        username={this.state.username}
+        username={this.props.username}
       />
     );
   }

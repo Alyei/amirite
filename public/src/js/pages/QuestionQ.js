@@ -42,7 +42,7 @@ export default class QuestionQ extends React.Component {
   componentWillUnmount() {
     //leave game
     this.props.closeSockets(
-      this.props.match.params.gameid.split('?')[0],
+      this.props.match.params.gameid,
       this.props.username
     );
     this.props.onRef(undefined);
@@ -109,7 +109,7 @@ export default class QuestionQ extends React.Component {
     this.state.socket.emit(
       'start game',
       JSON.stringify({
-        gameId: this.props.match.params.gameid.split('?')[0],
+        gameId: this.props.match.params.gameid,
         username: this.props.username,
       })
     );
@@ -126,7 +126,7 @@ export default class QuestionQ extends React.Component {
       'action',
       JSON.stringify({
         username: this.props.username,
-        gameId: this.props.match.params.gameid.split('?')[0],
+        gameId: this.props.match.params.gameid,
         msgType: this.state.socket.MessageType.QuestionQTip,
         data: {
           questionId: questionId,
@@ -192,10 +192,9 @@ export default class QuestionQ extends React.Component {
           return (
             <Row key={'r' + item[0]}>
               <Col className="ColAns" xsOffset={2} xs={4}>
-                <div className="AnsBox">{firstCol}</div>
+                {firstCol}
               </Col>
               <Col className="ColAns" xs={4}>
-                <div className="AnsBox">
                   <AnswerBox
                     className="AnswerBox"
                     key={item[0]}
@@ -204,7 +203,6 @@ export default class QuestionQ extends React.Component {
                     ref={item[0]}
                     onClick={this.AnswClick}
                   />
-                </div>
               </Col>
             </Row>
           );

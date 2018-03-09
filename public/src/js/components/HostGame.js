@@ -10,35 +10,33 @@ class HostGame extends React.Component {
     this.state = {
       gamemodes: ['QuestionQ', 'Determination'],
       selectedMode: '',
-      username: 'alyei', //change to cookies
+      username: null,
       socket: null,
     };
     this.handleGameSelection = this.handleGameSelection.bind(this);
     this.handleHostGameClick = this.handleHostGameClick.bind(this);
     this.renderGamemodes = this.renderGamemodes.bind(this);
   }
-  componentWillMount() {
-    const params = new URLSearchParams(this.props.location.search);
-    this.setState({ username: params.get('username') });
+  componentDidMount() {
+    console.log('Host props', this.props);
+    if (this.props.isAuthenticated) {
+      this.setState({ username: this.props.username });
+    } else {
+      this.props.notAuth();
+    }
   }
   handleGameSelection(event) {
     this.setState({ selectedMode: event.target.value });
   }
   handleHostGameClick() {
-    const params = new URLSearchParams(this.props.location.search);
-    this.setState({ username: params.get('username') });
     Socket.Connect(this.state.selectedMode)
       .then((sock) => {
-        console.log(sock);
         this.setState({ socket: sock });
-        console.log(this.state.username);
         this.state.socket.emit('host game', this.state.username);
         this.state.socket.on('gameid', (gameid) => {
           console.log('got game with id', gameid);
-          console.log(this.state.socket);
           this.props.history.push({
             pathname: '/game/' + gameid,
-            search: '?username=' + this.state.username,
             host: true,
             socketio: this.state.socket,
           });
@@ -68,6 +66,10 @@ class HostGame extends React.Component {
   }
 
   render() {
+    if (this.props.isAuthenticated) {
+    } else {
+      return <div />;
+    }
     return (
       <div className="HostGame">
         {this.renderGamemodes()}

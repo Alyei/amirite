@@ -1,27 +1,32 @@
 html,
 body {
   height: 100%;
-  height: 100vh;
+  width: 100%;
+  background: url(https://osu.ppy.sh/images/backgrounds/page-333@2x.png);
+  color: whitesmoke;
 }
 
 .QuestionQGrid,
 .GameEndScreenGrid {
-  background: url(https://osu.ppy.sh/images/backgrounds/page-333@2x.png);
   /*url(https://osu.ppy.sh/images/backgrounds/page-000.png);*/
   background-attachment: fixed;
   background-size: cover;
-  height: 100vh;
-  font-size: 250%;
   height: 100%;
+  font-size: 250%;
   align-items: center;
   cursor: default;
   vertical-align: bottom;
-  position: "absolute";
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
 }
+.QuestionBox,
+.AnswerBox {
+  background-color: whitesmoke;
+  color: black;
+}
+
 .QuestionBox {
   text-align: center;
   border-radius: 20px;
@@ -29,19 +34,45 @@ body {
   padding-bottom: 10%;
   margin-top: 1.5ex;
   margin-bottom: 5%;
-  background-color: whitesmoke;
+  display: block;
 }
-/*
-.AnsBox {
+
+.AnswerBox {
   position: relative;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-wrap: break-word;
+  border-radius: 20px;
+  margin-bottom: 1ex;
 }
-.AnsBox:before {
+
+.AnswerBox:before {
   content: "";
-  display: block;
+  width: 1px;
+  margin-left: -1px;
+  float: left;
+  height: 0;
   padding-top: 56.25%;
+  /* */
 }
-*/
+
+.AnswerBox:after {
+  content: "";
+  clear: both;
+}
+
+.AnswerBox > .AnsBoxContent {
+  text-align: center;
+  word-wrap: break-word;
+  min-width: 50%;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+/*
 .AnswerBox {
   text-align: center;
   border-radius: 20px;
@@ -53,6 +84,7 @@ body {
   margin-bottom: 1ex;
   background-color: whitesmoke;
 }
+*/
 .AnswerBox:hover {
   background-color: darkgray;
 }

@@ -1,21 +1,35 @@
 import React from 'react';
-import { Button, Navbar, Nav, NavItem } from 'react-bootstrap';
+import {
+  Button,
+  Navbar,
+  Nav,
+  NavItem,
+  NavDropdown,
+  MenuItem,
+} from 'react-bootstrap';
+import { withRouter } from 'react-router-dom';
 
 import '../../css/navigation.css';
 
 import Overlay from './Overlay.js';
 
-export default class NavBar extends React.Component {
+class NavBar extends React.Component {
   constructor() {
     super();
     this.state = {
       showModal: false,
       defTab: 1,
-      prelogin: true,
     };
     this.OpenRegister = this.OpenRegister.bind(this);
     this.OpenLogin = this.OpenLogin.bind(this);
     this.OverlayClose = this.OverlayClose.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
+  }
+  componentDidMount() {
+    this.props.onRef(this);
+  }
+  componentWillUnmount() {
+    this.props.onRef(undefined);
   }
 
   OverlayClose() {
@@ -28,7 +42,21 @@ export default class NavBar extends React.Component {
     this.setState({ defTab: 2, showModal: true });
   }
 
-  MainNavElements() {
+  handleLogout(event) {
+    fetch('https://localhost:443/api/logout', {
+      method: 'POST',
+      credentials: 'include',
+    }).then((res) => {
+      console.log(res);
+      if (res.status === 200) {
+        console.log(this);
+        this.props.history.push({ pathname: '/' });
+        this.props.setAuth(false, null);
+      } else return { status: res.status };
+    });
+  }
+
+  PublicNavElements() {
     const NavElements = (
       <Nav pullRight className="navbar-nav navbar-right">
         <NavItem className="LogRegForm">
@@ -53,17 +81,19 @@ export default class NavBar extends React.Component {
     );
     return <div>{NavElements}</div>;
   }
-  PostLoginNavElements() {
+  PrivateNavElements() {
     const NavElements = (
       <Nav pullRight className="navbar-nav navbar-right">
-        <NavItem className="LogRegForm">
-          <label text={this.props.user.username} />
-        </NavItem>
-        <NavItem className="LogRegForm">
-          <img src={this.props.user.image} />
-        </NavItem>
+        <NavDropdown
+          id={this.props.username || 'username'}
+          title={this.props.username || 'test'}
+          noCaret
+        >
+          <MenuItem onClick={this.handleLogout}>Logout</MenuItem>
+        </NavDropdown>
       </Nav>
     );
+    return <div>{NavElements}</div>;
   }
 
   render() {
@@ -73,11 +103,13 @@ export default class NavBar extends React.Component {
           <Navbar.Brand className="MainNavBarBrand">Amirite</Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
-        <Navbar.Collapse className="navbar-collapse">
-          {this.state.prelogin === true
-            ? this.MainNavElements()
-            : this.PostLoginNavElements()}
-        </Navbar.Collapse>
+        {this.props.isAuthenticated === false ? (
+          <Navbar.Collapse className="navbar-collapse">
+            {this.PublicNavElements()}
+          </Navbar.Collapse>
+        ) : (
+          this.PrivateNavElements()
+        )}
       </Navbar>
     );
     return (
@@ -87,9 +119,12 @@ export default class NavBar extends React.Component {
           defTab={this.state.defTab}
           showModal={this.state.showModal}
           overlayClose={this.OverlayClose}
+          setAuth={this.props.setAuth}
         />
         {this.props.children}
       </div>
     );
   }
 }
+
+export default withRouter(NavBar);

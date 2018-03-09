@@ -1,24 +1,30 @@
-import React from "react";
+import React from 'react';
 
 export default class AnswerBox extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            visibility: true
-        }
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      visibility: true,
+    };
+  }
 
-    static defaultProps = {
-        id: "",
-        text: ""
-    }
+  static defaultProps = {
+    id: '',
+    text: '',
+  };
 
-    render() {
-        const {text, ...other} = this.props;
-        return(
-            <div onClick={this.props.onClick} {...other}>
-                {this.props.text}
-            </div>
-        )
-    }
+  render() {
+    const { text, className, ...other } = this.props;
+    return (
+      <div
+        onClick={this.props.onClick}
+        {...other}
+        className={this.props.className}
+      >
+        <div className="AnsBoxContent" {...other}>
+          {this.props.text}
+        </div>
+      </div>
+    );
+  }
 }
