@@ -375,7 +375,7 @@ export class QuestionQCore {
           this.QuestionPlayer(newPlayer);
         }
       }
-      this.LogSilly("player (" + newPlayer.GetPlayerData() + ") has joined the game.");
+      this.LogSilly("player (" + JSON.stringify(newPlayer.GetPlayerData()) + ") has joined the game.");
       return true;
     }
     return false;
