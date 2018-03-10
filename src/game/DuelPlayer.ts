@@ -5,7 +5,8 @@ export class DuelPlayer extends PlayerBase implements iDuelPlayerData {
     //username: string;
     //state: PlayerState;
     //role: PlayerRole;
-    score: number;
+    public score: number;
+    public ready: boolean;
 
     /**
      * Creates an instance of the iDuelPlayerData class.
@@ -15,7 +16,7 @@ export class DuelPlayer extends PlayerBase implements iDuelPlayerData {
         super(baseArguments.username, baseArguments.socket, baseArguments.role);
         //Object.setPrototypeOf(this, new.target.prototype);
         this.state = baseArguments.state;
-
+        this.ready = false;
         this.score = 0;
     }
 
