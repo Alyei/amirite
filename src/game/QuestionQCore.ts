@@ -358,26 +358,25 @@ export class QuestionQCore {
    * @returns - whether the user could be added
    */
   public AddUser(player: PlayerBase): boolean {
-    if (
-      this._players &&
-      !this._players.find(x => x.username == player.username)
-    ) {
+    if (this._gamePhase == QuestionQGamePhase.Ended) {
+      return false; // game ended
+    }
+    if (this._players && !this._players.find(x => x.username == player.username)) {
+      const newPlayer: QuestionQPlayer = new QuestionQPlayer(
+        player.GetArguments()
+      );
       if (this._gamePhase == QuestionQGamePhase.Setup) {
-        this._players.push(new QuestionQPlayer(player.GetArguments()));
-        return true;
+        this._players.push(newPlayer);
       }
       if (this._gamePhase == QuestionQGamePhase.Running) {
-        let newPlayer: QuestionQPlayer = new QuestionQPlayer(
-          player.GetArguments()
-        );
         this._players.push(newPlayer);
-        if (newPlayer.state == PlayerState.Launch)
-        {
-          this.InformPlayer(newPlayer, MessageType.QuestionQStartGameData, this.GetStartGameData())
+        if (newPlayer.state == PlayerState.Launch) {
+          newPlayer.state = PlayerState.Playing;
           this.QuestionPlayer(newPlayer);
         }
-        return true;
       }
+      this.LogSilly("player (" + newPlayer.GetPlayerData() + ") has joined the game.");
+      return true;
     }
     return false;
   }

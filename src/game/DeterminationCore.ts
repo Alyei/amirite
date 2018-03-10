@@ -15,14 +15,16 @@ import {
   Gamemode,
   iDeterminationGameData,
   iDeterminationTipData,
-  iSpectatingData
+  iSpectatingData,
+  iDeterminationPlayerStatistic
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { DeterminationPlayer } from "./DeterminationPlayer";
 import { Tryharder } from "./Tryharder";
 import { platform } from "os";
-import { QuestionModel } from "../models/Schemas";
+import { QuestionModel, DeterminationGameDataModel } from "../models/Schemas";
 import { logger } from "../server/logging";
+import { RunningGames } from "./RunningGames";
 
 enum DeterminationGamePhase {
     Setup = 0,
@@ -57,7 +59,8 @@ export class DeterminationCore {
         public gameId: string,
         questionIds: string[],
         players: PlayerBase[],
-        readonly gameArguments: iDeterminationHostArguments
+        readonly gameArguments: iDeterminationHostArguments,
+        private runningGames: RunningGames
     ) {
         this._gamePhase = DeterminationGamePhase.Setup;
         this._timers = {};
@@ -79,18 +82,18 @@ export class DeterminationCore {
      * @param data - the data that is to be sent
      * @returns - whether no error happened
      */
-    private InformPlayer(player: PlayerBase, msgType: MessageType, data: any): boolean {
+    private InformPlayer(player: DeterminationPlayer, msgType: MessageType, data: any): boolean {
       const result: boolean = player.Inform(msgType, data);
   
-      const specData: iSpectatingData = {
-        targetUsername: player.username,
-        msgType: msgType,
-        data: data
-      };
+      const playerStats: iDeterminationPlayerStatistic = this.GetPlayerStats(player);
   
+      const host: DeterminationPlayer | undefined = this._players.find(p => p.role == PlayerRole.Host);
+      if (host)
+        host.Inform(MessageType.DeterminationPlayerData, player.GetPlayerData())
+
       const spectators: PlayerBase[] = this.Players.filter(x => x.state == PlayerState.Spectating && x.username != player.username);
       for (let spec of spectators) {
-        spec.Inform(MessageType.SpectatingData, specData);
+        spec.Inform(MessageType.DeterminationPlayerStatistic, playerStats);
       }
   
       return result;
@@ -146,6 +149,7 @@ export class DeterminationCore {
      * Sends the game's data to all players.
      */
     private SendGameData(): void {
+      const gameDataFP = this.GetPlayerStatistics();
       const gameData = this.GetGameData();
       const players: PlayerBase[] = this.Players;
       const th: Tryharder = new Tryharder();
@@ -153,7 +157,7 @@ export class DeterminationCore {
         if (
           !th.Tryhard(
             () => {
-              return this.InformPlayer(player, MessageType.QuestionQGameData, gameData);
+              return player.Inform(MessageType.DeterminationGameDataForPlayers, gameDataFP);
             },
             3000, // delay
             3 // tries
@@ -161,8 +165,47 @@ export class DeterminationCore {
         ) {
           // player not reachable
         }
+      }/*
+      th.Tryhard(
+        () => {
+          const host: DeterminationPlayer = this._players.find(p => p.role == PlayerRole.Host);
+          if (!host)
+            return false;
+          return host.Inform(MessageType.DeterminationGameDataForHost, gameData);
+        },
+        3000,
+        3
+      );*/
+    }
+
+    private GetPlayerStatistics(): iDeterminationPlayerStatistic[] {
+      const result: iDeterminationPlayerStatistic[] = [];
+      for (let player of this._players) {
+        result.push(this.GetPlayerStats(player));
       }
-      //this.SendToRoom(MessageType.QuestionQGameData, gameData);
+      return result;
+    }
+
+  private GetPlayerStats(player: DeterminationPlayer): iDeterminationPlayerStatistic {
+    return {
+      username: player.username,
+      score: player.score,
+      role: player.role,
+      state: player.state,
+      questionIds: player.questions.map(qd => qd.question.questionId),
+      correctAnswers: player.tips.filter(td => td.feedback.correct).length,
+      totalValuedTime: this.GetSum(player.tips.map(td => td.feedback.duration)),
+      totalTimeCorrection: this.GetSum(player.tips.map(td => td.feedback.timeCorrection))
+    };
+  }
+
+    public GetSum(numberArray: number[]): number {
+      let result: number = 0;
+      for (let j of numberArray)
+      {
+        result += j;
+      }
+      return result;
     }
 
     /**
@@ -295,8 +338,7 @@ export class DeterminationCore {
     const th: Tryharder = new Tryharder();
     th.Tryhard(
       () => {
-        return this.InformPlayer(
-          player,
+        return player.Inform(
           MessageType.DeterminationPlayerData,
           player.GetPlayerData()
         );
@@ -313,21 +355,27 @@ export class DeterminationCore {
      * @returns - whether the user could be added
      */
     public AddUser(player: PlayerBase): boolean {
-        if (this._players && !this._players.find(x => x.username == player.username)) {
-          if (this._gamePhase == DeterminationGamePhase.Setup) {
-            this._players.push(new DeterminationPlayer(player.GetArguments()));
-            return true;
-          }
-          if (this._gamePhase == DeterminationGamePhase.Running) {
-            let newPlayer: DeterminationPlayer = new DeterminationPlayer(
-              player.GetArguments()
-            );
-            this._players.push(newPlayer);
-            if (newPlayer.state == PlayerState.Launch) this.QuestionPlayer(newPlayer);
-            return true;
+      if (this._gamePhase == DeterminationGamePhase.Ended) {
+        return false; // game ended
+      }
+      if (this._players && !this._players.find(x => x.username == player.username)) {
+        const newPlayer: DeterminationPlayer = new DeterminationPlayer(
+          player.GetArguments()
+        );
+        if (this._gamePhase == DeterminationGamePhase.Setup) {
+          this._players.push(newPlayer);
+        }
+        if (this._gamePhase == DeterminationGamePhase.Running) {
+          this._players.push(newPlayer);
+          if (newPlayer.state == PlayerState.Launch) {
+            newPlayer.state = PlayerState.Playing;
+            this.QuestionPlayer(newPlayer);
           }
         }
-        return false;
+        this.LogSilly("player (" + newPlayer.GetPlayerData() + ") has joined the game.");
+        return true;
+      }
+      return false;
     }
 
     /**
@@ -361,8 +409,35 @@ export class DeterminationCore {
         this._gamePhase = DeterminationGamePhase.Ended;
 
         this.SendGameData();
-    
-        //!!! save game to database
+
+        this.Save();
+
+        this.runningGames.Sessions.splice(
+            this.runningGames.Sessions.findIndex(
+                x => x.GeneralArguments.gameId == this.gameId
+            ),
+            1
+        );
+    }
+
+    /**
+     * Saves the game's data into the DB
+     */
+    public Save(): void {
+        const gameData: iDeterminationGameData = this.GetGameData();
+        const gameDataModel = new DeterminationGameDataModel(gameData);
+        gameDataModel.save((err: any) => {
+            if (err) {
+                logger.log(
+                    "info",
+                    "failed to save game (%s); error: %s",
+                    gameData,
+                    err
+                );
+                return;
+            }
+            this.LogSilly("the game has been saved");
+        });
     }
 
     /**
@@ -457,8 +532,7 @@ export class DeterminationCore {
                 if (
                   !th.Tryhard(
                     () => {
-                      return this.InformPlayer(
-                        player,
+                      return player.Inform(
                         MessageType.DeterminationQuestion,
                         nextQuestion.question
                       );
@@ -482,8 +556,7 @@ export class DeterminationCore {
                 if (
                   !th.Tryhard(
                     () => {
-                      return this.InformPlayer(
-                        player,
+                      return player.Inform(
                         MessageType.DeterminationPlayerData,
                         player.GetPlayerData()
                       );
@@ -713,7 +786,7 @@ export class DeterminationCore {
     private ProcessPlayerInputError(player: DeterminationPlayer, errorMessage: iGeneralPlayerInputError) {
         const th: Tryharder = new Tryharder();
         if (!th.Tryhard(() => {
-            return this.InformPlayer(player, MessageType.PlayerInputError, errorMessage);
+            return player.Inform(MessageType.PlayerInputError, errorMessage);
         }, 3000, // delay
             3 // tries
         )) {
