@@ -144,6 +144,7 @@ export enum MessageType {
   DuelChooseDifficultyReply,
   DuelChooseCategoryRequest,
   DuelChooseCategoryReply,
+  DuelSetReadyState,
 }
 export enum GameAction {
   Start = 0,
@@ -482,6 +483,9 @@ export interface iDuelPlayerData {
   state: PlayerState;
   role: PlayerRole;
   score: number;
+}
+export interface iDuelSetReadyState {
+  ready: boolean;
 }
 export interface iDuelQuestionBase extends iGeneralQuestion {
   questionCounter: number;
