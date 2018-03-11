@@ -16,6 +16,7 @@ import {
 } from "../models/GameModels";
 import * as GModels from "../models/GameModels";
 import { iGame } from "../game/iGame";
+import { ENOSTR } from "constants";
 
 export class io {
   public server: SocketIO.Server;
@@ -150,19 +151,28 @@ export class io {
     }
   }
 
+  private ParseOptions(optS: any): iJoinGame {
+    let options: iJoinGame;
+    if (typeof optS === "string") {
+      try {
+        options = JSON.parse(optS);
+      } catch (e) {
+        throw new Error("Could not parse options.");
+      }
+    } else {
+      options = optS;
+    }
+
+    return options;
+  }
+
   /**
    * Adds the player to the specified game's players-array.
    * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
    * @param {string}optS Options in the format of `iJoinGame`.
    */
   private JoinGame(playerSocket: SocketIO.Socket, optS: any): void {
-    let opt: iJoinGame;
-    if (typeof optS === "string") {
-      opt = JSON.parse(optS);
-    } else {
-      opt = optS;
-    }
-    console.log(opt);
+    let opt: iJoinGame = this.ParseOptions(optS);
 
     const game: iGame | undefined = this.GameSessions.Sessions.find(
       x => x.GeneralArguments.gameId == opt.gameId
