@@ -76,6 +76,7 @@ export class GameFactory {
                     "Game could not be initialized: %s",
                     err
                   );
+                  reject(err);
                 });
               break;
             }
@@ -102,6 +103,7 @@ export class GameFactory {
                     "Game could not be initialized: %s",
                     err
                   );
+                  reject(err);
                 });
               break;
             }
@@ -125,6 +127,30 @@ export class GameFactory {
                     "Game could not be initialized: %s",
                     err
                   );
+                  reject(err);
+                });
+            }
+            case Gamemode.Duel: {
+              const newGame: iGame = new DeterminationGame( //change to Duel
+                generalArguments,
+                namespaceSocket,
+                determinationArguments || {
+                  pointBase: 100,
+                  pointBaseWrongAnswerIdentified: 100,
+                  interQuestionGap: 1000
+                }
+              );
+              this.Initialize(newGame)
+                .then((res: any) => {
+                  resolve(res);
+                })
+                .catch(err => {
+                  logger.log(
+                    "warning",
+                    "Game could not be initialized: %s",
+                    err
+                  );
+                  reject(err);
                 });
             }
             default:
