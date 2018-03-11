@@ -1,70 +1,166 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const path = require("path");
-const dotenv = require("dotenv");
+exports.__esModule = true;
+var path = require("path");
+var dotenv = require("dotenv");
 /**
- * Route-setting library for amirite.
+ * HTTPS server's routing.
+ * @class
  */
-var ExpressRoutes;
-(function (ExpressRoutes) {
+var Https = /** @class */ (function () {
     /**
-     * Sets routes for the HTTPS server.
+     * Sets up the routes.
+     * @constructor
+     * @param app Express server.
+     * @param pass Passport object.
      */
-    class Https {
-        /**
-         * Sets up the routes.
-         * @param app Express server.
-         * @param pass Passport object.
-         */
-        constructor(app, pass) {
-            this.app = app;
-            this.passport = pass;
-            this.setRoutes();
-        }
-        /**
-         * Sets the express server's routes.
-         */
-        setRoutes() {
-            this.app.get("/", (req, res) => {
-                res.sendFile(path.join(__dirname, "..", "..", "public", "index.html"));
-            });
-            this.app.get("/login", (req, res) => {
-                res.sendFile(path.join(__dirname, "..", "..", "public", "login.html"));
-            });
-            this.app.get("/signup", (req, res) => {
-                res.sendFile(path.join(__dirname, "..", "..", "public", "signup.html"));
-            });
-            this.app.post("/signup", this.passport.authenticate("local-signup", {
-                successRedirect: "/profile",
-                failureRedirect: "/signup",
-                failureFlash: false // allow flash messages  #IMPLEMENT
-            }));
-        }
+    function Https(app, pass, questEdit, running) {
+        this.app = app;
+        this.passport = pass;
+        this.questEdit = questEdit;
+        this.sessions = running;
+        this.setRoutes();
     }
-    ExpressRoutes.Https = Https;
     /**
-     * Sets the redirect route for the HTTPS server,
-     * to redirect from HTTP to HTTPS.
+     * Sets the express server's routes.
+     * @function
      */
-    class Http {
-        /**
-         * Adds the route for redirection. * `app.get('*', ...)`
-         * @param app HTTPS express app that should redirect.
-         */
-        constructor(app) {
-            this.env = dotenv.config();
-            this.app = app;
-            this.httpRedirectRoute();
+    Https.prototype.setRoutes = function () {
+        var _this = this;
+        //When the user visits '/' he should be sent .../public/index.html
+        this.app.get("/", function (req, res) {
+            res.render(path.join(__dirname, "..", "..", "public", "index.ejs"));
+        });
+        this.app.get("/login", function (req, res) {
+            res.render(path.join(__dirname, "..", "..", "public", "login.ejs"), {
+                message: req.flash("login")
+            });
+        });
+        this.app.get("/signup", function (req, res) {
+            res.render(path.join(__dirname, "..", "..", "public", "signup.ejs"), {
+                message: req.flash("login")
+            });
+        });
+        this.app.get("/mhost", function (req, res) {
+            res.render(path.join(__dirname, "..", "..", "public", "millionairehost.ejs"));
+        });
+        this.app.get("/mplayer", function (req, res) {
+            res.render(path.join(__dirname, "..", "..", "public", "millionaireplayer.ejs"));
+        });
+        this.app.get("/api/signup", function (req, res) {
+            res.render("signup");
+        });
+        this.app.get("/profile", this.IsAuthenticated, function (req, res) {
+            res.render(path.join(__dirname, "..", "..", "public", "profile.ejs"), {
+                user: req.user
+            });
+        });
+        this.app.get("/logout", this.IsAuthenticated, function (req, res) {
+            req.logout();
+            res.redirect("/");
+        });
+        this.app.get("/socket", this.IsAuthenticated, function (req, res) {
+            res.render(path.join(__dirname, "..", "..", "public", "socket.ejs"));
+        });
+        this.app.get("/question", this.IsAuthenticated, function (req, res) {
+            res.render(path.join(__dirname, "..", "..", "public", "question.ejs"));
+        });
+        this.app.post("/api/signup", this.passport.authenticate("local-signup"), function (req, res) {
+            res.redirect("/login");
+        });
+        this.app.post("/signup", this.passport.authenticate("local-signup"), function (req, res) {
+            res.redirect("/login");
+        });
+        /*this.app.post("/api/signup", (req: any, res: any) => {
+          console.log("THIS COMING IN");
+          console.log(req.body);
+          console.log("_______________________________________");
+          console.log(req.body.data);
+          res.send("successful");
+        });*/
+        /*this.passport.authenticate("local-signup", {
+          successRedirect: "/profile", //Redirect to the secure profile section.
+          failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
+          failureFlash: true //Allow flash messages.
+          });*/
+        this.app.post("/api/login", this.passport.authenticate("local-login"), function (req, res) {
+            res.redirect("/socket");
+        });
+        this.app.post("/login", this.passport.authenticate("local-login"), function (req, res) {
+            res.redirect("/socket");
+        });
+        this.app.post("/question", function (req, res) {
+            _this.questEdit
+                .SaveQuestion(JSON.parse(req.body.data))
+                .then(function (prom) {
+                res.send("successful");
+            })["catch"](function (err) {
+                //implement statuscode
+                res.send("failed");
+            });
+        });
+        this.app.post("/test", function (req, res) {
+            console.log(req.body.data);
+            res.send("test");
+        });
+        this.app.post("/api/test", function (req, res) {
+            console.log(req.body.data + "API");
+            res.send("test");
+        });
+        this.app.post("/test", function (req, res) {
+            console.log(req.body.data);
+            res.send("test");
+        });
+        this.app.post("/api/test", function (req, res) {
+            console.log(req.body.data + "API");
+            res.send("test");
+        });
+        this.app.post("/game", this.IsAuthenticated, function (req, res) {
+            var msg = req.body.data;
+            for (var _i = 0, _a = _this.sessions.Sessions; _i < _a.length; _i++) {
+                var game = _a[_i];
+                if (game.GeneralArguments.gameId == msg.gameId) {
+                    res.send(game.GeneralArguments.gamemode);
+                }
+            }
+        });
+    };
+    Https.prototype.IsAuthenticated = function (req, res, next) {
+        if (req.user) {
+            return next();
         }
-        /**
-         * Redirection route.
-         */
-        httpRedirectRoute() {
-            this.app.get("*", (req, res) => {
-                res.redirect("https://localhost:" + process.env.https_port + req.url);
+        else {
+            return res.status(401).json({
+                error: "not authenticated"
             });
         }
+    };
+    return Https;
+}());
+exports.Https = Https;
+/**
+ * Sets the http-to-https redirection routes.
+ * @class
+ */
+var Http = /** @class */ (function () {
+    /**
+     * Adds the route for redirection.  `app.get('*', ...)`
+     * @param app HTTPS express app that should redirect.
+     * @constructor
+     */
+    function Http(app) {
+        this.env = dotenv.config();
+        this.app = app;
+        this.httpRedirectRoute();
     }
-    ExpressRoutes.Http = Http;
-})(ExpressRoutes = exports.ExpressRoutes || (exports.ExpressRoutes = {}));
-//# sourceMappingURL=routes.js.map
+    /**
+     * Redirection route.
+     * @function
+     */
+    Http.prototype.httpRedirectRoute = function () {
+        this.app.get("*", function (req, res) {
+            res.redirect("https://" + req.headers.host + req.url);
+        });
+    };
+    return Http;
+}());
+exports.Http = Http;

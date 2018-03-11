@@ -5,7 +5,8 @@ import {
   Gamemode,
   iDeterminationHostArguments,
   iMillionaireHostArguments,
-  PlayerRole
+  PlayerRole,
+  iDuelHostArguments
 } from "../models/GameModels";
 import { QuestionQGame } from "./QuestionQGame";
 import { MillionaireGame } from "./MillionaireGame";
@@ -20,6 +21,7 @@ import {
 } from "../server/Errors";
 import { iGame } from "./iGame";
 import { MillionaireGameDataModel } from "../models/Schemas";
+import { DeterminationGame } from "./DeterminationGame";
 
 export class GameFactory {
   public Sessions: RunningGames;
@@ -41,8 +43,10 @@ export class GameFactory {
   public CreateGame(
     generalArguments: iGeneralHostArguments,
     namespaceSocket: SocketIO.Namespace,
-    gameArguments?: iQuestionQHostArguments | iDeterminationHostArguments,
-    millionaireArguments?: iMillionaireHostArguments
+    questionqArguments?: iQuestionQHostArguments,
+    millionaireArguments?: iMillionaireHostArguments,
+    determinationArguments?: iDeterminationHostArguments,
+    duelArguments?: iDuelHostArguments
   ): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
@@ -56,48 +60,15 @@ export class GameFactory {
               const newGame: iGame = new QuestionQGame(
                 generalArguments,
                 namespaceSocket,
-                gameArguments || { pointBase: 100, interQuestionGap: 3000 },
+                questionqArguments || {
+                  pointBase: 100,
+                  interQuestionGap: 3000
+                },
                 this.Sessions
               );
-              try {
-                newGame
-                  .AddPlayer(
-                    generalArguments.owner,
-                    generalArguments.ownerSocket,
-                    PlayerRole.Host
-                  )
-                  .then((res: any) => {
-                    logger.log(
-                      "info",
-                      "Added owner %s as player to game %s.",
-                      generalArguments.owner,
-                      generalArguments.gameId
-                    );
-                  })
-                  .catch((err: any) => {
-                    logger.log(
-                      "info",
-                      "Adding of player %s to game %s was unsuccessful.",
-                      generalArguments.owner,
-                      generalArguments.gameId
-                    );
-                  });
-                this.Sessions.addRunningGame(newGame)
-                  .then((res: any) => {
-                    logger.log(
-                      "info",
-                      "New QuestionQ game: %s hosted.",
-                      generalArguments.gameId
-                    );
-                    resolve(res);
-                  })
-                  .catch((err: any) => {
-                    logger.log("info", err);
-                    reject(err);
-                  });
-              } catch (e) {
-                logger.log("error", e.message);
-              }
+              this.Initialize(newGame).catch(err => {
+                logger.log("warning", "Game could not be initialized: %s", err);
+              });
               break;
             }
             case Gamemode.Millionaire: {
@@ -113,54 +84,32 @@ export class GameFactory {
                   scoreCalcB: 2
                 }
               );
-              try {
-                newGame
-                  .AddPlayer(
-                    generalArguments.owner,
-                    generalArguments.ownerSocket,
-                    PlayerRole.Host
-                  )
-                  .then((res: any) => {
-                    logger.log(
-                      "info",
-                      "Added owner %s as player to game %s.",
-                      generalArguments.owner,
-                      generalArguments.gameId
-                    );
-                  })
-                  .catch((err: any) => {
-                    logger.log(
-                      "info",
-                      "Adding of player %s to game %s was unsuccessful.",
-                      generalArguments.owner,
-                      generalArguments.gameId
-                    );
-                  });
-                this.Sessions.addRunningGame(newGame)
-                  .then((res: any) => {
-                    logger.log(
-                      "info",
-                      "New Millionaire game: %s hosted.",
-                      generalArguments.gameId
-                    );
-                    resolve(res);
-                  })
-                  .catch((err: any) => {
-                    logger.log("info", err);
-                    reject(err);
-                  });
-              } catch (e) {
-                logger.log("error", e.message);
-              }
+              this.Initialize(newGame);
               break;
             }
-            /*case Gamemode.Determination: {
-        return new DeterminationGame(
-          generalArguments,
-          namespaceSocket,
-          gameArguments
-        );
-      }*/
+            case Gamemode.Determination: {
+              const newGame: iGame = new DeterminationGame(
+                generalArguments,
+                namespaceSocket,
+                determinationArguments || {
+                  pointBase: 100,
+                  pointBaseWrongAnswerIdentified: 100,
+                  interQuestionGap: 1000
+                }
+              );
+              this.Initialize(newGame)
+                .then(res => {
+                  console.log("GAME INITIALIZED");
+                  console.log(this.Sessions.Sessions);
+                })
+                .catch(err => {
+                  logger.log(
+                    "warning",
+                    "Game could not be initialized: %s",
+                    err
+                  );
+                });
+            }
             default:
               throw new GameCreationError("Invalid gamemode passed.");
           }
@@ -169,6 +118,52 @@ export class GameFactory {
         }
       } catch (err) {
         throw new Error(err.stack);
+      }
+    });
+  }
+
+  private Initialize(game: iGame): Promise<any> {
+    return new Promise((resolve: any, reject: any) => {
+      try {
+        game
+          .AddPlayer(
+            game.GeneralArguments.owner,
+            game.GeneralArguments.ownerSocket,
+            PlayerRole.Host
+          )
+          .then((res: any) => {
+            logger.log(
+              "info",
+              "Added owner %s as player to game %s.",
+              game.GeneralArguments.owner,
+              game.GeneralArguments.gameId
+            );
+          })
+          .catch((err: any) => {
+            logger.log(
+              "info",
+              "Adding of player %s to game %s was unsuccessful.",
+              game.GeneralArguments.owner,
+              game.GeneralArguments.gameId
+            );
+            logger.log("silly", err);
+            reject(err);
+          });
+        this.Sessions.addRunningGame(game)
+          .then((res: any) => {
+            logger.log(
+              "info",
+              "New Millionaire game: %s hosted.",
+              game.GeneralArguments.gameId
+            );
+            resolve(res);
+          })
+          .catch((err: any) => {
+            logger.log("info", err);
+            reject(err);
+          });
+      } catch (e) {
+        logger.log("error", e.message);
       }
     });
   }

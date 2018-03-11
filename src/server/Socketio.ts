@@ -277,7 +277,7 @@ export class io {
   private MillionaireConf(): void {
     this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
-      
+
       playerSocket.on("host game", (optS: string) => {
         const opt: any = JSON.parse(optS);
         this.HostGame(
@@ -285,6 +285,42 @@ export class io {
           this.Millionaire,
           opt.GeneralArgs.username,
           GModels.Gamemode.Millionaire
+        );
+      });
+
+      playerSocket.on("join game", (optS: string) => {
+        const opt: any = JSON.parse(optS);
+        this.JoinGame(playerSocket, opt);
+      });
+
+      playerSocket.on("start game", (optS: string) => {
+        console.log(optS);
+        const opt: any = JSON.parse(optS);
+        this.StartGame(playerSocket, opt);
+      });
+
+      playerSocket.on("leave game", (optS: string) => {
+        const opt: any = JSON.parse(optS);
+        this.LeaveGame(playerSocket, opt);
+      });
+
+      playerSocket.on("action", (optS: string) => {
+        this.PlayerAction(playerSocket, optS);
+      });
+    });
+  }
+
+  private DuelConf(): void {
+    this.Duel.on("connection", (playerSocket: SocketIO.Socket) => {
+      logger.log("info", "New user connected: %s", playerSocket.client.id);
+
+      playerSocket.on("host game", (optS: string) => {
+        const opt: any = JSON.parse(optS);
+        this.HostGame(
+          playerSocket,
+          this.Duel,
+          opt.GeneralArgs.username,
+          GModels.Gamemode.Duel
         );
       });
 
