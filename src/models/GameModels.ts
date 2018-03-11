@@ -106,8 +106,10 @@ export enum MessageType {
   DeterminationTipFeedback,
   DeterminationPlayerData,
   DeterminationTip,
-  DeterminationGameData,
+  DeterminationGameDataForPlayers,
   DeterminationHostArguments,
+  DeterminationGameDataForHost,
+  DeterminationPlayerStatistic,
 
   // Millionaire
   MillionaireQuestion = 20,
@@ -144,7 +146,8 @@ export enum MessageType {
   DuelChooseDifficultyRequest,
   DuelChooseDifficultyReply,
   DuelChooseCategoryRequest,
-  DuelChooseCategoryReply
+  DuelChooseCategoryReply,
+  DuelSetReadyState,
 }
 export enum GameAction {
   Start = 0,
@@ -287,10 +290,23 @@ export interface iDeterminationTipData {
 export interface iDeterminationPlayerData {
   username: string;
   role: PlayerRole;
-  state: number;
+  state: PlayerState;
   score: number;
   questions: iDeterminationQuestionData[];
   tips: iDeterminationTipData[]; // filter qId length for next option
+}
+export interface iDeterminationPlayerStatistic {
+  username: string;
+  score: number;
+  state: PlayerState;
+  role: PlayerRole;
+  questionIds: string[];
+  correctAnswers: number;
+  totalValuedTime: number;
+  totalTimeCorrection: number;
+}
+export interface iDeterminationEndGameData {
+  playerStatistics: iDeterminationPlayerStatistic[];
 }
 //#endregion
 
@@ -483,6 +499,9 @@ export interface iDuelPlayerData {
   state: PlayerState;
   role: PlayerRole;
   score: number;
+}
+export interface iDuelSetReadyState {
+  ready: boolean;
 }
 export interface iDuelQuestionBase extends iGeneralQuestion {
   questionCounter: number;

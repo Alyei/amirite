@@ -1,6 +1,6 @@
 import { logger } from "../server/logging";
 import { RunningGames } from "./RunningGames";
-import { Gamemode, iDuelQuestionBase, iDuelHostArguments, MessageType, iSpectatingData, PlayerState, iDuelEndGameData, iDuelPlayerData, iDuelPlayerQuestionData, iDuelAnswerOption, iDuelTimeCorrection, iDuelStartGameData, iDuelTip, iDuelTipFeedback, iDuelTipData, iDuelScoringData, iDuelChooseChoiceReply, DuelChoice, iDuelChooseCategoryRequest, iDuelChooseDifficultyRequest, iDuelChooseDifficultyReply, iDuelChooseCategoryReply } from "../models/GameModels";
+import { Gamemode, iDuelQuestionBase, iDuelHostArguments, MessageType, iSpectatingData, PlayerState, iDuelEndGameData, iDuelPlayerData, iDuelPlayerQuestionData, iDuelAnswerOption, iDuelTimeCorrection, iDuelStartGameData, iDuelTip, iDuelTipFeedback, iDuelTipData, iDuelScoringData, iDuelChooseChoiceReply, DuelChoice, iDuelChooseCategoryRequest, iDuelChooseDifficultyRequest, iDuelChooseDifficultyReply, iDuelChooseCategoryReply, iDuelSetReadyState } from "../models/GameModels";
 import { DuelPlayer } from "./DuelPlayer";
 import { PlayerBase } from "./PlayerBase";
 import { QuestionModel, DuelGameDataModel } from "../models/Schemas";
@@ -15,7 +15,7 @@ export enum DuelGamePhase {
 
 export class DuelCore {
     readonly Gamemode: Gamemode = Gamemode.Duel;
-    private players: DuelPlayer[];
+    public players: DuelPlayer[];
     private questionBases: iDuelQuestionBase[];
     private questions: iDuelPlayerQuestionData[];
     private currentQuestion?: iDuelPlayerQuestionData;
@@ -106,6 +106,24 @@ export class DuelCore {
             return true;
         }
         return false;
+    }
+
+    public SetReadyState(username: string, rs: iDuelSetReadyState) {
+        const player: DuelPlayer | undefined = this.players.find(p => p.username == username);
+        if (!player) {
+            return; // player not found
+        }
+        player.ready = rs.ready;
+        
+        // do start when conditions are met
+        /*if (this.players.length != 2)
+            return;
+        for (let p of this.players) {
+            if (!p.ready)
+                return;
+        }*/
+
+        this.Start();
     }
 
     /**
@@ -311,17 +329,27 @@ export class DuelCore {
      * @returns - whether the game has been started
      */
     public Start(): boolean {
-        if (this.gamePhase == DuelGamePhase.Setup) {
-            this.gamePhase = DuelGamePhase.Running;
-            const startGameData: iDuelStartGameData = this.GetStartGameData();
-            for (let player of this.players) {
-                this.InformPlayer(player, MessageType.DuelStartGameData, startGameData);
-                player.state = PlayerState.Playing;
-                player.StartPing();
-                this.AskQuestion();
+        if (this.gamePhase != DuelGamePhase.Setup) {
+            return false; // game not in setup phase
+        }
+        if (this.players.length != 2) {
+            return false; // invalid player array
+        }
+        for (let p of this.players) {
+            if (!p.ready) {
+                return false; // player not ready
             }
-            return true;
-        } else return false;
+        }
+
+        this.gamePhase = DuelGamePhase.Running;
+        const startGameData: iDuelStartGameData = this.GetStartGameData();
+        for (let player of this.players) {
+            this.InformPlayer(player, MessageType.DuelStartGameData, startGameData);
+            player.state = PlayerState.Playing;
+            player.StartPing();
+            this.AskQuestion();
+        }
+        return true;
     }
 
     public GetStartGameData(): iDuelStartGameData {

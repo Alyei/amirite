@@ -22,7 +22,9 @@
   },
   "proxy": {
     "/api": {
-      "target": "https://localhost:443"
+      "target": "https://localhost:443",
+	  "secure": false,
+	  "host": "0.0.0.0"
     }
   },
   "devDependencies": {
