@@ -147,7 +147,7 @@ export enum MessageType {
   DuelChooseDifficultyReply,
   DuelChooseCategoryRequest,
   DuelChooseCategoryReply,
-  DuelSetReadyState,
+  DuelSetReadyState
 }
 export enum GameAction {
   Start = 0,
@@ -487,7 +487,7 @@ export interface iDuelHostArguments {
   pointBase2: number;
   pointDeductionBase: number;
   pointDeductionBase2: number;
-  poindDetuctionWhenTooSlow: number;
+  pointDeductionWhenTooSlow: number;
   postfeedbackGap: number; // ms to next question
   choosingTime1: number;
   choosingTime2: number;

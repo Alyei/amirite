@@ -22,6 +22,7 @@ import {
 import { iGame } from "./iGame";
 import { MillionaireGameDataModel } from "../models/Schemas";
 import { DeterminationGame } from "./DeterminationGame";
+import { DuelGame } from "./DuelGame";
 
 export class GameFactory {
   public Sessions: RunningGames;
@@ -111,6 +112,7 @@ export class GameFactory {
               const newGame: iGame = new DeterminationGame(
                 generalArguments,
                 namespaceSocket,
+                this.Sessions,
                 determinationArguments || {
                   pointBase: 100,
                   pointBaseWrongAnswerIdentified: 100,
@@ -131,13 +133,23 @@ export class GameFactory {
                 });
             }
             case Gamemode.Duel: {
-              const newGame: iGame = new DeterminationGame( //change to Duel
+              const newGame: iGame = new DuelGame(
                 generalArguments,
                 namespaceSocket,
-                determinationArguments || {
-                  pointBase: 100,
-                  pointBaseWrongAnswerIdentified: 100,
-                  interQuestionGap: 1000
+                this.Sessions,
+                duelArguments || {
+                  scoreGoal: 5000,
+                  scoreMin: 1000,
+                  pointBase: 200,
+                  pointBase2: 300,
+                  pointDeductionBase: 100,
+                  pointDeductionBase2: 200,
+                  pointDeductionWhenTooSlow: 400,
+                  postfeedbackGap: 1000,
+                  choosingTime1: 10000,
+                  choosingTime2: 10000,
+                  maxCategoryChoiceRange: 5,
+                  maxDifficultyChoiceRange: 16
                 }
               );
               this.Initialize(newGame)

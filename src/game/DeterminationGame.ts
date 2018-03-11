@@ -22,6 +22,7 @@ import {
   QuestionCouldNotBeAddedError
 } from "../server/Errors";
 import { Tryharder } from "./Tryharder";
+import { RunningGames } from "./RunningGames";
 
 export class DeterminationGame implements iGame {
   private GameCore: DeterminationCore;
@@ -35,6 +36,7 @@ export class DeterminationGame implements iGame {
   public constructor(
     readonly GeneralArguments: iGeneralHostArguments,
     public namespace: SocketIO.Namespace,
+    readonly sessions: RunningGames,
     private _gameCoreArguments?: iDeterminationHostArguments
   ) {
     this.GameCore = new DeterminationCore(
@@ -45,7 +47,8 @@ export class DeterminationGame implements iGame {
         pointBase: 100,
         pointBaseWrongAnswerIdentified: 33,
         interQuestionGap: 3000
-      }
+      },
+      sessions
     );
   }
 
@@ -61,21 +64,22 @@ export class DeterminationGame implements iGame {
     data: string
   ): void {
     let msgType: number | undefined;
-    try { msgType = +messageType; }
-    catch (err) {
+    try {
+      msgType = +messageType;
+    } catch (err) {
       let errorMessage: iGeneralPlayerInputError = {
         message: "invalid message type",
         data: { username: username, msgType: messageType }
       };
       this.ProcessUserError(username, errorMessage);
     }
-    
+
     switch (msgType) {
       case MessageType.DeterminationTip: {
         try {
           this.GameCore.PlayerGivesTip(username, JSON.parse(data));
         } catch (err) {
-            this.ProcessUserError(username, { message: err.message, data: err});
+          this.ProcessUserError(username, { message: err.message, data: err });
         }
         break;
       }
@@ -95,18 +99,23 @@ export class DeterminationGame implements iGame {
    * @param username - the user who caused the error
    * @param errorMessage - the error's error message
    */
-  private ProcessUserError(username: string, errorMessage: iGeneralPlayerInputError): void {
+  private ProcessUserError(
+    username: string,
+    errorMessage: iGeneralPlayerInputError
+  ): void {
     this.LogInfo(JSON.stringify(errorMessage));
-    const user: PlayerBase | undefined = this.GameCore.Players.find(x => x.username == username);
+    const user: PlayerBase | undefined = this.GameCore.Players.find(
+      x => x.username == username
+    );
     if (user) {
-        const th: Tryharder = new Tryharder();
-        th.Tryhard(
-            () => {
-                return user.Inform(MessageType.PlayerInputError, errorMessage);
-            },
-            3000,
-            3
-        );
+      const th: Tryharder = new Tryharder();
+      th.Tryhard(
+        () => {
+          return user.Inform(MessageType.PlayerInputError, errorMessage);
+        },
+        3000,
+        3
+      );
     }
   }
 
@@ -157,7 +166,8 @@ export class DeterminationGame implements iGame {
         );
         if (
           username == this.GeneralArguments.owner ||
-          (player && [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
+          (player &&
+            [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
         ) {
           resolve(this.GameCore.Start());
         } else {
@@ -174,13 +184,7 @@ export class DeterminationGame implements iGame {
    * @param toLog - the information to log
    */
   private LogInfo(toLog: string) {
-    logger.log(
-      "info",
-        "Game: " +
-        this.GeneralArguments.gameId +
-        " - " +
-        toLog
-    );
+    logger.log("info", "Game: " + this.GeneralArguments.gameId + " - " + toLog);
   }
 
   /**
@@ -190,10 +194,7 @@ export class DeterminationGame implements iGame {
   private LogSilly(toLog: string) {
     logger.log(
       "silly",
-        "Game: " +
-        this.GeneralArguments.gameId +
-        " - " +
-        toLog
+      "Game: " + this.GeneralArguments.gameId + " - " + toLog
     );
   }
 }
