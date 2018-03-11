@@ -112,6 +112,7 @@ export class io {
    */
   private StartGame(playerSocket: SocketIO.Socket, optS: any) {
     let opt: iStartGame;
+    console.log(optS);
     if (typeof optS === "string") {
       opt = JSON.parse(optS);
     } else {

@@ -66,9 +66,17 @@ export class GameFactory {
                 },
                 this.Sessions
               );
-              this.Initialize(newGame).catch(err => {
-                logger.log("warning", "Game could not be initialized: %s", err);
-              });
+              this.Initialize(newGame)
+                .then((res: any) => {
+                  resolve(res);
+                })
+                .catch((err: any) => {
+                  logger.log(
+                    "warning",
+                    "Game could not be initialized: %s",
+                    err
+                  );
+                });
               break;
             }
             case Gamemode.Millionaire: {
@@ -84,7 +92,17 @@ export class GameFactory {
                   scoreCalcB: 2
                 }
               );
-              this.Initialize(newGame);
+              this.Initialize(newGame)
+                .then((res: any) => {
+                  resolve(res);
+                })
+                .catch((err: any) => {
+                  logger.log(
+                    "warning",
+                    "Game could not be initialized: %s",
+                    err
+                  );
+                });
               break;
             }
             case Gamemode.Determination: {
@@ -98,9 +116,8 @@ export class GameFactory {
                 }
               );
               this.Initialize(newGame)
-                .then(res => {
-                  console.log("GAME INITIALIZED");
-                  console.log(this.Sessions.Sessions);
+                .then((res: any) => {
+                  resolve(res);
                 })
                 .catch(err => {
                   logger.log(
@@ -124,47 +141,42 @@ export class GameFactory {
 
   private Initialize(game: iGame): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
-      try {
-        game
-          .AddPlayer(
+      game
+        .AddPlayer(
+          game.GeneralArguments.owner,
+          game.GeneralArguments.ownerSocket,
+          PlayerRole.Host
+        )
+        .then((res: any) => {
+          logger.log(
+            "info",
+            "Added owner %s as player to game %s.",
             game.GeneralArguments.owner,
-            game.GeneralArguments.ownerSocket,
-            PlayerRole.Host
-          )
-          .then((res: any) => {
-            logger.log(
-              "info",
-              "Added owner %s as player to game %s.",
-              game.GeneralArguments.owner,
-              game.GeneralArguments.gameId
-            );
-          })
-          .catch((err: any) => {
-            logger.log(
-              "info",
-              "Adding of player %s to game %s was unsuccessful.",
-              game.GeneralArguments.owner,
-              game.GeneralArguments.gameId
-            );
-            logger.log("silly", err);
-            reject(err);
-          });
-        this.Sessions.addRunningGame(game)
-          .then((res: any) => {
-            logger.log(
-              "info",
-              "New Millionaire game: %s hosted.",
-              game.GeneralArguments.gameId
-            );
-            resolve(res);
-          })
-          .catch((err: any) => {
-            logger.log("info", err);
-            reject(err);
-          });
-      } catch (e) {
-        logger.log("error", e.message);
-      }
+            game.GeneralArguments.gameId
+          );
+        })
+        .catch((err: any) => {
+          logger.log(
+            "info",
+            "Adding of player %s to game %s was unsuccessful.",
+            game.GeneralArguments.owner,
+            game.GeneralArguments.gameId
+          );
+          logger.log("silly", err);
+          reject(err);
+        });
+      this.Sessions.addRunningGame(game)
+        .then((res: any) => {
+          logger.log(
+            "info",
+            "New Millionaire game: %s hosted.",
+            game.GeneralArguments.gameId
+          );
+          resolve(res);
+        })
+        .catch((err: any) => {
+          reject(err);
+        });
     });
   }
 }
