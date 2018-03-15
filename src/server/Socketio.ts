@@ -219,10 +219,10 @@ export class io {
   }
 
   /**
-   * Configures the events for QuestionQ.
+   * Configures the events for the QuestionQ gamemode.
    */
   private QuestionQConf(): void {
-    this.QuestionQ.on("connection", (playerSocket: SocketIO.Socket) => {
+    this.QuestionQ.on("connection of", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
 
       playerSocket.on("host game", (username: string) => {
@@ -253,7 +253,7 @@ export class io {
   }
 
   /**
-   * Sets up the events for the determination game.
+   * Configures the events for the determination gamemode.
    */
   private DeterminationConf(): void {
     this.Determination.on("connection", (playerSocket: SocketIO.Socket) => {
@@ -285,6 +285,9 @@ export class io {
     });
   }
 
+  /**
+   * Configures the events for the millionaire gamemode.
+   */
   private MillionaireConf(): void {
     this.Millionaire.on("connection", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
@@ -321,6 +324,9 @@ export class io {
     });
   }
 
+  /**
+   * Configures the events for the duel gamemode.
+   */
   private DuelConf(): void {
     this.Duel.on("connection", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
