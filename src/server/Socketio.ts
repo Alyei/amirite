@@ -47,7 +47,7 @@ export class io {
     this.QuestionQConf();
     this.DeterminationConf();
     this.MillionaireConf();
-    //   this.DuelConf();
+    this.DuelConf();
   }
 
   /**
