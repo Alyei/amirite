@@ -8,7 +8,7 @@ class HostGame extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      gamemodes: ['QuestionQ', 'Determination'],
+      gamemodes: ['QuestionQ', 'Determination', 'Duel', 'Millionaire'],
       selectedMode: '',
       username: null,
       socket: null,
