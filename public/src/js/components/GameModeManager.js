@@ -2,16 +2,21 @@ import React from 'react';
 
 import Determination from '../pages/Determination';
 import QuestionQ from '../pages/QuestionQ';
+import Duel from '../pages/Duel';
+import Millionaire from '../pages/Millionaire';
 import * as Socket from '../../api';
 
 export default class GameModeManager extends React.Component {
   constructor(props) {
     super(props);
+    //#region Instances
     this.state = {
       selectedMode: '',
       socket: null,
       openSocketEvents: [],
     };
+    const sockMsgType = null;
+    //#endregion Instances
     //#region Binds
     this.getGameType = this.getGameType.bind(this);
     this.handleJoinGame = this.handleJoinGame.bind(this);
@@ -24,6 +29,15 @@ export default class GameModeManager extends React.Component {
 
     this.DeterminationConf = this.DeterminationConf.bind(this);
     this.setDeterminationSockets = this.setDeterminationSockets.bind(this);
+
+    this.MillionaireConf = this.MillionaireConf.bind(this);
+    this.setMillionaireSockets = this.setMillionaireSockets.bind(this);
+    this.setMillionaireSpectatorSockets = this.setMillionaireSpectatorSockets.bind(
+      this
+    );
+
+    this.DuelConf = this.DuelConf.bind(this);
+    this.setDuelSockets = this.setDuelSockets.bind(this);
     //#endregion Binds
   }
   //#region StartUp
@@ -31,17 +45,24 @@ export default class GameModeManager extends React.Component {
     this.getGameType(this.props).then((gamemode) => {
       console.log(gamemode);
       if (this.props.location.socketio !== undefined) {
-        this.setState({ socket: this.props.location.socketio }, function() {
-          this.setSockets();
-          this.setState({ selectedMode: this.state.socket.nsp.substring(1) });
-        });
+        this.setState(
+          { socket: this.props.location.socketio },
+          (this.sockMsgType = this.state.socket.MessageType),
+          function() {
+            this.setSockets();
+            this.setState({ selectedMode: this.state.socket.nsp.substring(1) });
+          }
+        );
         if (this.props.location.host !== true) {
           this.handleJoinGame();
         }
       } else {
         Socket.Connect(gamemode)
           .then((res) => {
-            this.setState({ socket: res });
+            this.setState(
+              { socket: res },
+              (this.sockMsgType = this.state.socket.MessageType)
+            );
           })
           .then(() => {
             this.setSockets();
@@ -136,19 +157,19 @@ export default class GameModeManager extends React.Component {
   }
   setQuestionQSockets() {
     this.newSocketEvent(
-      this.state.socket.MessageType.QuestionQQuestion,
+      this.sockMsgType.QuestionQQuestion,
       this.QuestionQ.setQuestion
     );
     this.newSocketEvent(
-      this.state.socket.MessageType.QuestionQTipFeedback,
+      this.sockMsgType.QuestionQTipFeedback,
       this.QuestionQ.handleFeedback
     );
     this.newSocketEvent(
-      this.state.socket.MessageType.QuestionQPlayerData,
+      this.sockMsgType.QuestionQPlayerData,
       this.QuestionQ.handlePlayerFinished
     );
     this.newSocketEvent(
-      this.state.socket.MessageType.QuestionQGameData,
+      this.sockMsgType.QuestionQGameData,
       this.QuestionQ.handleGameFinished
     );
   }
@@ -168,21 +189,145 @@ export default class GameModeManager extends React.Component {
   }
   setDeterminationSockets() {
     this.newSocketEvent(
-      this.state.socket.MessageType.DeterminationQuestion,
+      this.sockMsgType.DeterminationQuestion,
       this.Determination.setQuestion
     );
     this.newSocketEvent(
-      this.state.socket.MessageType.DeterminationTipFeedback,
+      this.sockMsgType.DeterminationTipFeedback,
       this.Determination.handleFeedback
+    );
+    this.newSocketEvent(
+      this.sockMsgType.DeterminationPlayerData,
+      this.Determination.handlePlayerFinished
+    );
+    this.newSocketEvent(
+      this.sockMsgType.DeterminationGameData,
+      this.Determination.handleGameFinished
     );
   }
   //#endregion Determination
+  //#region Duel
+  DuelConf() {
+    return (
+      <Duel
+        onRef={(ref) => (this.Duel = ref)}
+        {...this.props}
+        socket={this.state.socket}
+        setSockets={this.setDuelSockets}
+        closeSockets={this.closeSockets}
+        username={this.props.username}
+      />
+    );
+  }
+  setDuelSockets() {
+    this.newSocketEvent(this.sockMsgType.DuelQuestion, this.Duel.setQuestion);
+    this.newSocketEvent(
+      this.sockMsgType.DuelTipFeedback,
+      this.Duel.handleFeedback
+    );
+    this.newSocketEvent(
+      this.sockMsgType.DuelStartGameData,
+      this.Duel.setParameters
+    );
+    this.newSocketEvent(
+      this.sockMsgType.DuelChoiceRequest,
+      this.Duel.handleChoice
+    );
+    this.newSocketEvent(
+      this.sockMsgType.DuelChooseDifficultyRequest,
+      this.Duel.handleDifficultyChoice
+    );
+    this.newSocketEvent(
+      this.sockMsgType.DuelChooseCategoryRequest,
+      this.Duel.handleCategoryChoice
+    );
+    this.newSocketEvent(
+      this.sockMsgType.DuelEndGameData,
+      this.Duel.handleGameFinished
+    );
+  }
+  //#endregion Duel
+  //#region Millionaire
+  MillionaireConf() {
+    return (
+      <Millionaire
+        onRef={(ref) => (this.Millionaire = ref)}
+        {...this.props}
+        socket={this.state.socket}
+        setSockets={this.setMillionaireSockets}
+        closeSockets={this.closeSockets}
+        username={this.props.username}
+      />
+    );
+  }
+  setMillionaireSockets() {
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireQuestion,
+      this.Millionaire.setQuestion
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireTipFeedback,
+      this.Millionaire.handleFeedback
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireAudienceJokerResponse,
+      this.Millionaire.handleAudienceRes
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireAudienceJokerClue,
+      this.Millionaire.handleAudienceClue
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireFiftyFiftyJokerResponse,
+      this.Millionaire.handleFiftyRes
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireCallJokerResponse,
+      this.Millionaire.handleCallRes
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireCallJokerClue,
+      this.Millionaire.handleCallClue
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionairePlayerData,
+      this.Millionaire.handlePlayerFinished
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireGameData,
+      this.Millionaire.handleGameFinished
+    );
+  }
+
+  setMillionaireSpectatorSockets() {
+    this.newSocketEvent(
+      this.sockMsgType.SpectatingData,
+      this.Millionaire.handleGameFinished
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireCallJokerRequest,
+      this.Millionaire.handleGameFinished
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireAudienceJokerRequest,
+      this.Millionaire.handleGameFinished
+    );
+    this.newSocketEvent(
+      this.sockMsgType.MillionaireGameData,
+      this.Millionaire.handleGameFinished
+    );
+  }
+  //#endregion Millionaire
   render() {
     switch (this.state.selectedMode) {
       case 'questionq':
         return this.QuestionQConf();
       case 'determination':
         return this.DeterminationConf();
+      case 'duel':
+        return this.DuelConf();
+      case 'millionaire':
+        return this.MillionaireConf();
       default:
         return <div>div</div>;
     }

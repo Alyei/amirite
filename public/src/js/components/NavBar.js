@@ -23,6 +23,8 @@ class NavBar extends React.Component {
     this.OpenRegister = this.OpenRegister.bind(this);
     this.OpenLogin = this.OpenLogin.bind(this);
     this.OverlayClose = this.OverlayClose.bind(this);
+    this.handleLinkToHomePage = this.handleLinkToHomePage.bind(this);
+    this.handleLinkToProfile = this.handleLinkToProfile.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
   }
   componentDidMount() {
@@ -40,6 +42,17 @@ class NavBar extends React.Component {
   }
   OpenRegister() {
     this.setState({ defTab: 2, showModal: true });
+  }
+  handleLinkToHomePage(event) {
+    this.props.history.push({
+      pathname: '/',
+    });
+  }
+
+  handleLinkToProfile(event) {
+    this.props.history.push({
+      pathname: '/profile/' + this.props.username,
+    });
   }
 
   handleLogout(event) {
@@ -89,18 +102,23 @@ class NavBar extends React.Component {
           title={this.props.username || 'test'}
           noCaret
         >
+          <MenuItem onClick={this.handleLinkToProfile}>Profile</MenuItem>
           <MenuItem onClick={this.handleLogout}>Logout</MenuItem>
         </NavDropdown>
       </Nav>
     );
-    return <div>{NavElements}</div>;
+    return NavElements;
   }
 
   render() {
     const NavBare = (
       <Navbar className="MainNavBar" staticTop inverse collapseOnSelect>
         <Navbar.Header>
-          <Navbar.Brand className="MainNavBarBrand">Amirite</Navbar.Brand>
+          <Navbar.Brand className="MainNavBarBrand">
+            <a href="" onClick={this.handleLinkToHomePage}>
+              Amirite
+            </a>
+          </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
         {this.props.isAuthenticated === false ? (

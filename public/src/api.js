@@ -28,32 +28,62 @@ const MessageTypes = {
   PlayerInputError: '100',
   SpectatingData: '101',
 
-  //QuestionQ
+  // QuestionQ
   QuestionQQuestion: '1',
   QuestionQTipFeedback: '2',
-  QuestionQPlayerData: '3',
+  QuestionQPlayerDataAndExplanations: '3',
   QuestionQTip: '4',
   QuestionQGameData: '5',
   QuestionQHostArguments: '6',
+  QuestionQStartGameData: '7',
 
-  //Determination
+  // Determination
   DeterminationQuestion: '10',
   DeterminationTipFeedback: '11',
   DeterminationPlayerData: '12',
   DeterminationTip: '13',
-  DeterminationGameData: '14',
+  DeterminationGameDataForPlayers: '14',
   DeterminationHostArguments: '15',
+  DeterminationGameDataForHost: '16',
+  DeterminationPlayerStatistic: '17',
 
   //Millionaire
-  MillionaireSpectateData: '20',
-  MillionaireQuestion: '21',
-  MillionaireTip: '22',
-  MillionaireTipFeedback: '23',
-  MillionaireAudienceJokerRequest: '24',
-  MillionaireAudienceJokerResponse: '25',
-  MillionaireAudienceJokerClue: '26',
-  MillionairePassRequest: '27',
-  MillionairePassResponse: '28',
+  MillionaireQuestion: '20', //
+  MillionaireTip: '21',
+  MillionaireTipFeedback: '22', //
+  MillionaireAudienceJokerRequest: '23', //Player send; Sepct recv
+  MillionaireAudienceJokerResponse: '24', //
+  MillionaireAudienceJokerClue: '25', //Player recv; Spect send
+  MillionaireAudienceJokerClueFeedback: '26', //Spect
+  MillionaireFiftyFiftyJokerRequest: '27',
+  MillionaireFiftyFiftyJokerResponse: '28', //
+  MillionaireCallJokerRequest: '29', //Player send; Spect recv
+  MillionaireCallJokerResponse: '30', //
+  MillionaireCallJokerCallRequest: '31',
+  MillionaireCallJokerClue: '32', //Player recv; Spect send
+  MillionaireChooseMillionaireRequest: '33', //Admin recv
+  MillionaireChooseMillionaireResponse: '34',
+  MillionaireChooseQuestionRequest: '35', //Admin recv
+  MillionaireChooseQuestionResponse: '36',
+  MillionairePassRequest: '37',
+  MillinairePassResponse: '38',
+  MillionaireGameData: '39',
+  MillionairePlayerData: '40',
+  MillionaireActionFeedback: '41',
+
+  // Duel
+  DuelQuestion: '50', //
+  DuelTip: '51',
+  DuelTipFeedback: '52', //
+  DuelStartGameData: '53', //
+  DuelEndGameData: '54', //
+  DuelChoiceRequest: '55', //
+  DuelChoiceReply: '56',
+  DuelChooseDifficultyRequest: '57', //
+  DuelChooseDifficultyReply: '58',
+  DuelChooseCategoryRequest: '59', //
+  DuelChooseCategoryReply: '60',
+  DuelSetReadyState: '61',
 };
 const GameModes = {
   QuestionQ: '0',

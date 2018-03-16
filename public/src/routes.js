@@ -64,25 +64,28 @@ export default class Routes extends React.Component {
             setAuth={this.handleSetAuth}
             username={this.state.username}
           />
-          <Route path="/" exact component={HomePage} />
-          {this.state.navBarRef != null ? (
+          <Route path="/" exact component={() => <HomePage />} />
+          {this.state.navBarRef !== null &&
+          this.state.username !== undefined ? (
             <div>
               <Route
                 path="/profile/:username"
-                component={() => (
+                component={(props) => (
                   <HostGame
                     isAuthenticated={this.state.isAuthenticated}
                     notAuth={this.handleNotAuthenticated}
                     username={this.state.username}
+                    {...props}
                   />
                 )}
               />
               <Route
                 path="/game/:gameid"
-                component={() => (
+                component={(props) => (
                   <GameModeManager
                     NavBarRef={this.Navbar}
                     username={this.state.username}
+                    {...props}
                   />
                 )}
               />

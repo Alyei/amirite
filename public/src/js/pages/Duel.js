@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Button, Grid, Row, Col } from 'react-bootstrap';
+import { Button, Grid, Row, Col, Table, Modal } from 'react-bootstrap';
 
 import QuestionBox from '../components/QuestionBox';
 import AnswerBox from '../components/AnswerBox';
@@ -12,25 +12,33 @@ export default class QuestionQ extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      //QuestionParams
       questionId: '',
       question: '',
       pictureId: '',
       options: [],
       timeLimit: 0,
       difficulty: null,
-      questionTime: '',
+      //StartGameData
+      players: [],
+      scoreMin: 0,
+      scoreGoal: 0,
+      choiceChoosingTime: 0,
+      catdiffChoosingtime: 0,
+      catMaxOptions: 0,
+      diffMaxOptions: 0,
+      //Internal
       selectedOptionId: '',
-      playerState: 0,
-      playerScore: 0,
-      playerData: null,
+      playerScoring: [],
+      makeChoice: false,
+      choiceOptions: [],
       socket: this.props.socket,
+      ready: false,
     };
     this.AnswClick = this.handleAnswerClick.bind(this);
     this.handleStartGameClick = this.handleStartGameClick.bind(this);
     this.handleFeedback = this.handleFeedback.bind(this);
     this.setQuestion = this.setQuestion.bind(this);
-    //this.setSockets = this.props.setSockets.bind(this);
-    //this.closeSockets = this.props.closeSockets.bind(this);
     this.handlePlayerFinished = this.handlePlayerFinished.bind(this);
     this.handleGameFinished = this.handleGameFinished.bind(this);
   }
@@ -46,7 +54,24 @@ export default class QuestionQ extends React.Component {
     );
     this.props.onRef(undefined);
   }
-
+  //#region eventHandler
+  //#region receives
+  setParameters(jsonParams) {
+    var params = JSON.parse(jsonParams);
+    if (params.gameId === this.props.match.params.gameid) {
+      this.setState({
+        players: params.players,
+        scoreMin: params.gameArguments.scoreMin,
+        scoreGoal: params.gameArguments.scoreGoal,
+        choiceChoosingTime: params.gameArguments.choosingTime1,
+        catdiffChoosingtime: params.gameArguments.choosingTime2,
+        catMaxOptions: params.gameArguments.maxCategoryChoiceRange,
+        diffMaxOptions: params.gameArguments.maxDifficultyChoiceRange,
+      });
+    } else {
+      throw new Error();
+    }
+  }
   setQuestion(jsonQuestion) {
     if (this.state.playerState === 0) {
       this.setState({ playerState: 1 });
@@ -60,59 +85,78 @@ export default class QuestionQ extends React.Component {
       options: question.options,
       timeLimit: question.timeLimit,
       difficulty: question.difficulty,
-      questionTime: question.questionTime,
       selectedOptionId: '',
     });
   }
   handleFeedback(jsonFeedback) {
     var feedback = JSON.parse(jsonFeedback);
+    var tipFeedback = JSON.parse(feedback.tip);
     console.log(feedback);
     if (feedback !== undefined) {
       if (feedback.questionId === this.state.questionId) {
-        if (feedback.correct === true) {
-          ReactDOM.findDOMNode(
-            this.refs[this.state.selectedOptionId]
-          ).style.backgroundcolor =
-            'green';
-        } else if (this.state.selectedOptionId !== '') {
-          ReactDOM.findDOMNode(
-            this.refs[this.state.selectedOptionId]
-          ).style.backgroundcolor =
-            'red';
-          ReactDOM.findDOMNode(
-            this.refs[feedback.correctAnswer]
-          ).style.backgroundcolor =
-            'green';
+        if (tipFeedback.username === this.props.username) {
+          if (tipFeedback.correct === true) {
+            ReactDOM.findDOMNode(
+              this.refs[this.state.selectedOptionId]
+            ).style.backgroundcolor =
+              'green';
+          } else if (this.state.selectedOptionId !== '') {
+            ReactDOM.findDOMNode(
+              this.refs[this.state.selectedOptionId]
+            ).style.backgroundcolor =
+              'red';
+            ReactDOM.findDOMNode(
+              this.refs[feedback.correctAnswer]
+            ).style.backgroundcolor =
+              'green';
+          } else {
+            ReactDOM.findDOMNode(
+              this.refs[feedback.correctAnswer]
+            ).style.backgroundcolor =
+              'green';
+          }
+          this.setState({ playerScoring: feedback.scoring });
         } else {
-          ReactDOM.findDOMNode(
-            this.refs[feedback.correctAnswer]
-          ).style.backgroundcolor =
-            'green';
+          console.log(
+            'Received questionId:',
+            feedback.questionId,
+            ', but currently hosted question with id:',
+            this.state.questionId
+          );
         }
-        if (feedback.message === 'too slow') {
-          alert(feedback.message);
-        }
-        this.setState({ playerScore: feedback.score });
       } else {
         console.log(
-          'Received questionId:',
-          feedback.questionId,
-          ', but currently hosted question with id:',
-          this.state.questionId
+          'Received username:',
+          tipFeedback.username,
+          'expected username:',
+          this.props.username
         );
       }
     }
   }
-  handleStartGameClick(event) {
-    console.log('start game', this.props);
-    this.state.socket.emit(
-      'start game',
-      JSON.stringify({
-        gameId: this.props.match.params.gameid,
-        username: this.props.username,
-      })
+  handleChoice(duelChoice) {
+    this.setState({ makeChoice: true, choiceOptions: duelChoice.choiceChoice });
+  }
+  handleGameFinished(jsonGameData) {
+    var gameData = JSON.parse(jsonGameData);
+    this.EndScreen.handleGameFinished(gameData);
+  }
+  //#endregion receives
+  handleReadyClick(event) {
+    this.setState(
+      { ready: !this.state.ready },
+      this.state.socket.emit(
+        'action',
+        JSON.stringify({
+          username: this.props.username,
+          gameId: this.props.match.params.gameid,
+          msgType: this.state.socket.MessageType.DuelSetReadyState,
+          data: {
+            ready: this.state.ready,
+          },
+        })
+      )
     );
-    this.setState({ playerState: 1 });
   }
   handleAnswerClick(event) {
     this.setState({ selectedOptionId: event.target.id });
@@ -120,13 +164,16 @@ export default class QuestionQ extends React.Component {
     console.log(this.refs[event.target.id]);
     this.ProgBar.stopProgress();
   }
+  handleChoiceOverlayClose() {
+    this.setState({ makeChoice: false });
+  }
   sendAnswer(questionId, answerId) {
     this.state.socket.emit(
       'action',
       JSON.stringify({
         username: this.props.username,
         gameId: this.props.match.params.gameid,
-        msgType: this.state.socket.MessageType.QuestionQTip,
+        msgType: this.state.socket.MessageType.DuelTip,
         data: {
           questionId: questionId,
           answerId: answerId,
@@ -144,10 +191,7 @@ export default class QuestionQ extends React.Component {
       console.log('got wrong username', playerData);
     }
   }
-  handleGameFinished(jsonGameData) {
-    var gameData = JSON.parse(jsonGameData);
-    this.EndScreen.handleGameFinished(gameData);
-  }
+  //#endregion eventHandler
   //#region Display
   printQuestion(questionId) {
     if (questionId !== '') {
@@ -211,12 +255,46 @@ export default class QuestionQ extends React.Component {
     console.log(Answ);
     return Answ;
   }
-
+  printChoiceModal(choiceOptions) {
+    return (
+      <Modal chow={this.state.makeChoice} onHide={this.props.overlayClose}>
+        <Modal.Title>Choose next Question Criteria</Modal.Title>
+        <Modal.Body>{choiceOptions}</Modal.Body>
+        <Modal.Footer>
+          <Button onClick={this.handleChoiceOverlayClose}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+  printScores(playerData) {
+    const players = playerData.map(function(item, i) {
+      console.log(item, i);
+      return (
+        <tr key={item.id}>
+          <td>{i + 1}</td>
+          <td>{item.id}</td>
+          <td>{item.score}</td>
+        </tr>
+      );
+    });
+    return (
+      <Table bordered key={'playerStats'}>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>{players}</tbody>
+      </Table>
+    );
+  }
   render() {
     switch (this.state.playerState) {
       case 0:
-        return this.props.location.host === true ? (
-          <Button onClick={this.handleStartGameClick}>Start Game</Button>
+        return this.state.playerState === 0 ? (
+          <Button onClick={this.handleReadyClick}>Ready</Button>
         ) : null;
       case 1:
         return (
@@ -225,10 +303,7 @@ export default class QuestionQ extends React.Component {
               <Col xs={9}>
                 <Row>
                   <Col xsOffset={2} xs={8}>
-                    <p className="Score">
-                      Score:
-                      {this.state.playerScore}
-                    </p>
+                    {this.printScores(this.state.playerScoring)}
                   </Col>
                 </Row>
                 {this.printQuestion(this.state.questionId)}

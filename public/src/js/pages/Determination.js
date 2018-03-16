@@ -15,7 +15,6 @@ export default class Determination extends React.Component {
       timeLimit: 0,
       difficulty: null,
       currOption: [],
-      username: 'alyei', //change to cookies
       playerState: 0,
       solved: this.props.socket,
       correctAnswer: '',
