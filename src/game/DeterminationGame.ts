@@ -22,6 +22,7 @@ import {
   QuestionCouldNotBeAddedError
 } from "../server/Errors";
 import { Tryharder } from "./Tryharder";
+import { RunningGames } from "./RunningGames";
 
 export class DeterminationGame implements iGame {
   private GameCore: DeterminationCore;
@@ -35,17 +36,19 @@ export class DeterminationGame implements iGame {
   public constructor(
     readonly GeneralArguments: iGeneralHostArguments,
     public namespace: SocketIO.Namespace,
-    private _gameCoreArguments?: iDeterminationHostArguments
+    private _gameCoreArguments: iDeterminationHostArguments,
+    runningGames: RunningGames
   ) {
     this.GameCore = new DeterminationCore(
       this.GeneralArguments.gameId,
       this.GeneralArguments.questionIds,
       [],
-      this._gameCoreArguments || {
+      this._gameCoreArguments/* || {
         pointBase: 100,
         pointBaseWrongAnswerIdentified: 33,
         interQuestionGap: 3000
-      }
+      }*/,
+      runningGames
     );
   }
 
@@ -119,11 +122,11 @@ export class DeterminationGame implements iGame {
   public AddPlayer(
     username: string,
     socket: SocketIO.Socket,
-    role: PlayerRole
+    roles: PlayerRole[]
   ): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
-        resolve(this.GameCore.AddUser(new PlayerBase(username, socket, role)));
+        resolve(this.GameCore.AddUser(new PlayerBase(username, socket, roles)));
       } catch (err) {
         reject(err);
       }
@@ -157,7 +160,7 @@ export class DeterminationGame implements iGame {
         );
         if (
           username == this.GeneralArguments.owner ||
-          (player && [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
+          (player && [PlayerRole.Mod, PlayerRole.Host].find(x => undefined != player.roles.find(r => r == x)) != undefined)
         ) {
           resolve(this.GameCore.Start());
         } else {

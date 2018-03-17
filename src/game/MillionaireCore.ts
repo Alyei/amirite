@@ -29,7 +29,8 @@ import {
   iMillionaireCallJokerCallRequest,
   iMillionaireCallJokerClue,
   iMillionaireChooseQuestionResponse,
-  iMillionairePassRequest
+  iMillionairePassRequest,
+  iChangePlayerRolesRequest
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { RunningGames } from "./RunningGames";
@@ -121,6 +122,47 @@ export class MillionaireCore {
       .catch((err: any) => {
         logger.log("info", "Could not load questions in %s.", this.gameId);
       });
+  }
+
+  public ChangePlayerRoles(username: string, changes: iChangePlayerRolesRequest) {
+    const host: PlayerBase | undefined = this.players.find(p => p.username == username);
+    if (!host) {
+      return; // player not found
+    }
+    if (host.roles.find(r => r == PlayerRole.Host) == undefined) {
+      return; // not the host
+    }
+
+    const player: MillionairePlayer | undefined = this.players.find(p => p.username == changes.username);
+    if (!player) {
+      return; // player not found
+    }
+    if (changes.toAdd) {
+      for (let role of changes.toAdd) {
+        if (player.roles.find(r => r == role) == undefined)
+          player.roles.push(role);
+      }
+    }
+    if (changes.toRemove) {
+      player.roles = player.roles.filter(r => changes.toRemove.find(rem => rem == r) == undefined || r == PlayerRole.Host);
+    }
+
+    player.state = PlayerState.Disqualified;
+
+    if (player.roles.find(r => [PlayerRole.Spectator, PlayerRole.Host, PlayerRole.Mod].find(pr => pr == r) != undefined) != undefined) {
+      player.state = PlayerState.Spectating;
+    }
+    if (player.roles.find(r => r == PlayerRole.Player) != undefined) {
+      player.state = PlayerState.Launch;
+    }
+
+    this.UpdatePlayerData(player);
+  }
+
+  UpdatePlayerData(player: MillionairePlayer) {
+    for(let p of this.players) {
+      p.Inform(MessageType.MillionairePlayerData, p.GetPlayerData());
+    }
   }
 
   private LoadGame(gameId: string) {
@@ -339,6 +381,8 @@ export class MillionaireCore {
       3000, // delay
       3 // tries
     );
+
+    this.UpdatePlayerData(player);
   }
 
   /**
@@ -377,10 +421,12 @@ export class MillionaireCore {
           startGameData
         );
 
-        if (player.role == PlayerRole.Player) {
+        if (player.roles.find(r => r == PlayerRole.Player) != undefined) {
           player.state = PlayerState.Launch;
           if (this.millionaire) player.state = PlayerState.Spectating;
         }
+
+        this.UpdatePlayerData(newPlayer);
 
         return true;
       }
@@ -405,7 +451,6 @@ export class MillionaireCore {
       players: this.GetPlayerData(
         this.players.filter(
           player =>
-            player.role == PlayerRole.Player &&
             player.state == PlayerState.Launch
         ) || []
       )
@@ -418,7 +463,7 @@ export class MillionaireCore {
       player =>
         undefined ==
         [PlayerRole.Host, PlayerRole.Mod].find(
-          modRole => player.role == modRole
+          modRole => player.roles.find(pr => pr == modRole) != undefined
         )
     );
     for (let mod of mods) {
@@ -436,7 +481,7 @@ export class MillionaireCore {
     }
     if (
       undefined ==
-      [PlayerRole.Host, PlayerRole.Mod].find(role => role == mod.role)
+      [PlayerRole.Host, PlayerRole.Mod].find(role => mod.roles.find(mr => mr == role) != undefined)
     ) {
       return; // not permitted
     }
@@ -446,7 +491,7 @@ export class MillionaireCore {
     );
     if (
       !this.millionaire ||
-      this.millionaire.role != PlayerRole.Player ||
+      this.millionaire.roles.find(mr => mr == PlayerRole.Player) != undefined ||
       this.millionaire.state == PlayerState.Disqualified
     ) {
       this.millionaire = undefined;
@@ -462,7 +507,7 @@ export class MillionaireCore {
       return;
     }
 
-    for (let player of this.players.filter(x => x.role == PlayerRole.Player)) {
+    for (let player of this.players.filter(x => x.roles.find(xr => xr == PlayerRole.Player) != undefined)) {
       player.state = PlayerState.Spectating;
     }
     this.millionaire.state = PlayerState.Playing;
@@ -470,6 +515,8 @@ export class MillionaireCore {
     this.millionaire.score = 0;
     this.millionaire.checkpoint = 0;
     this.millionaire.millionaireCounter++;
+
+    this.UpdatePlayerData(this.millionaire);
 
     this.GetNextQuestion();
   }
@@ -494,7 +541,7 @@ export class MillionaireCore {
     }
     if (
       undefined ==
-      [PlayerRole.Host, PlayerRole.Mod].find(role => role == mod.role)
+      [PlayerRole.Host, PlayerRole.Mod].find(role => mod.roles.find(mr => mr == role) != undefined)
     ) {
       return; // not permitted
     }
@@ -544,7 +591,7 @@ export class MillionaireCore {
 
   private EndOfMillionaire() {
     for (let player of this.players.filter(
-      p => p.role == PlayerRole.Player && p.state != PlayerState.Disqualified
+      p => p.roles.find(pr => pr == PlayerRole.Player) != undefined && p.state != PlayerState.Disqualified
     )) {
       player.state = PlayerState.Launch;
     }
@@ -814,8 +861,8 @@ export class MillionaireCore {
     const reply: iMillionaireAudienceJokerResponse = {
       possibleResponses: this.players.filter(
         p =>
-          p.role == PlayerRole.Spectator ||
-          (p.role == PlayerRole.Player && p.state == PlayerState.Spectating)
+          p.roles.find(pr => pr == PlayerRole.Spectator) != undefined ||
+          (p.roles.find(pr => pr == PlayerRole.Player) != undefined && p.state == PlayerState.Spectating)
       ).length
     };
 
@@ -865,20 +912,20 @@ export class MillionaireCore {
     if (!this.millionaire.currentQuestion.tip) {
       return; // already answered
     }
+
+    const player: MillionairePlayer | undefined = this.players.find(player => player.username == username);
+    if (!player) {
+      return; // player not found
+    }
     if (
-      !this.players.find(
-        player =>
-          player.username == username &&
-          (player.role == PlayerRole.Spectator ||
-            (player.role == PlayerRole.Player &&
-              player.state == PlayerState.Spectating))
-      )
+      player.roles.find(pr => pr == PlayerRole.Spectator) != undefined ||
+      (player.roles.find(pr => pr == PlayerRole.Player) != undefined && player.state == PlayerState.Spectating)
     ) {
-      return; // not permitted player with username 'username' found
+      return; // not permitted
     }
 
     this.millionaire.currentQuestion.audienceJokerData.playerClues.push({
-      username: username,
+      username: player.username,
       clue: clue
     });
 
@@ -932,9 +979,8 @@ export class MillionaireCore {
       questionId: this.millionaire.currentQuestion.question.questionId,
       callOptions: this.players.filter(
         player =>
-          player.role == PlayerRole.Spectator ||
-          (player.role == PlayerRole.Player &&
-            player.state == PlayerState.Spectating)
+        player.roles.find(pr => pr == PlayerRole.Spectator) != undefined ||
+        (player.roles.find(pr => pr == PlayerRole.Player) != undefined && player.state == PlayerState.Spectating)
       ) //!!! who can you call?
     };
 

@@ -17,7 +17,8 @@ import {
   iQuestionQPlayerDataAndExplanations,
   iQuestionQPlayerStatistic,
   iQuestionQSaveGameData,
-  iQuestionQStartGameData
+  iQuestionQStartGameData,
+  iChangePlayerRolesRequest
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { QuestionQPlayer } from "./QuestionQPlayer";
@@ -76,34 +77,78 @@ export class QuestionQCore {
     }
   }
 
-  /**
-   * Sends the passed data to the player and all spectators
-   * @param player - the main target for the data
-   * @param msgType - defines the data's type
-   * @param data - the data that is to be sent
-   * @returns - whether no error happened
-   */
-  private InformPlayer(
-    player: PlayerBase,
-    msgType: MessageType,
-    data: any
-  ): boolean {
-    const result: boolean = player.Inform(msgType, data);
+  private SpectatePlayer(player: QuestionQPlayer) {
+  
+    const playerStats: iQuestionQPlayerStatistic = this.GetPlayerStats(player);
 
-    const specData: iSpectatingData = {
-      targetUsername: player.username,
-      msgType: msgType,
-      data: data
-    };
-
-    const spectators: PlayerBase[] = this.Players.filter(
-      x => x.state == PlayerState.Spectating && x.username != player.username
-    );
-    for (let spec of spectators) {
-      spec.Inform(MessageType.SpectatingData, specData);
+    const privilegedSpectators: QuestionQPlayer[] = this._players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
+    for (let ps of privilegedSpectators) {
+      ps.Inform(MessageType.DeterminationPlayerData, player.GetPlayerData());
     }
 
+    const spectators: PlayerBase[] = this.Players.filter(x => x.state == PlayerState.Spectating && x.username != player.username);
+    for (let spec of spectators) {
+      spec.Inform(MessageType.DeterminationPlayerStatistic, playerStats);
+    }
+  }
+
+  private GetPlayerStatistics(): iQuestionQPlayerStatistic[] {
+    const result: iQuestionQPlayerStatistic[] = [];
+    for (let player of this._players) {
+      result.push(this.GetPlayerStats(player));
+    }
     return result;
+  }
+
+  private GetPlayerStats(player: QuestionQPlayer): iQuestionQPlayerStatistic {
+    return {
+      username: player.username,
+      score: player.score,
+      roles: player.roles,
+      state: player.state,
+      questionIds: player.questions.map(qd => qd[0].questionId),
+      correctAnswers: player.tips.filter(td => td.feedback.correct).length,
+      totalValuedTime: this.GetSum(player.tips.map(td => td.feedback.duration)),
+      totalTimeCorrection: this.GetSum(player.tips.map(td => td.feedback.timeCorrection))
+    };
+  }
+
+  public ChangePlayerRoles(username: string, changes: iChangePlayerRolesRequest) {
+    const host: PlayerBase | undefined = this._players.find(p => p.username == username);
+    if (!host) {
+      return; // player not found
+    }
+    if (host.roles.find(r => r == PlayerRole.Host) == undefined) {
+      return; // not the host
+    }
+
+    const player: QuestionQPlayer | undefined = this._players.find(p => p.username == changes.username);
+    if (!player) {
+      return; // player not found
+    }
+    if (changes.toAdd) {
+      for (let role of changes.toAdd) {
+        if (player.roles.find(r => r == role) == undefined)
+          player.roles.push(role);
+      }
+    }
+    if (changes.toRemove) {
+      player.roles = player.roles.filter(r => changes.toRemove.find(rem => rem == r) == undefined || r == PlayerRole.Host);
+    }
+
+    player.state = PlayerState.Disqualified;
+
+    if (player.roles.find(r => [PlayerRole.Spectator, PlayerRole.Host, PlayerRole.Mod].find(pr => pr == r) != undefined) != undefined) {
+      player.state = PlayerState.Spectating;
+    }
+    if (player.roles.find(r => r == PlayerRole.Player) != undefined) {
+      if (QuestionQGamePhase.Setup == this._gamePhase)
+        player.state = PlayerState.Launch;
+      else if (QuestionQGamePhase.Running == this._gamePhase)
+        player.state = PlayerState.Playing; // startEndPing??!
+    }
+
+    this.SpectatePlayer(player);
   }
 
   public GetSaveGameData(): iQuestionQSaveGameData {
@@ -187,18 +232,27 @@ export class QuestionQCore {
    * Sends the game's data to all players.
    */
   private SendGameData(): void {
+    const gameDataFP = this.GetPlayerStatistics();
     const gameData = this.GetGameData();
-    const players: PlayerBase[] = this.Players;
+
+    const privileged: PlayerBase[] = this.Players.filter(p => p.roles.find(r => [PlayerRole.Host, PlayerRole.Mod].find(permitted => r == permitted) != undefined) != undefined);
+    const players: PlayerBase[] = this.Players.filter(p => privileged.find(priv => priv.username == p.username) == undefined);
+
     const th: Tryharder = new Tryharder();
+    for (let priv of privileged) {
+      th.Tryhard(
+        () => {
+          return priv.Inform(MessageType.DeterminationGameDataForHost, gameData);
+        },
+        3000,
+        3
+      );
+    }
     for (let player of players) {
       if (
         !th.Tryhard(
           () => {
-            return this.InformPlayer(
-              player,
-              MessageType.QuestionQGameData,
-              gameData
-            );
+            return player.Inform(MessageType.DeterminationGameDataForPlayers, gameDataFP);
           },
           3000, // delay
           3 // tries
@@ -207,7 +261,6 @@ export class QuestionQCore {
         // player not reachable
       }
     }
-    //this.SendToRoom(MessageType.QuestionQGameData, gameData);
   }
 
   /**
@@ -340,8 +393,7 @@ export class QuestionQCore {
     const th: Tryharder = new Tryharder();
     th.Tryhard(
       () => {
-        return this.InformPlayer(
-          player,
+        return player.Inform(
           MessageType.QuestionQPlayerDataAndExplanations,
           data
         );
@@ -349,6 +401,9 @@ export class QuestionQCore {
       3000, // delay
       3 // tries
     );
+
+    this.SpectatePlayer(player);
+
     this.CheckForEnd();
   }
 
@@ -372,10 +427,14 @@ export class QuestionQCore {
         this._players.push(newPlayer);
         if (newPlayer.state == PlayerState.Launch) {
           newPlayer.state = PlayerState.Playing;
+          newPlayer.StartPing();
           this.QuestionPlayer(newPlayer);
         }
       }
       this.LogSilly("player (" + JSON.stringify(newPlayer.GetPlayerData()) + ") has joined the game.");
+
+      this.SpectatePlayer(newPlayer);
+
       return true;
     }
     return false;
@@ -431,31 +490,6 @@ export class QuestionQCore {
       ),
       1
     );
-  }
-
-  public GetPlayerStatistics(): iQuestionQPlayerStatistic[] {
-    const players = this.GetPlayerData();
-    const result: iQuestionQPlayerStatistic[] = [];
-    for (let player of players) {
-      result.push({
-        username: player.username,
-        score: player.score,
-        correctAnswers: player.tips.filter(x => x.feedback.correct).length,
-        totalTime: this.GetSum(
-          player.tips.map(
-            (value: iQuestionQTipData, index: number, array: iQuestionQTipData[]) => {
-              return value.feedback.duration;
-            })
-        ),
-        totalTimeCorrection: this.GetSum(
-          player.tips.map(
-            (value: iQuestionQTipData, index: number, array: iQuestionQTipData[]) => {
-              return value.feedback.timeCorrection;
-            })
-        )
-      });
-    }
-    return result;
   }
 
   public GetSum(numberArray: number[]): number {
@@ -564,8 +598,7 @@ export class QuestionQCore {
         if (
           !th.Tryhard(
             () => {
-              return this.InformPlayer(
-                player,
+              return player.Inform(
                 MessageType.QuestionQQuestion,
                 nextQuestion[0]
               );
@@ -592,8 +625,7 @@ export class QuestionQCore {
         const th: Tryharder = new Tryharder();
         th.Tryhard(
           () => {
-            return this.InformPlayer(
-              player,
+            return player.Inform(
               MessageType.QuestionQPlayerDataAndExplanations,
               data
             );
@@ -704,8 +736,7 @@ export class QuestionQCore {
         if (
           !th.Tryhard(
             () => {
-              return this.InformPlayer(
-                player,
+              return player.Inform(
                 MessageType.QuestionQTipFeedback,
                 feedback
               );
@@ -717,6 +748,8 @@ export class QuestionQCore {
           //this.DisqualifyPlayer(player);
           //return;
         }
+
+        this.SpectatePlayer(player);
 
         //add to playertipdata
         player.tips.push({
@@ -771,8 +804,7 @@ export class QuestionQCore {
     if (
       !th.Tryhard(
         () => {
-          return this.InformPlayer(
-            player,
+          return player.Inform(
             MessageType.PlayerInputError,
             errorMessage
           );

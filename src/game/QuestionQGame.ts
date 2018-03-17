@@ -123,11 +123,11 @@ export class QuestionQGame implements iGame {
   public AddPlayer(
     username: string,
     socket: SocketIO.Socket,
-    role: PlayerRole
+    roles: PlayerRole[]
   ): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
-        resolve(this.GameCore.AddUser(new PlayerBase(username, socket, role)));
+        resolve(this.GameCore.AddUser(new PlayerBase(username, socket, roles)));
       } catch (err) {
         reject(err);
       }
@@ -162,7 +162,7 @@ export class QuestionQGame implements iGame {
         if (
           username == this.GeneralArguments.owner ||
           (player &&
-            [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
+            undefined != [PlayerRole.Mod, PlayerRole.Host].find(x => player.roles.find(pr => pr == x) != undefined))
         ) {
           resolve(this.GameCore.Start());
         } else {

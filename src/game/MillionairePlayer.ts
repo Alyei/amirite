@@ -19,7 +19,7 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
      * @param baseArguments - the arguments that have been returned by the parent's class GetArguments-method
      */
     constructor(baseArguments: iPlayerBaseArguments, jokers?: JokerType[]) {
-        super(baseArguments.username, baseArguments.socket, baseArguments.role);
+        super(baseArguments.username, baseArguments.socket, baseArguments.roles);
         //Object.setPrototypeOf(this, new.target.prototype);
         this.state = baseArguments.state;
 
@@ -35,7 +35,7 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
     public ApplyData(playerData: iMillionairePlayerData): void {
         //this.username = playerData.username;
         this.state = playerData.state;
-        this.role = playerData.role;
+        this.roles = playerData.roles;
         //this.checkpoint = playerData.checkpoint;
         this.jokers = playerData.jokers;
         this.questionData = playerData.questionData;
@@ -52,7 +52,7 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
     public GetPlayerData(): iMillionairePlayerData {
         return {
             username: this.username,
-            role: this.role,
+            roles: this.roles,
             state: this.state,
             score: this.score,
             questionData: this.questionData,
