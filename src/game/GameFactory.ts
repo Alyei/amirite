@@ -112,12 +112,12 @@ export class GameFactory {
               const newGame: iGame = new DeterminationGame(
                 generalArguments,
                 namespaceSocket,
-                this.Sessions,
                 determinationArguments || {
                   pointBase: 100,
                   pointBaseWrongAnswerIdentified: 100,
                   interQuestionGap: 1000
-                }
+                },
+                this.Sessions
               );
               this.Initialize(newGame)
                 .then((res: any) => {

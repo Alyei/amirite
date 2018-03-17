@@ -498,7 +498,7 @@ export interface iDuelHostArguments {
   pointDeductionBase: number;
   pointDeductionBase2: number;
   pointDeductionWhenTooSlow: number;
-  postfeedbackGap: number; // ms to next question
+  postFeedbackGap: number; // ms to next question
   choosingTime1: number;
   choosingTime2: number;
   maxCategoryChoiceRange: number;

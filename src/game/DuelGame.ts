@@ -46,7 +46,7 @@ export class DuelGame implements iGame {
                 pointBase2: 100,
                 pointDeductionBase: 50,
                 pointDeductionBase2: 50,
-                poindDetuctionWhenTooSlow: 10,
+                pointDeductionWhenTooSlow: 10,
                 postfeedbackGap: 3000,
                 choosingTime1: 5000,
                 choosingTime2: 7000,
