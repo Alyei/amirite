@@ -78,6 +78,14 @@ export class QuestionQGame implements iGame {
         }
         break;
       }
+      case MessageType.ChangePlayerRolesRequest: {
+          try {
+              this.GameCore.ChangePlayerRoles(username, JSON.parse(data));
+          } catch (err) {
+              this.ProcessUserError(username, { message: err.message, data: err });
+          }
+          break;
+      }
       default: {
         let errorMessage: iGeneralPlayerInputError = {
           message: "invalid message type",
