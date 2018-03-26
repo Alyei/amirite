@@ -283,6 +283,7 @@ export interface iDeterminationOption {
   answer: string;
 }
 export interface iDeterminationTipFeedback {
+  questionId: string;
   tip: iDeterminationTip;
   correct: boolean;
   duration: number;
@@ -498,7 +499,7 @@ export interface iDuelHostArguments {
   pointDeductionBase: number;
   pointDeductionBase2: number;
   pointDeductionWhenTooSlow: number;
-  postFeedbackGap: number; // ms to next question
+  postfeedbackGap: number; // ms to next question
   choosingTime1: number;
   choosingTime2: number;
   maxCategoryChoiceRange: number;

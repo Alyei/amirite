@@ -575,7 +575,7 @@ export class DuelCore {
                                 }
                             );
                         },
-                        this.gameArguments.postFeedbackGap + this.gameArguments.choosingTime1
+                        this.gameArguments.postfeedbackGap + this.gameArguments.choosingTime1
                     );
                 }
             }
@@ -586,7 +586,7 @@ export class DuelCore {
                 () => {
                     this.AskQuestion();
                 },
-                this.gameArguments.postFeedbackGap
+                this.gameArguments.postfeedbackGap
             );
         }
     }
