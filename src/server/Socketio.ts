@@ -92,7 +92,7 @@ export class io {
   private LeaveGame(playerSocket: SocketIO.Socket, optS: string) {
     const opt: iLeaveGame = JSON.parse(optS);
     for (let item of this.GameSessions.Sessions) {
-      if (item.GeneralArguments.gameId == opt.gameId) {
+      if (item.generalArguments.gameId == opt.gameId) {
         item
           .RemovePlayer(opt.username)
           .then((res: any) => {
@@ -120,7 +120,7 @@ export class io {
       opt = optS;
     }
     for (let item of this.GameSessions.Sessions) {
-      if (item.GeneralArguments.gameId == opt.gameId) {
+      if (item.generalArguments.gameId == opt.gameId) {
         item
           .StartGame(opt.username)
           .then((res: any) => {
@@ -175,19 +175,19 @@ export class io {
     let opt: iJoinGame = this.ParseOptions(optS);
 
     const game: iGame | undefined = this.GameSessions.Sessions.find(
-      x => x.GeneralArguments.gameId == opt.gameId
+      x => x.generalArguments.gameId == opt.gameId
     );
 
     if (game) {
       game
         .AddPlayer(opt.username, playerSocket, [PlayerRole.Player])
         .then((res: any) => {
-          playerSocket.join(game.GeneralArguments.gameId);
+          playerSocket.join(game.generalArguments.gameId);
           logger.log(
             "info",
             "Player %s joined game %s.",
             opt.username,
-            game.GeneralArguments.gameId
+            game.generalArguments.gameId
           );
         })
         .catch((err: any) => {
@@ -208,7 +208,7 @@ export class io {
     const msg: iPlayerAction = JSON.parse(msgS);
     console.log(msgS);
     for (let item of this.GameSessions.Sessions) {
-      if (item.GeneralArguments.gameId == msg.gameId) {
+      if (item.generalArguments.gameId == msg.gameId) {
         item.ProcessUserInput(
           msg.username,
           msg.msgType,

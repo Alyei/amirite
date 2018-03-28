@@ -1,3 +1,4 @@
+//#region imports
 import { logger } from "../server/logging";
 import { RunningGames } from "./RunningGames";
 import { Gamemode, iDuelQuestionBase, iDuelHostArguments, MessageType, iSpectatingData, PlayerState, iDuelEndGameData, iDuelPlayerData, iDuelPlayerQuestionData, iDuelAnswerOption, iDuelTimeCorrection, iDuelStartGameData, iDuelTip, iDuelTipFeedback, iDuelTipData, iDuelScoringData, iDuelChooseChoiceReply, DuelChoice, iDuelChooseCategoryRequest, iDuelChooseDifficultyRequest, iDuelChooseDifficultyReply, iDuelChooseCategoryReply, iDuelSetReadyState } from "../models/GameModels";
@@ -6,36 +7,108 @@ import { PlayerBase } from "./PlayerBase";
 import { QuestionModel, DuelGameDataModel } from "../models/Schemas";
 import { ArrayManager } from "./ArrayManager";
 import { Tryharder } from "./Tryharder";
+//#endregion
 
+//#region enums
+/**
+ * The DuelGamePhase-enum contains all possible states of a Duel-game.
+ */
 export enum DuelGamePhase {
     Setup = 0,
     Running,
     Ended
 }
+//#endregion
 
+//#region classes
+/**
+ * The DuelCore-class combines the Duel-game's mechanics with user input.
+ * It is used to run a Duel-game.
+ */
 export class DuelCore {
-    readonly Gamemode: Gamemode = Gamemode.Duel;
-    public players: DuelPlayer[];
+    //#region fields
+    /**
+     * - contains base data for every question that a player of the game can be asked
+     */
     private questionBases: iDuelQuestionBase[];
-    private questions: iDuelPlayerQuestionData[];
-    private currentQuestion?: iDuelPlayerQuestionData;
-    private gamePhase: DuelGamePhase;
-    private timers: { [id: string]: NodeJS.Timer } = {};
 
+    /**
+     * - contains every question that has been asked in the game
+     */
+    private questions: iDuelPlayerQuestionData[];
+
+    /**
+     * - indicates the game's current state
+     */
+    private gamePhase: DuelGamePhase;
+
+    //#region questioningFields
+    /**
+     * - represents the current question, if there is one
+     */
+    private currentQuestion?: iDuelPlayerQuestionData;
+
+    /**
+     * - indicates which player has to choose the difficulty of the next question
+     */
     private difficultyChooser?: DuelPlayer;
+
+    /**
+     * - indicates which player has to choose the category of the next question
+     */
     private categoryChooser?: DuelPlayer;
+
+    /**
+     * - indicates which player has to choose what choice they want to have (difficulty / category)
+     */
     private choiceChooser?: DuelPlayer;
+
+    /**
+     * - contains the range of difficulties the difficulty-chooser has to choose from
+     */
     private difficultyRequest?: iDuelChooseDifficultyRequest;
+
+    /**
+     * - contains the difficulty-chooser's choice
+     */
     private difficultyReply?: iDuelChooseDifficultyReply;
+
+    /**
+     * - contains the range of categories the category-chooser has to choose from
+     */
     private categoryRequest?: iDuelChooseCategoryRequest;
+
+    /**
+     * - contains the category-chooser's choice
+     */
     private categoryReply?: iDuelChooseCategoryReply;
 
     /**
-     * Creates a new instance of the QuestionQCore-class
+     * - contains all timed events of the game
+     */
+    private timers: { [id: string]: NodeJS.Timer } = {};
+    //#endregion
+    //#endregion
+
+    //#region properties
+    /**
+     * - indicates the game's gamemode
+     */
+    readonly gamemode: Gamemode = Gamemode.Duel;
+
+    /**
+     * - contains the players of the game
+     */
+    public players: DuelPlayer[];
+    //#endregion
+
+    //#region constructors
+    /**
+     * Creates a new instance of the DuelCore-class
      * @param gameId - the game's id
+     * @param runningGames - list of every game instance currently running
+     * @param gameArguments - Duel-specific game arguments
      * @param questionIds - list of the questions' IDs
-     * @param players - list of players that are here from the beginning
-     * @param gameArguments - QuestionQ-specific game arguments
      */
     public constructor(
         readonly gameId: string,
@@ -49,9 +122,150 @@ export class DuelCore {
 
         this.LoadQuestions(questionIds);
     }
+    //#endregion
+
+    //#region gameMechanics
+    //#region publicFunctions
+    /**
+     * Returns the data of the game that will be saved
+     * @returns - game data according to the iDuelEndGameData-interface
+     */
+    public GetSaveGameData(): iDuelEndGameData {
+        return {
+            gameId: this.gameId,
+            gamemode: this.gamemode,
+            gameArguments: this.gameArguments,
+            playerData: this.players.map(player => player.GetPlayerData()),
+            questionBases: this.questionBases,
+        } as iDuelEndGameData;
+    }
 
     /**
-     * Sends the passed data to the player and all spectators
+     * Tries to add a new user to the game
+     * @param player - the player to add
+     * @returns - whether the user could be added
+     */
+    public AddUser(player: PlayerBase): boolean {
+        if (this.players.find(p => p.username == player.username)) {
+            return false; // player already joined
+        }
+        if (this.gamePhase == DuelGamePhase.Setup) {
+            this.players.push(new DuelPlayer(player.GetArguments()));
+            player.state = PlayerState.Launch;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Saves the game's data into the database
+     */
+    public Save(): void {
+        const gameData: iDuelEndGameData = this.GetSaveGameData();
+        const gameDataModel = new DuelGameDataModel(gameData);
+        gameDataModel.save((err: any) => {
+            if (err) {
+                logger.log(
+                    "info",
+                    "failed to save game (%s); error: %s",
+                    gameData,
+                    err
+                );
+                return;
+            }
+            this.LogSilly("the game has been saved");
+        });
+    }
+
+    /**
+     * Returns an array of the players' data
+     * @returns - array of the players' data according to the iDuelPlayerData-interface
+     */
+    public GetPlayerData(): iDuelPlayerData[] {
+        return this.players.map(player => player.GetPlayerData());
+    }
+
+    /**
+     * Disqualifies a user by their name
+     * @param username - user to disqualify
+     * @returns - whether the user was found
+     */
+    public DisqualifyUser(username: string): boolean {
+        const player: DuelPlayer | undefined = this.players.find(
+            x => x.username == username
+        );
+        if (!player) {
+            this.LogInfo("could not find player '" + username + "'");
+            return false;
+        }
+
+        this.DisqualifyPlayer(player);
+        return true;
+    }
+
+    /**
+     * Starts the game, if all conditions are met
+     * @returns - whether the game has been started
+     */
+    public Start(): boolean {
+        if (this.gamePhase != DuelGamePhase.Setup) {
+            return false; // game not in setup phase
+        }
+        if (this.players.length != 2) {
+            return false; // invalid player array
+        }
+        for (let p of this.players) {
+            if (!p.ready) {
+                return false; // player not ready
+            }
+        }
+
+        this.gamePhase = DuelGamePhase.Running;
+        const startGameData: iDuelStartGameData = this.GetStartGameData();
+        for (let player of this.players) {
+            this.InformPlayer(player, MessageType.DuelStartGameData, startGameData);
+            player.state = PlayerState.Playing;
+            player.StartPing();
+            this.AskQuestion();
+        }
+        return true;
+    }
+
+    /**
+     * Returns the data that players require to begin the game
+     * @returns - JSON implementing the iDuelStartGameData
+     */
+    public GetStartGameData(): iDuelStartGameData {
+        const startGameData: iDuelStartGameData = {
+            gameId: this.gameId,
+            players: this.players.map(player => player.username),
+            gameArguments: this.gameArguments
+        };
+        return startGameData;
+    }
+
+    /**
+     * Ends the game
+     */
+    public Stop(): void {
+        this.gamePhase = DuelGamePhase.Ended;
+
+        this.SendGameData();
+
+        this.Save();
+
+        this.runningGames.Sessions.splice(
+            this.runningGames.Sessions.findIndex(
+                x => x.generalArguments.gameId == this.gameId
+            ),
+            1
+        );
+    }
+    //#endregion
+
+    //#region privateFunctions
+    /**
+     * Sends the passed data to the player and disqualifies them in case they cannot be reached
      * @param player - the main target for the data
      * @param msgType - defines the data's type
      * @param data - the data that is to be sent
@@ -81,74 +295,9 @@ export class DuelCore {
         return result;
     }
 
-    public GetSaveGameData(): iDuelEndGameData {
-        return {
-            gameId: this.gameId,
-            gamemode: this.Gamemode,
-            gameArguments: this.gameArguments,
-            playerData: this.players.map(player => player.GetPlayerData()),
-            questionBases: this.questionBases,
-        } as iDuelEndGameData;
-    }
-
     /**
-     * Adds a new user to the game, if it did not end already.
-     * @param player - the player to add
-     * @returns - whether the user could be added
-     */
-    public AddUser(player: PlayerBase): boolean {
-        if (this.players.find(p => p.username == player.username)) {
-            return false; // player already joined
-        }
-        if (this.gamePhase == DuelGamePhase.Setup) {
-            this.players.push(new DuelPlayer(player.GetArguments()));
-            player.state = PlayerState.Launch;
-            return true;
-        }
-        return false;
-    }
-
-    public SetReadyState(username: string, rs: iDuelSetReadyState) {
-        const player: DuelPlayer | undefined = this.players.find(p => p.username == username);
-        if (!player) {
-            return; // player not found
-        }
-        player.ready = rs.ready;
-        
-        // do start when conditions are met
-        /*if (this.players.length != 2)
-            return;
-        for (let p of this.players) {
-            if (!p.ready)
-                return;
-        }*/
-
-        this.Start();
-    }
-
-    /**
-     * Saves the game's data into the DB
-     */
-    public Save(): void {
-        const gameData: iDuelEndGameData = this.GetSaveGameData();
-        const gameDataModel = new DuelGameDataModel(gameData);
-        gameDataModel.save((err: any) => {
-            if (err) {
-                logger.log(
-                    "info",
-                    "failed to save game (%s); error: %s",
-                    gameData,
-                    err
-                );
-                return;
-            }
-            this.LogSilly("the game has been saved");
-        });
-    }
-
-    /**
-     * Loads the questions' data from the DB.
-     * @param questionIds - list of IDs of the questions that are to load from the DB
+     * Loads the questions' data from the database
+     * @param questionIds - list of IDs of the questions that are to load from the database
      */
     private LoadQuestions(questionIds: string[]) {
         this.questionBases = [];
@@ -179,22 +328,13 @@ export class DuelCore {
                     JSON.stringify(this.questionBases),
                     this.gameId
                 );
-            })
-            .catch((err: any) => {
+        }).catch((err: any) => {
                 logger.log("info", "Could not load questions in %s.", this.gameId);
-            });
+        });
     }
 
     /**
-     * Returns an array of the players' data.
-     * @returns - array of the players' data according to the iDuelPlayerData-interface
-     */
-    public GetPlayerData(): iDuelPlayerData[] {
-        return this.players.map(player => player.GetPlayerData());
-    }
-
-    /**
-     * Sends the game's data to all players.
+     * Sends the game's data to all players
      */
     private SendGameData(): void {
         const gameData = this.GetSaveGameData();
@@ -247,17 +387,24 @@ export class DuelCore {
     }
 
     /**
-     * Generates a DuelPlayerQuestion out of a JSON implementing the iDuelQuestionBase-interface.
+     * Generates a DuelPlayerQuestion out of a JSON implementing the iDuelQuestionBase-interface
      * @param question - the question base's data
      * @returns - an iDuelPlayerQuestionData
      */
-    public GetDuelPlayerQuestion(
+    private GetDuelPlayerQuestion(
         question: iDuelQuestionBase
     ): iDuelPlayerQuestionData {
+        if (question.otherOptions.length < 3) {
+          return; // invalid count of other options (at least 3)
+        }
+
         question.questionCounter++;
 
         const am: ArrayManager = new ArrayManager("A B C D".split(" "));
         const letters: string[] = am.ShuffleArray();
+        am.collection = question.otherOptions;
+        const otherOptions: string[] = am.ShuffleArray();
+
         const answers: iDuelAnswerOption[] = [];
         answers.push({
             answerId: letters[0],
@@ -291,24 +438,6 @@ export class DuelCore {
     }
 
     /**
-     * Disqualifies a user by their name
-     * @param username - user to disqualify
-     * @returns - whether the user was found
-     */
-    public DisqualifyUser(username: string): boolean {
-        const player: DuelPlayer | undefined = this.players.find(
-            x => x.username == username
-        );
-        if (!player) {
-            this.LogInfo("could not find player '" + username + "'");
-            return false;
-        }
-
-        this.DisqualifyPlayer(player);
-        return true;
-    }
-
-    /**
      * Disqualifies a player
      * @param player - player to disqualify
      */
@@ -325,65 +454,11 @@ export class DuelCore {
     }
 
     /**
-     * Starts the game, if all conditions are met.
-     * @returns - whether the game has been started
+     * Checks whether the game end's conditions are met and, if so, ends the game
+     * (has to be executed whenever a player is disqualified and whenever a player finishes)
+     * @returns - whether the game has been stopped
      */
-    public Start(): boolean {
-        if (this.gamePhase != DuelGamePhase.Setup) {
-            return false; // game not in setup phase
-        }
-        if (this.players.length != 2) {
-            return false; // invalid player array
-        }
-        for (let p of this.players) {
-            if (!p.ready) {
-                return false; // player not ready
-            }
-        }
-
-        this.gamePhase = DuelGamePhase.Running;
-        const startGameData: iDuelStartGameData = this.GetStartGameData();
-        for (let player of this.players) {
-            this.InformPlayer(player, MessageType.DuelStartGameData, startGameData);
-            player.state = PlayerState.Playing;
-            player.StartPing();
-            this.AskQuestion();
-        }
-        return true;
-    }
-
-    public GetStartGameData(): iDuelStartGameData {
-        const startGameData: iDuelStartGameData = {
-            gameId: this.gameId,
-            players: this.players.map(player => player.username),
-            gameArguments: this.gameArguments
-        };
-        return startGameData;
-    }
-
-    /**
-     * Ends the game
-     */
-    public Stop(): void {
-        this.gamePhase = DuelGamePhase.Ended;
-
-        this.SendGameData();
-
-        this.Save();
-
-        this.runningGames.Sessions.splice(
-            this.runningGames.Sessions.findIndex(
-                x => x.GeneralArguments.gameId == this.gameId
-            ),
-            1
-        );
-    }
-
-    /**
-     * Checks whether the game end's conditions are met and, if so, ends the game.
-     * This has to be executed whenever a player is disqualified and whenever a player finishes.
-     */
-    public CheckForEnd(): boolean {
+    private CheckForEnd(): boolean {
         let result = false;
         if (this.gamePhase == DuelGamePhase.Running) {
             for (let player of this.players) {
@@ -403,8 +478,7 @@ export class DuelCore {
     }
 
     /**
-     * Questions the passed player or processes that they finished.
-     * @param player - the player to be questioned
+     * Asks the players the next question
      */
     private AskQuestion(): void {
         this.currentQuestion = undefined;
@@ -430,7 +504,9 @@ export class DuelCore {
         }
         this.currentQuestion = this.GetDuelPlayerQuestion(questionBase);
         if (!this.currentQuestion) {
-            this.Stop();
+            //this.Stop();
+            this.questionBases = this.questionBases.filter(q => q != questionBase);
+            this.GetNextQuestion();
             return; // failed question generation
         }
 
@@ -460,6 +536,11 @@ export class DuelCore {
         }
     }
 
+    /**
+     * Validates the tip of a player and either continues the game or ends it
+     * @param player - the player whose tip is to validate
+     * @param opponent - the opponent of the player whose tip is to validate
+     */
     private ValidateTip(player: DuelPlayer, opponent: DuelPlayer) {
         if (!this.currentQuestion) {
             return; // no question
@@ -554,43 +635,82 @@ export class DuelCore {
         }
 
         // next question
-        if (player.score != opponent.score) {
-            const leadingScore: number = Math.max(...this.players.map(p => p.score));
-            for (let p of this.players) {
-                if (p.score == leadingScore) {
-                    this.choiceChooser = p;
-                    this.InformPlayer(
-                        p,
-                        MessageType.DuelChoiceRequest,
-                        {}
-                    );
-                    this.timers[
-                        "chooseChoice"
-                    ] = global.setTimeout(
-                        () => {
-                            this.ChooseChoice(
-                                p.username,
-                                {
-                                    choiceChoice: Math.floor(Math.random() * 3) // random choice DuelChoice
-                                }
-                            );
-                        },
-                        this.gameArguments.postfeedbackGap + this.gameArguments.choosingTime1
-                    );
-                }
-            }
-        } else {
-            this.timers[
-                "nextQuestion"
-            ] = global.setTimeout(
-                () => {
-                    this.AskQuestion();
-                },
-                this.gameArguments.postfeedbackGap
-            );
+        this.GetNextQuestion();
+    }
+
+    private GetNextQuestion() {
+        if (this.players[0].score != this.players[1].score) {
+            this.ChooseChoiceChooser();
+        }
+        else {
+            this.timers["nextQuestion"] = global.setTimeout(() => {
+                this.AskQuestion();
+            }, this.gameArguments.postfeedbackGap);
         }
     }
 
+    private ChooseChoiceChooser() {
+        const leadingScore: number = Math.max(...this.players.map(p => p.score));
+        for (let p of this.players) {
+            if (p.score == leadingScore) {
+                this.choiceChooser = p;
+                this.InformPlayer(p, MessageType.DuelChoiceRequest, {});
+                this.timers["chooseChoice"] = global.setTimeout(() => {
+                    this.ChooseChoice(p.username, {
+                        choiceChoice: Math.floor(Math.random() * 3) // random choice DuelChoice
+                    });
+                }, this.gameArguments.postfeedbackGap + this.gameArguments.choosingTime1);
+            }
+        }
+    }
+
+    /**
+     * Logs important information
+     * @param toLog - information that is to log
+     */
+    private LogInfo(toLog: string) {
+        logger.log("info", this.gameId + " - " + toLog);
+    }
+
+    /**
+     * Logs less unique information
+     * @param toLog - information that is to log
+     */
+    private LogSilly(toLog: string) {
+        logger.log("silly", this.gameId + " - " + toLog);
+    }
+    //#endregion
+    //#endregion
+
+    //#region userActions
+    /**
+     * Processes a user action that changes a user's ready state
+     * @param username - the responsible user
+     * @param rs - JSON containing the action's parameters
+     */
+    public SetReadyState(username: string, rs: iDuelSetReadyState) {
+        const player: DuelPlayer | undefined = this.players.find(p => p.username == username);
+        if (!player) {
+            return; // player not found
+        }
+        player.ready = rs.ready;
+        
+        // do start when conditions are met
+        /*if (this.players.length != 2)
+            return;
+        for (let p of this.players) {
+            if (!p.ready)
+                return;
+        }*/
+
+        this.Start();
+    }
+
+    /**
+     * Processes a user's choice-choice
+     * @param username - the name of the user, who mad the decision
+     * @param choiceChoice - the choice they decided on
+     */
     public ChooseChoice(username: string, choiceChoice: iDuelChooseChoiceReply) {
         if (!this.choiceChooser) {
             return; // no choice chooser
@@ -694,6 +814,11 @@ export class DuelCore {
         );
     }
 
+    /**
+     * Processes a user's difficulty-choice
+     * @param username - the name of the user, made the decision
+     * @param choice - the difficulty they decided on
+     */
     public ChooseDifficulty(username: string, choice: iDuelChooseDifficultyReply) {
         if (!this.difficultyChooser) {
             return; // no difficulty chooser
@@ -717,6 +842,11 @@ export class DuelCore {
             this.AskQuestion();
     }
 
+    /**
+     * Processes a user's category-choice
+     * @param username - the name of the user, who made the decision
+     * @param choice - the category they decided on
+     */
     public ChooseCategory(username: string, choice: iDuelChooseCategoryReply) {
         if (!this.categoryChooser) {
             return; // no category chooser
@@ -741,7 +871,7 @@ export class DuelCore {
     }
 
     /**
-     * Processes a 'player that is giving a tip'-action.
+     * Processes a player's tip
      * @param username - the name of the user, who is giving the tip
      * @param tip - the tip that is given
      */
@@ -810,20 +940,6 @@ export class DuelCore {
             this.CheckQuestionTime(opponent, this.currentQuestion);
         }
     }
-
-    /**
-     * Logs magnificient information.
-     * @param toLog - information that is to log
-     */
-    private LogInfo(toLog: string) {
-        logger.log("info", this.gameId + " - " + toLog);
-    }
-
-    /**
-     * Logs less unique information.
-     * @param toLog - information that is to log
-     */
-    private LogSilly(toLog: string) {
-        logger.log("silly", this.gameId + " - " + toLog);
-    }
+    //#endregion
 }
+//#endregion

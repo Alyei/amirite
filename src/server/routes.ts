@@ -166,8 +166,8 @@ export class Https {
     this.app.post("/game", this.IsAuthenticated, (req: any, res: any) => {
       const msg = req.body.data;
       for (let game of this.sessions.Sessions) {
-        if (game.GeneralArguments.gameId == msg.gameId) {
-          res.send(game.GeneralArguments.gamemode);
+        if (game.generalArguments.gameId == msg.gameId) {
+          res.send(game.generalArguments.gamemode);
         }
       }
     });

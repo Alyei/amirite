@@ -1,3 +1,4 @@
+//#region imports
 import {
   iGeneralHostArguments,
   MessageType,
@@ -23,7 +24,12 @@ import { iGame } from "./iGame";
 import { MillionaireGameDataModel } from "../models/Schemas";
 import { DeterminationGame } from "./DeterminationGame";
 import { DuelGame } from "./DuelGame";
+//#endregion
 
+//#region classes
+/**
+ * The GameFactory-class' purpose is to instantiate games, so those can be played.
+ */
 export class GameFactory {
   public Sessions: RunningGames;
 
@@ -53,7 +59,7 @@ export class GameFactory {
       try {
         if (
           !this.Sessions.Sessions.find(
-            x => x.GeneralArguments.owner == generalArguments.owner
+            x => x.generalArguments.owner == generalArguments.owner
           )
         ) {
           switch (generalArguments.gamemode) {
@@ -181,24 +187,24 @@ export class GameFactory {
     return new Promise((resolve: any, reject: any) => {
       game
         .AddPlayer(
-          game.GeneralArguments.owner,
-          game.GeneralArguments.ownerSocket,
+          game.generalArguments.owner,
+          game.generalArguments.ownerSocket,
           [PlayerRole.Host, PlayerRole.Player]
         )
         .then((res: any) => {
           logger.log(
             "info",
             "Added owner %s as player to game %s.",
-            game.GeneralArguments.owner,
-            game.GeneralArguments.gameId
+            game.generalArguments.owner,
+            game.generalArguments.gameId
           );
         })
         .catch((err: any) => {
           logger.log(
             "info",
             "Adding of player %s to game %s was unsuccessful.",
-            game.GeneralArguments.owner,
-            game.GeneralArguments.gameId
+            game.generalArguments.owner,
+            game.generalArguments.gameId
           );
           logger.log("silly", err);
           reject(err);
@@ -208,7 +214,7 @@ export class GameFactory {
           logger.log(
             "info",
             "New Millionaire game: %s hosted.",
-            game.GeneralArguments.gameId
+            game.generalArguments.gameId
           );
           resolve(res);
         })
@@ -218,3 +224,4 @@ export class GameFactory {
     });
   }
 }
+//#endregion

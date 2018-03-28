@@ -32,7 +32,7 @@ import { RunningGames } from "./RunningGames";
 
 //#region enums
 /**
- * This enum contains all possible states of a Determination-game
+ * The DeterminationGamePhase-enum contains all possible states of a Determination-game.
  */
 enum DeterminationGamePhase {
   Setup = 0,
@@ -48,11 +48,6 @@ enum DeterminationGamePhase {
  */
 export class DeterminationCore {
   //#region fields
-  /**
-   * - indicates the game's gamemode
-   */
-  readonly gamemode: Gamemode.Determination;
-
   /**
    * - contains all users of the game
    */
@@ -81,7 +76,12 @@ export class DeterminationCore {
 
   //#region properties
   /**
-   * - getter for the game's players
+   * - indicates the game's gamemode
+   */
+  readonly gamemode: Gamemode.Determination;
+
+  /**
+   * Getter for the game's players
    */
   get Players(): DeterminationPlayer[] {
     return this.players;
@@ -126,7 +126,6 @@ export class DeterminationCore {
    * @param player - player to be spectated
    */
   private SpectatePlayer(player: DeterminationPlayer) {
-
     const playerStats: iDeterminationPlayerStatistic = this.GetPlayerStats(player);
 
     const privilegedSpectators: DeterminationPlayer[] = this.players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
@@ -150,16 +149,16 @@ export class DeterminationCore {
       .then((res: any) => {
         for (let question of res) {
           try {
-          this.questions.push(this.GetDeterminationQuestion({
-            questionId: question.id,
-            question: question.question,
-            answer: question.answer,
-            otherOptions: question.otherOptions,
-            timeLimit: question.timeLimit,
-            difficulty: question.difficulty,
-            explanation: question.explanation,
-            pictureId: question.pictureId
-          }));
+            this.questions.push(this.GetDeterminationQuestion({
+              questionId: question.id,
+              question: question.question,
+              answer: question.answer,
+              otherOptions: question.otherOptions,
+              timeLimit: question.timeLimit,
+              difficulty: question.difficulty,
+              explanation: question.explanation,
+              pictureId: question.pictureId
+            }));
           } catch (err) {
             this.LogInfo(
               "Failed to load question " + JSON.stringify(question)
@@ -167,6 +166,7 @@ export class DeterminationCore {
             );
           }
         }
+        this.questions = this.questions.filter(q => q);
         let am: ArrayManager = new ArrayManager(this.questions);
         this.questions = am.ShuffleArray();
         this.LogSilly(
@@ -216,6 +216,7 @@ export class DeterminationCore {
 
   /**
    * Returns the statistics of every player of the game
+   * @returns - an array containing the statistics of each player of the game
    */
   private GetPlayerStatistics(): iDeterminationPlayerStatistic[] {
     const result: iDeterminationPlayerStatistic[] = [];
@@ -228,6 +229,7 @@ export class DeterminationCore {
   /**
    * Returns the players statistics
    * @param player - the player who's statistics are to return
+   * @returns - the player's statistics
    */
   private GetPlayerStats(player: DeterminationPlayer): iDeterminationPlayerStatistic {
     return {
@@ -245,6 +247,7 @@ export class DeterminationCore {
   /**
    * Calculates and returns the sum of the numbers of the passed array
    * @param numberArray - array of numbers that are to sum up
+   * @returns - number that equals the sum of the passed numbers
    */
   private GetSum(numberArray: number[]): number {
     let result: number = 0;
@@ -284,26 +287,26 @@ export class DeterminationCore {
     try {
       const correction: number = player.Ping / 2;
       this.timers[
-          "questionTimeout2:" + player.username + ":" + question.question.questionId
+        "questionTimeout2:" + player.username + ":" + question.question.questionId
       ] = global.setTimeout(() => {
-              if (player.LatestQuestion != question) {
-                  return; // question not current
-              }
-              if (player.tips.find(tip => tip.feedback.questionId == question.question.questionId && tip.feedback.correctAnswer != undefined)) {
-                return; // question answered
-              }
+        if (player.LatestQuestion != question) {
+          return; // question not current
+        }
+        if (player.tips.find(tip => tip.feedback.questionId == question.question.questionId && tip.feedback.correctAnswer != undefined)) {
+          return; // question answered
+        }
 
-              this.PlayerGivesTip(
-                player.username,
-                {
-                  questionId: question.question.questionId,
-                  answerId: "none",
-                  correct: false
-                },
-                correction
-              );
+        this.PlayerGivesTip(
+          player.username,
+          {
+            questionId: question.question.questionId,
+            answerId: "none",
+            correct: false
           },
           correction
+        );
+      },
+        correction
       );
     } catch (err) {
       this.LogInfo(JSON.stringify(err));
@@ -635,7 +638,7 @@ export class DeterminationCore {
 
     this.runningGames.Sessions.splice(
       this.runningGames.Sessions.findIndex(
-        x => x.GeneralArguments.gameId == this.gameId
+        x => x.generalArguments.gameId == this.gameId
       ),
       1
     );
@@ -823,7 +826,7 @@ export class DeterminationCore {
     };
 
     // if the question was not answered in time
-    if (duration > playerQuestion.question.timeLimit) {
+    if (duration > playerQuestion.question.timeLimit || tip.answerId == "none") {
       feedback.message = "too slow";
     }
     // answer correct & tip correct
