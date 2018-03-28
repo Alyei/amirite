@@ -62,11 +62,6 @@ export class MillionaireGame implements iGame {
       runningGames,
       this.gameCoreArguments,
       this.generalArguments.questionIds
-      /*this._gameCoreArguments || {
-              pointBase: 100,
-              pointBaseWrongAnswerIdentified: 33,
-              interQuestionGap: 3000
-            }*/
     );
   }
   //#endregion

@@ -128,10 +128,10 @@ export class DeterminationCore {
   private SpectatePlayer(player: DeterminationPlayer) {
     const playerStats: iDeterminationPlayerStatistic = this.GetPlayerStats(player);
 
-    const privilegedSpectators: DeterminationPlayer[] = this.players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
+    /*const privilegedSpectators: DeterminationPlayer[] = this.players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
     for (let ps of privilegedSpectators) {
       ps.Inform(MessageType.DeterminationPlayerData, player.GetPlayerData());
-    }
+    }*/
 
     const spectators: PlayerBase[] = this.Players // no filter .filter(x => x.state == PlayerState.Spectating);
     for (let spec of spectators) {
@@ -191,7 +191,7 @@ export class DeterminationCore {
     const gameData: iDeterminationGameData = this.GetGameData();
 
     const privileged: PlayerBase[] = this.Players.filter(p => p.roles.find(r => [PlayerRole.Host, PlayerRole.Mod].find(permitted => r == permitted) != undefined) != undefined);
-    const players: PlayerBase[] = this.Players.filter(p => privileged.find(priv => priv.username == p.username) == undefined);
+    const players: PlayerBase[] = this.Players;
 
     const th: Tryharder = new Tryharder();
     for (let priv of privileged) {

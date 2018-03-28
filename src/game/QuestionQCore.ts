@@ -294,14 +294,14 @@ export class QuestionQCore {
   private SpectatePlayer(player: QuestionQPlayer) {
     const playerStats: iQuestionQPlayerStatistic = this.GetPlayerStats(player);
 
-    const privilegedSpectators: QuestionQPlayer[] = this.players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
+    /*const privilegedSpectators: QuestionQPlayer[] = this.players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
     for (let ps of privilegedSpectators) {
-      ps.Inform(MessageType.DeterminationPlayerData, player.GetPlayerData());
-    }
+      ps.Inform(MessageType.QuestionQPlayerData, player.GetPlayerData());
+    }*/
 
     const spectators: PlayerBase[] = this.Players // no filter .filter(x => x.state == PlayerState.Spectating);
     for (let spec of spectators) {
-      spec.Inform(MessageType.DeterminationPlayerStatistic, playerStats);
+      spec.Inform(MessageType.QuestionQPlayerStatistic, playerStats);
     }
   }
 
@@ -400,17 +400,17 @@ export class QuestionQCore {
    * Sends the game's data to all players
    */
   private SendGameData(): void {
-    const gameDataFP = this.GetPlayerStatistics();
-    const gameData = this.GetGameData();
+    const gameDataFP: iQuestionQGameData = this.GetGameData();
+    const gameData: iQuestionQSaveGameData = this.GetSaveGameData();
 
     const privileged: PlayerBase[] = this.Players.filter(p => p.roles.find(r => [PlayerRole.Host, PlayerRole.Mod].find(permitted => r == permitted) != undefined) != undefined);
-    const players: PlayerBase[] = this.Players.filter(p => privileged.find(priv => priv.username == p.username) == undefined);
+    const players: PlayerBase[] = this.Players;
 
     const th: Tryharder = new Tryharder();
     for (let priv of privileged) {
       th.Tryhard(
         () => {
-          return priv.Inform(MessageType.DeterminationGameDataForHost, gameData);
+          return priv.Inform(MessageType.QuestionQGameData, gameData);
         },
         3000,
         3
@@ -420,7 +420,7 @@ export class QuestionQCore {
       if (
         !th.Tryhard(
           () => {
-            return player.Inform(MessageType.DeterminationGameDataForPlayers, gameDataFP);
+            return player.Inform(MessageType.QuestionQEndGameData, gameDataFP);
           },
           3000, // delay
           3 // tries

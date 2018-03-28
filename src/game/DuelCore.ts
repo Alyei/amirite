@@ -150,8 +150,12 @@ export class DuelCore {
             return false; // player already joined
         }
         if (this.gamePhase == DuelGamePhase.Setup) {
-            this.players.push(new DuelPlayer(player.GetArguments()));
+            const newPlayer: DuelPlayer = new DuelPlayer(player.GetArguments());
+            this.players.push(newPlayer);
             player.state = PlayerState.Launch;
+
+            this.SpectatePlayer(newPlayer);
+
             return true;
         }
         return false;
@@ -314,7 +318,8 @@ export class DuelCore {
                             difficulty: question.difficulty,
                             explanation: question.explanation,
                             pictureId: question.pictureId,
-                            questionCounter: 0
+                            questionCounter: 0,
+                            categories: question.categories
                         });
                     } catch {
                         this.LogInfo("Failed to load question (" + JSON.stringify(question) + ")");
@@ -679,6 +684,24 @@ export class DuelCore {
     private LogSilly(toLog: string) {
         logger.log("silly", this.gameId + " - " + toLog);
     }
+    /**
+     * Sends detailed data of the player to priviledged spectators (host & mods)
+     * and statistics of the player to usual spectators
+     * @param player - player to be spectated
+     */
+    private SpectatePlayer(player: DuelPlayer) {
+      const playerStats: iDuelPlayerData = player.GetPlayerData();
+  
+      /*const privilegedSpectators: QuestionQPlayer[] = this.players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
+      for (let ps of privilegedSpectators) {
+        ps.Inform(MessageType.QuestionQPlayerData, player.GetPlayerData());
+      }*/
+  
+      const spectators: PlayerBase[] = this.players // no filter .filter(x => x.state == PlayerState.Spectating);
+      for (let spec of spectators) {
+        spec.Inform(MessageType.DuelPlayerData, playerStats);
+      }
+    }
     //#endregion
     //#endregion
 
@@ -694,6 +717,8 @@ export class DuelCore {
             return; // player not found
         }
         player.ready = rs.ready;
+
+        this.SpectatePlayer(player);
         
         // do start when conditions are met
         /*if (this.players.length != 2)

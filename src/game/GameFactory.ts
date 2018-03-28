@@ -7,7 +7,8 @@ import {
   iDeterminationHostArguments,
   iMillionaireHostArguments,
   PlayerRole,
-  iDuelHostArguments
+  iDuelHostArguments,
+  JokerType
 } from "../models/GameModels";
 import { QuestionQGame } from "./QuestionQGame";
 import { MillionaireGame } from "./MillionaireGame";
@@ -94,8 +95,8 @@ export class GameFactory {
                 this.Sessions,
                 millionaireArguments || {
                   maxQuestions: 14,
-                  checkpoints: [2, 4, 8],
-                  jokers: [],
+                  checkpoints: [1000, 5000, 10000, 100000],
+                  jokers: [JokerType.Audience, JokerType.Call, JokerType.FiftyFifty],
                   scoreCalcA: 200,
                   scoreCalcB: 2
                 }
@@ -144,18 +145,18 @@ export class GameFactory {
                 namespaceSocket,
                 this.Sessions,
                 duelArguments || {
-                  scoreGoal: 5000,
-                  scoreMin: 1000,
-                  pointBase: 200,
-                  pointBase2: 300,
-                  pointDeductionBase: 100,
-                  pointDeductionBase2: 200,
-                  pointDeductionWhenTooSlow: 400,
-                  postfeedbackGap: 1000,
-                  choosingTime1: 10000,
-                  choosingTime2: 10000,
-                  maxCategoryChoiceRange: 5,
-                  maxDifficultyChoiceRange: 16
+                  scoreGoal: 100000,
+                  scoreMin: -10000,
+                  pointBase: 100,
+                  pointBase2: 100,
+                  pointDeductionBase: 50,
+                  pointDeductionBase2: 50,
+                  pointDeductionWhenTooSlow: 10,
+                  postfeedbackGap: 3000,
+                  choosingTime1: 5000,
+                  choosingTime2: 7000,
+                  maxCategoryChoiceRange: 3,
+                  maxDifficultyChoiceRange: 3
                 }
               );
               this.Initialize(newGame)
