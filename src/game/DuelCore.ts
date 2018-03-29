@@ -491,7 +491,7 @@ export class DuelCore {
             // too late
             this.currentQuestion.tip.correct = false;
             this.currentQuestion.tip.message = "too slow";
-            this.currentQuestion.feedback.scoring[player.username].points =  Math.floor(-this.gameArguments.poindDetuctionWhenTooSlow);
+            this.currentQuestion.feedback.scoring[player.username].points =  Math.floor(-this.gameArguments.pointDeductionWhenTooSlow);
             this.currentQuestion.feedback.scoring[opponent.username].points = this.currentQuestion.feedback.scoring[player.username].points;
         } else {
             if (this.currentQuestion.tip.answerId == this.currentQuestion.correctAnswer) {
