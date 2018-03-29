@@ -113,11 +113,14 @@ export class server {
 
     try {
       this.httpsServer.listen(this.port, (req: any, res: any) => {
-        logger.log(
+        logger.info("HTTPS server started listening on port %d", this.port);
+
+        /*logger.log(
           "info",
           "HTTPS server started listening on port %d.",
           this.port
         );
+      });*/
       });
     } catch (err) {
       logger.log(
