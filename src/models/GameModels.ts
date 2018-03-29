@@ -128,11 +128,7 @@ export enum MessageType {
   DuelChooseCategoryRequest,
   DuelChooseCategoryReply,
   DuelSetReadyState,
-<<<<<<< HEAD
-  DuelPlayerData
-=======
   DuelPlayerData,
->>>>>>> gs_commentary
 }
 
 /**
@@ -892,11 +888,7 @@ export interface iMillionaireAudienceJokerRequest {
  * @property possibleResponses: number - the amount of player's that can give a clue
  */
 export interface iMillionaireAudienceJokerResponse {
-<<<<<<< HEAD
-  questionId: string;
-=======
   questionId: string
->>>>>>> gs_commentary
   possibleResponses: number;
 }
 
@@ -1192,8 +1184,4 @@ export interface iDuelChooseCategoryReply {
   category: string;
 }
 //#endregion
-<<<<<<< HEAD
 //#endregion
-=======
-//#endregion
->>>>>>> gs_commentary

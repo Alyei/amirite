@@ -1,24 +1,26 @@
 import winston = require("winston");
-import { settings } from "./helper";
 
-let logger: any = new winston.Logger({
+let logger: winston.LoggerInstance = new winston.Logger({
   transports: [
     new winston.transports.File({
+      level: "info",
       filename: "logs/logging.log",
       handleExceptions: true,
-      humanReadableUnhandledException: true,
       json: true,
       maxsize: 5242880 * 2,
       colorize: false
     }),
+
     new winston.transports.Console({
+      name: "silly",
+      level: "silly",
+      handleExceptions: true,
+      json: false,
       colorize: true,
-      timestamp: true,
-      level: settings.server.logging_level
+      timestamp: true
     })
   ]
 });
-logger.exitOnError = true;
 
 export { logger };
 

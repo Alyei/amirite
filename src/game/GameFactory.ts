@@ -145,20 +145,6 @@ export class GameFactory {
                 namespaceSocket,
                 this.Sessions,
                 duelArguments || {
-<<<<<<< HEAD
-                  scoreGoal: 5000,
-                  scoreMin: 1000,
-                  pointBase: 200,
-                  pointBase2: 300,
-                  pointDeductionBase: 100,
-                  pointDeductionBase2: 200,
-                  pointDeductionWhenTooSlow: 400,
-                  postFeedbackGap: 1000,
-                  choosingTime1: 10000,
-                  choosingTime2: 10000,
-                  maxCategoryChoiceRange: 5,
-                  maxDifficultyChoiceRange: 16
-=======
                   scoreGoal: 100000,
                   scoreMin: -10000,
                   pointBase: 100,
@@ -171,7 +157,6 @@ export class GameFactory {
                   choosingTime2: 7000,
                   maxCategoryChoiceRange: 3,
                   maxDifficultyChoiceRange: 3
->>>>>>> gs_commentary
                 }
               );
               this.Initialize(newGame)

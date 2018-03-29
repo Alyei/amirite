@@ -6,11 +6,7 @@ import {
   iQuestionQPlayerData
 } from "../models/GameModels";
 import { logger } from "../server/logging";
-<<<<<<< HEAD
-import { settings } from "../server/helper";
-=======
 //#endregion
->>>>>>> gs_commentary
 
 //#region interfaces
 /**
@@ -68,7 +64,7 @@ export class PlayerBase {
     public roles: PlayerRole[]
   ) {
     this.state = PlayerState.Spectating;
-
+    
     // player
     if (this.roles.find(x => x == PlayerRole.Player) != undefined)
       this.state = PlayerState.Launch;
@@ -137,7 +133,8 @@ export class PlayerBase {
    * an intervalTimer for `this.PingLogic()` for the specified inter
    */
   private GetPing(): void {
-    const interval: number = settings.game.ping_check_interval;
+    const interval: number = 2000; //Move to conf
+
     this.socket.on("clack", (res: any) => {
       this.OnClack();
     });
@@ -185,7 +182,7 @@ export class PlayerBase {
   }
 
   /**
-   * Sets `this.ping` to the average of the five most recent pings in milliseconds.
+   * Sets `this.ping` to the average of the last 5 pings in milliseconds.
    */
   private GetPingAverage(): any {
     let sum: number = 0;
