@@ -1,5 +1,5 @@
 //#region imports
-import { iDeterminationPlayerData, PlayerRole, PlayerState, iDeterminationQuestionData, iDeterminationTipData } from "../models/GameModels";
+import { iDeterminationPlayerData, PlayerRole, PlayerState, iDeterminationQuestionData, iDeterminationTipFeedback } from "../models/GameModels";
 import { PlayerBase, iPlayerBaseArguments } from "./PlayerBase";
 //#endregion
 
@@ -22,7 +22,7 @@ export class DeterminationPlayer extends PlayerBase implements iDeterminationPla
     /**
      * - contains every feedback the player got including its corresponding tip
      */
-    public tipData: iDeterminationTipData[];
+    public tipData: iDeterminationTipFeedback[];
 
     /**
      * Getter for the last question added to the player's questions

@@ -239,9 +239,9 @@ export class DeterminationCore {
       roles: player.roles,
       state: player.state,
       tips: player.tipData.length,
-      correctTips: player.tipData.filter(td => td.feedback.correct).length,
-      totalValuedTime: this.GetSum(player.tipData.map(td => td.feedback.duration)),
-      totalTimeCorrection: this.GetSum(player.tipData.map(td => td.feedback.timeCorrection))
+      correctTips: player.tipData.filter(td => td.correct).length,
+      totalValuedTime: this.GetSum(player.tipData.map(td => td.duration)),
+      totalTimeCorrection: this.GetSum(player.tipData.map(td => td.timeCorrection))
     };
   }
 
@@ -282,7 +282,7 @@ export class DeterminationCore {
     if (question.questionTime == undefined) {
       return; // no question time
     }
-    if (player.tipData.find(tip => tip.feedback.questionId == question.question.questionId && tip.feedback.correctAnswer != undefined)) {
+    if (player.tipData.find(tip => tip.questionId == question.question.questionId && tip.correctAnswer != undefined)) {
       return; // question answered
     }
     try {
@@ -293,7 +293,7 @@ export class DeterminationCore {
         if (player.LatestQuestion != question) {
           return; // question not current
         }
-        if (player.tipData.find(tip => tip.feedback.questionId == question.question.questionId && tip.feedback.correctAnswer != undefined)) {
+        if (player.tipData.find(tip => tip.questionId == question.question.questionId && tip.correctAnswer != undefined)) {
           return; // question answered
         }
 
@@ -903,7 +903,7 @@ export class DeterminationCore {
 
         this.ProcessPlayerInputError(player, errorMessage);
 
-        player.tipData.push({ tip: tip });
+        player.tipData.push(feedback);
 
         this.DisqualifyPlayer(player); // suspicious input
 

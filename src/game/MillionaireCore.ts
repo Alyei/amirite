@@ -1000,6 +1000,7 @@ export class MillionaireCore {
     ]);
 
     const reply: iMillionaireFiftyFiftyJokerResponse = {
+      questionId: request.questionId,
       remainingOptions: am.ShuffleArray()
     };
 
@@ -1062,6 +1063,7 @@ export class MillionaireCore {
     this.millionaire.jokers.splice(ji, 1);
 
     const reply: iMillionaireAudienceJokerResponse = {
+      questionId: request.questionId,
       possibleResponses: this.players.filter(
         p =>
           p.roles.find(pr => pr == PlayerRole.Spectator) != undefined ||
@@ -1267,9 +1269,15 @@ export class MillionaireCore {
       return; // player not found
     }
 
-    calledPlayer.Inform(MessageType.MillionaireCallJokerCallRequest, {}); // call user
+    const callRequest: iMillionaireCallJokerCallRequest = {
+      questionId: request.questionId,
+      username: calledPlayer.username
+    };
 
     this.millionaire.currentQuestion.callJokerData.call = request.username;
+
+    for (let p of this.players)
+      p.Inform(MessageType.MillionaireCallJokerCallRequest, callRequest);
   }
 
   /**

@@ -875,59 +875,142 @@ export interface iMillionaireQuestionData {
 }
 
 /**
- * 
+ * The iMillionaireAudienceJokerRequest-interface contains all data that is needed to activate the audience-joker for a question.
+ * @property questionId: string - the ID of the question for that the audience-joker shall be used (current question)
  */
 export interface iMillionaireAudienceJokerRequest {
   questionId: string;
 }
+
+/**
+ * The iMillionaireAudienceJokerResponse-interface contains data that is immediately sent to the millionaire after the audience-joker has been activated.
+ * @property questionId: string - the ID of the question the audience-joker's response is ment for
+ * @property possibleResponses: number - the amount of player's that can give a clue
+ */
 export interface iMillionaireAudienceJokerResponse {
+  questionId: string
   possibleResponses: number;
 }
+
+/**
+ * The iMillionaireAudienceJokerData-interface contains all data that results out of the audience-joker.
+ * @property playerClues: iMillionaireAudienceJokerPlayerClue[] - an array containing every player clue that has been given for the question
+ * @property response: iMillionaireAudienceJokerResponse - the message the server sent the millionaire in response to their audience-joker request
+ */
 export interface iMillionaireAudienceJokerData {
   playerClues: iMillionaireAudienceJokerPlayerClueData[];
   response: iMillionaireAudienceJokerResponse;
 }
+
+/**
+ * The iMillionaireAudienceJokerPlayerClueData-interface contains the data that is collected when a player gives a clue.
+ * @property username: string - the name of the player who gave the clue
+ * @property clue: iMillionaireAudienceJokerPlayerClue - the clue the player gave
+ * @property karmaPoints?: number - (optional) the karma-points the player got for their clue
+ */
 export interface iMillionaireAudienceJokerPlayerClueData {
   username: string;
   clue: iMillionaireAudienceJokerPlayerClue;
   karmaPoints?: number;
 }
-// sent from audience and to the player
+
+/**
+ * The iMillionaireAudienceJokerPlayerClue-interface contains the data of a player's audience-joker clue.
+ * @property questionId: string - the ID of the question the clue is ment for
+ * @property answerId: string - the answer-ID of the answer-option that is chosen in the clue
+ */
 export interface iMillionaireAudienceJokerPlayerClue {
   questionId: string;
   answerId: string;
 }
+
+/**
+ * The iMillionaireFiftyFiftyJokerRequest-interface contains all data that results out of the fifty/fifty-joker.
+ * @property questionId: string - the ID of the question for that the fifty/fifty-joker shall be used (current question)
+ */
 export interface iMillionaireFiftyFiftyJokerRequest {
   questionId: string;
 }
+
+/**
+ * The iMillionaireFiftyFiftyJokerResponse-interface contains the data that is sent in response to the activation of the fifty/fifty-joker.
+ * @property questionId: string - the ID of the question the fifty/fifty-joker response is ment for
+ * @property remainingOptions: string[] - an array of the IDs of the remaning answer-options
+ */
 export interface iMillionaireFiftyFiftyJokerResponse {
+  questionId: string;
   remainingOptions: string[]; // answerIds
 }
+
+/**
+ * The iMillionaireAudienceJokerData-interface contains all data that results out of the fifty/fifty-joker.
+ * @property response: iMillionaireFiftyFiftyJokerResponse - the message the server sent the millionaire in response to their fifty/fifty-joker request
+ */
 export interface iMillionaireFiftyFiftyJokerData {
   response: iMillionaireFiftyFiftyJokerResponse;
 }
 
+/**
+ * The iMillionaireCallJokerRequest-interface contains all data that is needed to activate the call-joker for a question.
+ * @property questionId: string - the ID of the question for that the call-joker shall be used (current question)
+ */
 export interface iMillionaireCallJokerRequest {
   questionId: string;
 }
+
+/**
+ * The iMillionaireCallJokerResponse-interface contains the data that is sent in response to the activation of the call-joker.
+ * @property questionId: string - the ID of the question the call-joker has been activated for
+ * @property callOptions: iMillionairePlayerData[] - list of detailed data of the player's that can be called
+ */
 export interface iMillionaireCallJokerResponse {
   questionId: string;
   callOptions: iMillionairePlayerData[];
 }
+
+/**
+ * The iMillionaireCallJokerCallRequest-interface contains the data that is used to call a player for help.
+ * @property questionId: string - the ID of the question the joker is ment for
+ * @property username: string - the name of the user that shall be called
+ */
 export interface iMillionaireCallJokerCallRequest {
   questionId: string;
   username: string;
 }
+
+/**
+ * The iMillionaireCallJokerClue-interface contains the data of a player's clue-joker clue.
+ * @property questionId: string - the ID of the question the clue is ment for
+ * @property answerId: string - the answer-ID of the answer-option that is chosen in the clue
+ */
 export interface iMillionaireCallJokerClue {
   questionId: string;
   answerId: string;
 }
+
+/**
+ * The iMillionaireCallJokerData-interface contains all data that results out of the call-joker.
+ * @property callOptions: string[] - the names of the players the millionaire had to chose from
+ * @property call?: string - (optional) the name of the called player
+ * @property clue?: iMillionaireCallJokerClue - the clue the called player gave
+ */
 export interface iMillionaireCallJokerData {
   callOptions: string[]; // usernames
   call?: string; // username
   clue?: iMillionaireCallJokerClue;
 }
 
+/**
+ * The iMillionaireTipFeedback-interface contains the data to notify a client about the result of their tip.
+ * @property questionId: string - the ID of the question that has been answered
+ * @property correct: boolean - the indicator for whether the given tip was correct
+ * @property points: number - the amount of points the player receives for their tip
+ * @property score: number - the player's current score
+ * @property checkpoint: number - the player's current checkpoint
+ * @property message: string - a message telling the circumstances of the scoring
+ * @property correctAnswer: string - the ID of the correct answer
+ * @property explanation?: string - (optional) an explanation for the question
+ */
 export interface iMillionaireTipFeedback {
   questionId: string;
   correct: boolean;
@@ -938,20 +1021,50 @@ export interface iMillionaireTipFeedback {
   correctAnswer: string;
   explanation?: string;
 }
-// --> Server
+
+/**
+ * The iMillionairePassRequest-interface contains the data that is needed to end the millionaire's tenure without their score falling back onto their last checkpoint.
+ */
 export interface iMillionairePassRequest {}
+
+/**
+ * The iMillionaireChooseMillionaireRequest contains the data that is sent to the owner and the moderators of a game in order to request them to chose the next millionaire.
+ * @property players: iMillionairePlayerData[] - the players that are potential millionaires
+ */
 export interface iMillionaireChooseMillionaireRequest {
   players: iMillionairePlayerData[];
 }
+
+/**
+ * The iMillionaireChooseMillionaireResponse-interface contians the data that is needed to choose the next millionaire.
+ * @property username: string - the username of the next millionaire
+ */
 export interface iMillionaireChooseMillionaireResponse {
   username: string;
 }
+
+/**
+ * The iMillionaireChooseQuestionRequest-interface contains the data that is sent to the owner and the moderators of a game in order to request them to chose the next question.
+ * @property questions: iMillionaireQuestionData[] - a list of all questions that can be chosen
+ */
 export interface iMillionaireChooseQuestionRequest {
   questions: iMillionaireQuestionData[];
 }
+
+/**
+ * The iMillionaireChooseQuestionResponse-interface contians the data that is needed to choose the next question.
+ * @property questionId: string - the question-ID of the next questions
+ */
 export interface iMillionaireChooseQuestionResponse {
   questionId: string;
 }
+
+// unused
+/**
+ * The iMillionaireActionFeedback-interface contains all data that can be needed to give a user a feedback for the action they tried to perform.
+ * @property requestType: MessageType - the type of the request the user sent
+ * @property response: any - the response of the game
+ */
 export interface iMillionaireActionFeedback {
   requestType: MessageType;
   response: any;
