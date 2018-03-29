@@ -14,7 +14,6 @@ import { Editor } from "./QuestionEditor";
 import * as cors from "cors";
 import { RunningGames } from "../game/RunningGames";
 import { GameFactory } from "../game/GameFactory";
-import { PlayerCommunication } from "./PlayerCom";
 import { settings } from "./helper";
 
 let flash: any = require("connect-flash");
@@ -38,7 +37,6 @@ export class server {
   private cors: any = require("cors");
   public GameSessions: RunningGames;
   public GameFactory: GameFactory;
-  public PlayerComm: PlayerCommunication;
 
   /**
    * Initializes the HTTPS server.
@@ -53,7 +51,6 @@ export class server {
     this.QuestionEditor = new Editor();
     this.GameSessions = new RunningGames();
     this.GameFactory = new GameFactory(this.GameSessions);
-    this.PlayerComm = new PlayerCommunication(this.GameSessions);
     this.app.use(function(req: any, res: any, next: any) {
       // Website you wish to allow to connect
       res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -96,8 +93,7 @@ export class server {
     this.socketIo = new io(
       this.httpsServer,
       this.GameSessions,
-      this.GameFactory,
-      this.PlayerComm
+      this.GameFactory
     );
     this.app.set("view engine", "ejs");
   }
