@@ -5,5 +5,7 @@
     "https_port": 443,
     "http_port": 80
   },
-  "games": {}
+  "game": {
+    "ping_check_interval": 2000
+  }
 }

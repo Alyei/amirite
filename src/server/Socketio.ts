@@ -4,7 +4,6 @@ import { generateGameId } from "./Helper";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "./Logging";
 import { GameFactory } from "../game/GameFactory";
-import { PlayerCommunication } from "./PlayerCom";
 import {
   iGeneralHostArguments,
   iPlayerAction,
@@ -24,14 +23,8 @@ export class io {
   public Duel: SocketIO.Namespace;
   public GameSessions: RunningGames;
   public GameFactory: GameFactory;
-  public PlayerComm: PlayerCommunication;
 
-  constructor(
-    app: any,
-    sessions: RunningGames,
-    factory: GameFactory,
-    playercom: PlayerCommunication
-  ) {
+  constructor(app: any, sessions: RunningGames, factory: GameFactory) {
     this.server = socketio.listen(app);
     //Setting up namespaces
     this.QuestionQ = this.server.of("/questionq");
@@ -41,7 +34,6 @@ export class io {
 
     this.GameSessions = sessions;
     this.GameFactory = factory;
-    this.PlayerComm = playercom;
     this.QuestionQConf();
     this.DeterminationConf();
     //   this.DuelConf();
