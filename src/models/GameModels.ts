@@ -22,6 +22,7 @@
  * @value 15: DeterminationHostArguments - the message-type for data according to the iDeterminationHostArguments-interface
  * @value 16: DeterminationGameDataForHost - the message-type for data according to the iDeterminationGameData-interface (server -> client)
  * @value 17: DeterminationPlayerStatistic - the message-type for data according to the iDeterminationPlayerStatistic-interface (server -> client)
+ * @value 18: DeterminationStartGameData - the message-type for data according to the iDeterminationStartGameData-interface (server -> client)
  * @value 20: MillionaireQuestion - the message-type for data according to the iMillionairePlayerQuestion-interface (server -> client)
  * @value 21: MillionaireTip - the message-type for data according to the iMillionaireTip-interface (client -> server)
  * @value 22: MillionaireTipFeedback - the message-type for data according to the iMillionaireTipFeedback-interface (server -> client)
@@ -44,6 +45,8 @@
  * @value 39: MillionaireGameData - the message-type for data according to the iMillionaireGameData-interface (server -> client)
  * @value 40: MillionairePlayerData - the message-type for data according to the iMillionairePlayerData-interface (server -> client)
  * @value 41: MillionaireActionFeedback - the message-type for data according to the iMillionaireActionFeedback-interface (server -> client)
+ * @value 41: MillionaireAddQuestionsRequest - the message-type for data according to the MillionaireAddQuestionsRequest-interface (client -> server)
+ * @value 41: MillionaireAddQuestionsResponse - the message-type for data according to the MillionaireAddQuestionsResponse-interface (server -> client)
  * @value 50: DuelQuestion - the message-type for data according to the iDuelQuestion-interface (server -> client)
  * @value 51: DuelTip - the message-type for data according to the iDuelTip-interface (client -> server)
  * @value 52: DuelTipFeedback - the message-type for data according to the iDuelTipFeedback-interface (server -> client)
@@ -84,6 +87,7 @@ export enum MessageType {
   DeterminationHostArguments,
   DeterminationGameDataForHost,
   DeterminationPlayerStatistic,
+  DeterminationStartGameData,
 
   // Millionaire
   MillionaireQuestion = 20,
@@ -108,6 +112,8 @@ export enum MessageType {
   MillionaireGameData,
   MillionairePlayerData,
   MillionaireActionFeedback,
+  MillionaireAddQuestionsRequest,
+  MillionaireAddQuestionsResponse,
 
   // Duel
   DuelQuestion = 50,
@@ -249,7 +255,7 @@ export interface iPlayerAction {
 }
 
 /**
- * The iChangePlayerRolesRequest-interface is sent to change a player's roles.
+ * The iChangePlayerRolesRequest-interface contains all essential data to change a player's roles.
  * Its message-type is 'ChangePlayerRolesRequest'.
  * @property username: string - the name of the user whose roles are to modify
  * @property toAdd?: PlayerRole[] - the roles that are to add
@@ -262,7 +268,7 @@ export interface iChangePlayerRolesRequest {
 }
 
 /**
- * The iJoinGame-interface is sent to join a game.
+ * The iJoinGame-interface contains the data to join a game.
  * @property gameId: string - the ID of the game to join
  * @property username: string - the username that shall be used for the player
  * @property role: number - the role the player prefers
@@ -274,7 +280,7 @@ export interface iJoinGame {
 }
 
 /**
- * The iJoinGame-interface is sent to leave a game.
+ * The iJoinGame-interface contains the data to leave a game.
  * @property gameId: string - the ID og the game to leave
  * @property username: string - the name of the user to leave
  */
@@ -285,7 +291,7 @@ export interface iLeaveGame {
 }
 
 /**
- * The iStartGame-interface is sent to start a game.
+ * The iStartGame-interface contains the data to start a game.
  * @property gameId: string - the ID of the game to start
  * @property username: string - the name of the user who requested the start
  */
@@ -295,7 +301,7 @@ export interface iStartGame {
 }
 
 /**
- * The iGeneralPlayerInputError-interface is sent to the client to notify them that there was an input error.
+ * The iGeneralPlayerInputError-interface contains the data to notify a client that there was an input error.
  * @property message: string - the error message
  * @property data: any - additional error data
  */
@@ -321,7 +327,7 @@ export interface iGeneralHostArguments {
 }
 
 /**
- * The iSpectatingData-interface is sent to the client to notify them that a message was sent to someone.
+ * The iSpectatingData-interface contains the data to notify a client that a message was sent to someone.
  * @property msgType: MessageType - the type of the message that has been sent to the target
  * @property data: any - the data that has been sent to the target
  * @property targetUsername: string - the name of the user the original message has been sent to
@@ -345,7 +351,7 @@ export interface iQuestionQHostArguments {
 }
 
 /**
- * The iQuestionQStartGameData-interface is sent to the client in order to enable them to begin the game.
+ * The iQuestionQStartGameData-interface contains the data a client needs to begin the game.
  * @property questionAmount: number - the amount of questions that will be asked before a player finishes
  * @property gameArguments: iQuestionQGameArguments - the game arguments the game has been hosted with
  */
@@ -355,12 +361,12 @@ export interface iQuestionQStartGameData {
 }
 
 /**
- * The iQuestionQSaveGameData is sent to give priviledged spectators detailed information about the players performance.
+ * The iQuestionQSaveGameData contains the data to give priviledged spectators detailed information about the players performance.
  * This is also the data that will be saved into the database.
  * @property gameId: string - the game's ID
  * @property gamemode: Gamemode - the game's gamemode
  * @property gameArguments: iQuestionQHostArguments - the game arguments the game has been hosted with
- * @property players: iQuestionQPlayerData - detailed information about the palyers' performance
+ * @property players: iQuestionQPlayerData[] - detailed information about the palyers' performance
  * @property explanations: { questionId: string, explanation: string }[] - explanations for the questions
  */
 export interface iQuestionQSaveGameData {
@@ -375,7 +381,7 @@ export interface iQuestionQSaveGameData {
 }
 
 /**
- * The iQuestionQGameData-interface is sent to notify all players about the game's statistics
+ * The iQuestionQGameData-interface contains the data to notify all players about the game's statistics
  * @property gameId: string - the game's ID
  * @property gamemode: Gamemode - the game's gamemode
  * @property gameArguments: iQuestionQHostArguments - the game arguments the game has been hosted with
@@ -389,7 +395,7 @@ export interface iQuestionQGameData {
 }
 
 /**
- * The iQuestionQTip-interface is sent from a client to the server to choose an answer option.
+ * The iQuestionQTip-interface contains the data to choose an answer-option.
  * @property questionId: string - the ID of the question that is to answer
  * @property answerId: string - the ID of the chosen answer
  */
@@ -399,7 +405,16 @@ export interface iQuestionQTip {
 }
 
 /**
- * !!!
+ * The iQuestionQQuestion-interface contains the data to ask a client a question.
+ * @property questionId: string - the question's ID
+ * @property question: string - the question
+ * @property pictureId?: string - (optional) the ID of the question's picture
+ * @property options: [string, string][] - the four answer-options for the question containing the correct one
+ * @property timeLimit: number - the question's time limit in milliseconds
+ * @property difficulty: number - the question's difficulty
+ * @property categories: string[] - the question's categories
+ * @property questionTime: Date - the time the question has been sent to the client
+ * @property timeCorrection: number - the current time correction for the client
  */
 export interface iQuestionQQuestion {
   questionId: string;
@@ -408,9 +423,22 @@ export interface iQuestionQQuestion {
   options: [string, string][];
   timeLimit: number;
   difficulty: number;
+  categories?: string[];
   questionTime: Date;
   timeCorrection?: number;
 }
+
+/**
+ * The iQuestionQTipFeedback-interface contains the data to notify a client about the result of their tip.
+ * @property questionId: string - the ID of the question that has been answered
+ * @property correct: boolean - the indicator for whether the given tip was correct
+ * @property duration: number - the duration for answering the question
+ * @property timeCorrection: number - the amount of time that has been subtracted from the time difference between the moment when the question was sent and the moment when the answer was received
+ * @property points: number - the amount of points the player receives for their tip
+ * @property score: number - the player's current score
+ * @property message: string - a message telling the circumstances of the scoring
+ * @property correctAnswer: string - the ID of the correct answer
+ */
 export interface iQuestionQTipFeedback {
   questionId: string;
   correct: boolean;
@@ -421,6 +449,12 @@ export interface iQuestionQTipFeedback {
   message: string;
   correctAnswer: string; // answerId
 }
+
+/**
+ * The iQuestionQPlayerDataAndExplanations-interface contains the data to enable a client to look into a player's performance.
+ * @property player: iQuestionQPlayerData - all data the game collected for the player
+ * @property explanations: { questionId: string, explanation: string }[] - explanations for the questions that have been asked
+ */
 export interface iQuestionQPlayerDataAndExplanations {
   player: iQuestionQPlayerData;
   explanations: {
@@ -428,6 +462,16 @@ export interface iQuestionQPlayerDataAndExplanations {
     explanation: string;
   }[];
 }
+
+/**
+ * The iQuestionQPlayerData-interface contains all data the game collects for a player.
+ * @property username: string - the username of the player
+ * @property roles: PlayerRole[] - the roles the player has
+ * @property state: PlayerState - the current state of the player
+ * @property score: number - the current score of the player
+ * @property questions: [iQuestionQQuestion, string][] - an array of all questions that the player has been asked yet in combination with the id of the correct answer each
+ * @property tips: iQuestionQTipData[] - a collection of every tip the player gave yet each in combination with the corresponding feedback
+ */
 export interface iQuestionQPlayerData {
   username: string;
   roles: PlayerRole[];
@@ -436,6 +480,18 @@ export interface iQuestionQPlayerData {
   questions: [iQuestionQQuestion, string][];
   tips: iQuestionQTipData[];
 }
+
+/**
+ * The iQuestionQPlayerStatistic-interface contains the data to inform all clients about the new statistics of a player.
+ * @property username: string - the player's username
+ * @property score: number - the player's current score
+ * @property state: PlayerState - the player's current score
+ * @property roles: PlayerRole[] - the player's roles
+ * @property questionIds: string[] - the IDs of the questions the player has answered yet
+ * @property correctAnswers: number - the amount of questions the player has answered correctly yet
+ * @property totalValuedTime: number - the total amount of time that has been valued as duration for questions of the player in milliseconds
+ * @property totalTimeCorrection: number - the total amount of time that has been removed from the meassured time the player has taken to answer their questions
+ */
 export interface iQuestionQPlayerStatistic {
   username: string;
   score: number;
@@ -446,6 +502,12 @@ export interface iQuestionQPlayerStatistic {
   totalValuedTime: number;
   totalTimeCorrection: number;
 }
+
+/**
+ * The iQuestionQTipData-interface combines a tip a player has given with its corresponding feedback.
+ * @property tip: iQuestionQTip - the tip the player has given
+ * @property feedback: iQuestionQTipFeedback - the feedback for the tip
+ */
 export interface iQuestionQTipData {
   tip: iQuestionQTip;
   feedback: iQuestionQTipFeedback;
@@ -453,30 +515,115 @@ export interface iQuestionQTipData {
 //#endregion
 
 //#region Determination
+/**
+ * The iDeterminationHostArguments-interface contains every modifier for a Determination-game.
+ * @property pointBase: number - when identifying a correct answer points are calculated by the formula: question's difficulty * (pointBase + question's time limit / (player's answering time + 1))
+ * @property pointBaseWrongAnswerIdentified: number - when identifying a wrong answer points are calculated by the formula: question's difficulty * (pointBaseWrongAnswerIdentified + question's time limit / (player's answering time + 1))
+ * @property interQuestionGap number - minimum time span between questions (to receive feedback)
+ */
 export interface iDeterminationHostArguments {
   pointBase: number; // pointBase x difficulty = min points for the correctly answered question
   pointBaseWrongAnswerIdentified: number; // pointBase x difficulty = min points for the correctly identified wrong answer
   interQuestionGap: number; // minimum time in milliseconds between questions
 }
+
+/**
+ * The iQuestionQStartGameData-interface contains the data a client needs to begin the game.
+ * @property questionAmount: number - the amount of questions that will be asked before a player finishes
+ * @property gameArguments: iQuestionQGameArguments - the game arguments the game has been hosted with
+ */
+export interface iDeterminationStartGameData {
+  questionAmount: number;
+  gameArguments: iDeterminationHostArguments;
+}
+
+/**
+ * The iDeterminationGameData-interface contains the data to give priviledged spectators detailed information about the players' performance.
+ * This is also the data that will be saved into the database.
+ * @property gameId: string - the game's ID
+ * @property gamemode: Gamemode - the game's gamemode
+ * @property gameArguments: iDeterminationHostArguments - the game arguments the game has been hosted with
+ * @property players: iDeterminationPlayerData[] - detailed information about the palyers' performance
+ */
 export interface iDeterminationGameData {
   gameId: string;
   gamemode: Gamemode;
   gameArguments: iDeterminationHostArguments;
   players: iDeterminationPlayerData[];
 }
+
+/**
+ * The iDeterminationEndGameData-interface contains the data to notify all players about the player's statistics
+ * @property playerStatistics: iDeterminationPlayerStatistic[] - the players' statistics
+ */
+export interface iDeterminationEndGameData {
+  playerStatistics: iDeterminationPlayerStatistic[];
+}
+
+/**
+ * The iDeterminationPlayerStatistic-interface contains the data to inform all clients about the current statistics of a player.
+ * @property username: string - the player's username
+ * @property score: number - the player's current score
+ * @property state: PlayerState - the player's current score
+ * @property roles: PlayerRole[] - the player's roles
+ * @property tips: number - the amount of tips the player has given yet
+ * @property correctTips: number - the amount of correct tips the player has given yet
+ * @property totalValuedTime: number - the total amount of time that has been valued as duration for questions of the player in milliseconds
+ * @property totalTimeCorrection: number - the total amount of time that has been removed from the meassured time the player has taken to answer their questions
+ */
+export interface iDeterminationPlayerStatistic {
+  username: string;
+  score: number;
+  state: PlayerState;
+  roles: PlayerRole[];
+  tips: number;
+  correctTips: number;
+  totalValuedTime: number;
+  totalTimeCorrection: number;
+}
+
+/**
+ * The iDeterminationTip-interface contains the data to try to identify an answer-option.
+ * @property questionId: string - the ID of the question the answer is for
+ * @property answerId: string - the ID of the answer to identify
+ * @property correct: boolean - the guess of the player whether the answer is correct
+ */
 export interface iDeterminationTip {
   questionId: string;
   answerId: string;
   correct: boolean;
 }
+
+/**
+ * The iDeterminationQuestion-interface contains the data to ask a client a question.
+ * @property questionId: string - the question's ID
+ * @property question: string - the question
+ * @property pictureId?: string - (optional) the ID of the question's picture
+ * @property timeLimit: number - the question's time limit in milliseconds
+ * @property difficulty: number - the question's difficulty
+ * @property categories: string[] - the question's categories
+ * @property questionTime: Date - the time the question has been sent to the client
+ * @property timeCorrection: number - the current time correction for the client
+ */
 export interface iDeterminationQuestion {
   questionId: string;
   question: string;
   pictureId?: string;
   timeLimit: number;
   difficulty: number;
+  categories?: string[];
   firstOption?: iDeterminationOption;
 }
+
+/**
+ * The iDeterminationQuestionData-interface contains all data that is collected during questioning a single player a single question.
+ * @property question: iDeterminationQuestion - the data that will be sent to the client when asking the question
+ * @property options: iDeterminationOption[] - the four answer-options for the question containing three wrong answers and the correct one
+ * @property correct: string - the answer-ID of the correct answer
+ * @property questionTime?: Date - the time the question has been asked
+ * @property explanation?: string - an explanation for the question
+ * @property timeCorrection?: number - the current amount of time that will be subtracted from the meassured time difference between the moment the question is sent to the client and the moment the answer is received
+ */
 export interface iDeterminationQuestionData {
   question: iDeterminationQuestion;
   options: iDeterminationOption[];
@@ -485,10 +632,30 @@ export interface iDeterminationQuestionData {
   explanation?: string;
   timeCorrection?: number;
 }
+
+/**
+ * The iDeterminationOption-interface combines an answer with its id.
+ * @property answerId: string - the answer's ID
+ * @property answer: string - the answer
+ */
 export interface iDeterminationOption {
   answerId: string;
   answer: string;
 }
+
+/**
+ * The iDeterminationTipFeedback-interface contains the data to notify a client about the result of their tip.
+ * @property questionId: string - the ID of the question the feedback relates to
+ * @property tip: iDeterminationTip - the tip that resulted the feedback
+ * @property correct: boolean - the indicator for whether the given tip was correct
+ * @property duration: number - the duration for giving the tip
+ * @property timeCorrection: number - the amount of time that has been subtracted from the time difference between the moment the question was sent and the moment the tip was received
+ * @property points: number - the amount of points the player receives for their tip
+ * @property score: number - the player's current score
+ * @property message: string - a message telling the circumstances of the scoring
+ * @property correctAnswer?: iDeterminationOption - (optional) the correct answer (if this property is not 'undefined' it means that the question is completed)
+ * @property nextOption?: iDeterminationOption - (optional) the next answer-option that is to identify as either true or false
+ */
 export interface iDeterminationTipFeedback {
   questionId: string;
   tip: iDeterminationTip;
@@ -501,42 +668,52 @@ export interface iDeterminationTipFeedback {
   correctAnswer?: iDeterminationOption;
   nextOption?: iDeterminationOption;
 }
-export interface iDeterminationTipData {
-  tip: iDeterminationTip;
-  feedback?: iDeterminationTipFeedback;
-}
+
+/**
+ * The iDeterminationPlayerData-interface contains all data the game collects for a player.
+ * @property username: string - the username of the player
+ * @property roles: PlayerRole[] - the roles the player has
+ * @property state: PlayerState - the current state of the player
+ * @property score: number - the current score of the player
+ * @property questions: iDeterminationQuestionData[] - an array of the data of each question that the player has been asked yet
+ * @property tipData: iDeterminationTipFeedback[] - a collection of every feedback the player got including its corresponding feedback
+ */
 export interface iDeterminationPlayerData {
   username: string;
   roles: PlayerRole[];
   state: PlayerState;
   score: number;
   questions: iDeterminationQuestionData[];
-  tips: iDeterminationTipData[]; // filter qId length for next option
-}
-export interface iDeterminationPlayerStatistic {
-  username: string;
-  score: number;
-  state: PlayerState;
-  roles: PlayerRole[];
-  questionIds: string[];
-  correctAnswers: number;
-  totalValuedTime: number;
-  totalTimeCorrection: number;
-}
-export interface iDeterminationEndGameData {
-  playerStatistics: iDeterminationPlayerStatistic[];
+  tipData: iDeterminationTipFeedback[]; // filter qId length for next option
 }
 //#endregion
 
 //#region Millionaire
+/**
+ * The iMillionaireHostArguments-interface contains every modifier for a Millionaire-game.
+ * @property maxQuestions: number - the maximum amount of questions a millionaire may get
+ * @property checkpoints: number - the score-values that indicate the checkpoints
+ * @property jokers: JokerType[] - the list of jokers the millionaire has
+ * @property scoreCalcA: number - the points for a correctly answered question are calculated by the formula: points = (current score + scoreCalcA) * scoreCalcB
+ * @property scoreCalcB: number - the points for a correctly answered question are calculated by the formula: points = (current score + scoreCalcA) * scoreCalcB
+ */
 export interface iMillionaireHostArguments {
   maxQuestions: number; // maximum amount of questions per player
   // questionsPerDifficulty: number; // amount of questions per difficulty
   checkpoints: number[]; // score checkpoints
-  jokers: JokerType[]; // jokers per player ??per millionaire??
+  jokers: JokerType[]; // jokers per player per millionaire
   scoreCalcA: number; // (current score + scoreCalcA) * scoreCalcB = points for a correctly answered question
   scoreCalcB: number;
 }
+
+/**
+ * The iMillionaireGameData-interface contains the game's data that will be saved into the database.
+ * @property gameId: string - the game's ID
+ * @property gamemode: Gamemode - the game's gamemode
+ * @property gameArguments: iMillionaireHostArguments - the game arguments the game has been hosted with
+ * @property questions: iMillionaireQuestionData[] - detailed information about the questions of the game
+ * @property players: iMillionairePlayerData[] - detailed information about the palyers' performance
+ */
 export interface iMillionaireGameData {
   gameId: string;
   gamemode: Gamemode;
@@ -544,15 +721,59 @@ export interface iMillionaireGameData {
   questions: iMillionaireQuestionData[];
   players: iMillionairePlayerData[];
 }
+
+/**
+ * The iMillionaireStartGameData-interface contains all data that a client needs to begin the game.
+ * @property gameArguments: iMillionaireHostArguments - the game arguments the game has been hosted with
+ * @property players: iMillionairePlayerData[] - the players of the game
+ * @property millionaire?: iMillionairePlayerData - (optional) the current millionaire
+ */
 export interface iMillionaireStartGameData {
   gameArguments: iMillionaireHostArguments;
   players: iMillionairePlayerData[];
   millionaire?: iMillionairePlayerData;
 }
+
+/**
+ * The iMillionaireAddQuestionsRequest-interface contains the data that is needed to add questions to the game.
+ * @property questionIds: string[] - the IDs of the questions that are to add
+ */
+export interface iMillionaireAddQuestionsRequest {
+  questionIds: string[];
+}
+
+/**
+ * The iMillionaireAddQuestionsResponse-interface contains data to notify the user who orderd new questions of what questions have been added.
+ * @property questionIds: string[] - the IDs of the questions that have been added
+ */
+export interface iMillionaireAddQuestionsResponse {
+  questionIds: string[];
+}
+
+/**
+ * The iMillionaireTip-interface contains all data the millionaire needs to give a tip for a question.
+ * @property questionId: string - the question's ID
+ * @property answerId: string - the ID of the chosen answer
+ */
 export interface iMillionaireTip {
   questionId: string;
   answerId: string;
 }
+
+/**
+ * The iMillionairePlayerData-interface contains all data the game collects for a player.
+ * @property username: string - the username of the player
+ * @property roles: PlayerRole[] - the roles the player has
+ * @property state: PlayerState - the current state of the player
+ * @property score: number - the current score of the player
+ * @property checkpoint: number - the player's current checkpoint
+ * @property jokers: JokerType[] - a list of the player's jokers
+ * @property currentQuestion?: iMillionairePlayerQuestionData - (optional) detailed data of the curent question of the player
+ * @property questionData: iMillionairePlayerQuestionData[] - an array of the data of each question that the player has answered yet
+ * @property karmaScore: number - the player's current karma-score
+ * @property millionaireCounter: number - a counter that indicates how often the player has been millionaire yet
+ * @property scoreArchieve: iMillioniareScoreEntry - an array of every score the player had when completing a millionaire-period and the corresponding date
+ */
 export interface iMillionairePlayerData {
   username: string;
   state: PlayerState;
@@ -566,21 +787,57 @@ export interface iMillionairePlayerData {
   millionaireCounter: number;
   scoreArchive: iMillionaireScoreEntry[];
 }
+
+/**
+ * The iMillionaireScoreEntry-interface combines a score a player had when completing a millionaire-period with the corresponding date.
+ * @property score: number - the score the player ended their millionaire tenure with
+ * @property date: Date - a timestamp marking the moment when the player's tenure as millionaire ended
+ */
 export interface iMillionaireScoreEntry {
   score: number;
   date: Date;
 }
+
+/**
+ * The iMillionairePlayerQuestion-interface contains all data that is sent to the millionaire in order to ask them a question.
+ * @property questionId: string - the question's ID
+ * @property question: string - the question
+ * @property pictureId?: string - (optional) the ID of the question's picture
+ * @property options: iMillionaireAnswerOption[] - the four answer-options for the question containing the correct one
+ * @property difficulty: number - the question's difficulty
+ * @property categories?: string[] - (optional) the question's categories
+ */
 export interface iMillionairePlayerQuestion {
   questionId: string;
   question: string;
   pictureId?: string;
   options: iMillionaireAnswerOption[];
   difficulty: number;
+  categories?: string[];
 }
+
+/**
+ * The iMillionaireAnswerOption-interface combines an answer-option of a question with its ID.
+ * @property answerId: string - the answer's ID
+ * @property answer: string - the answer
+ */
 export interface iMillionaireAnswerOption {
   answerId: string;
   answer: string;
 }
+
+/**
+ * The iMillionairePlayerQuestionData-interface contains all data that is corresponding to a question.
+ * @property question: iMillionairePlayerQuestion - the data that is sent to the millionaire in order to ask them the question
+ * @property correctAnswer: string - the correct answer's ID
+ * @property questionTime: Date - a timestamp indicating when the question has been asked
+ * @property tip?: iMillionaireTip - (optional) the tip that the millionaire has given for the question
+ * @property audienceJokerData?: iMillionaireAudienceJokerData - (optional) all data that has been collected by the audience-joker, if activated
+ * @property fiftyFiftyJokerData?: iMillionaireFiftyFiftyJokerData - (optional) all data that has been collected by the fifty/fifty-joker, if activated
+ * @property callJokerData?: iMillionaireCallJokerData - (optional) all data that has been collected by the call-joker, if activated
+ * @property feedback?: iMillionaireTipFeedback - (optional) the feedback for the tip the millionaire gave for the question
+ * @property explanation?: string - (optional) an explanation for the question
+ */
 export interface iMillionairePlayerQuestionData {
   question: iMillionairePlayerQuestion;
   correctAnswer: string;
@@ -592,6 +849,19 @@ export interface iMillionairePlayerQuestionData {
   feedback?: iMillionaireTipFeedback;
   explanation?: string;
 }
+
+/**
+ * The iMillionaireQuestionData-interface contains all data that is needed to generate an iMillionairePlayerQuestion-interface-implementing JSON
+ * @property questionId: string - the question's ID
+ * @property question: string - the question
+ * @property pictureId?: string - (optional) the ID of the question's picture
+ * @property answer: string - the correct answer for the question
+ * @property options: string[] - at least three wrong answer-options
+ * @property difficulty: number - the question's difficulty
+ * @property explanation?: string - (optional) an explanation for the question
+ * @property categories?: string[] - (optional) the question's categories
+ * @property questionCounter: number - a counter indicating how often this question has been asked yet
+ */
 export interface iMillionaireQuestionData {
   questionId: string;
   question: string;
@@ -600,10 +870,13 @@ export interface iMillionaireQuestionData {
   otherOptions: string[];
   difficulty: number;
   explanation?: string;
+  categories?: string[];
   questionCounter: number;
 }
 
-// sent to inform about AudienceJoker
+/**
+ * 
+ */
 export interface iMillionaireAudienceJokerRequest {
   questionId: string;
 }

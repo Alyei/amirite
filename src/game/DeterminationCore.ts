@@ -15,11 +15,11 @@ import {
   iDeterminationPlayerData,
   Gamemode,
   iDeterminationGameData,
-  iDeterminationTipData,
   iSpectatingData,
   iDeterminationPlayerStatistic,
   iChangePlayerRolesRequest,
-  iDeterminationEndGameData
+  iDeterminationEndGameData,
+  iDeterminationStartGameData
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { DeterminationPlayer } from "./DeterminationPlayer";
@@ -157,7 +157,8 @@ export class DeterminationCore {
               timeLimit: question.timeLimit,
               difficulty: question.difficulty,
               explanation: question.explanation,
-              pictureId: question.pictureId
+              pictureId: question.pictureId,
+              categories: question.categories
             }));
           } catch (err) {
             this.LogInfo(
@@ -237,10 +238,10 @@ export class DeterminationCore {
       score: player.score,
       roles: player.roles,
       state: player.state,
-      questionIds: player.questions.map(qd => qd.question.questionId),
-      correctAnswers: player.tips.filter(td => td.feedback.correct).length,
-      totalValuedTime: this.GetSum(player.tips.map(td => td.feedback.duration)),
-      totalTimeCorrection: this.GetSum(player.tips.map(td => td.feedback.timeCorrection))
+      tips: player.tipData.length,
+      correctTips: player.tipData.filter(td => td.feedback.correct).length,
+      totalValuedTime: this.GetSum(player.tipData.map(td => td.feedback.duration)),
+      totalTimeCorrection: this.GetSum(player.tipData.map(td => td.feedback.timeCorrection))
     };
   }
 
@@ -281,7 +282,7 @@ export class DeterminationCore {
     if (question.questionTime == undefined) {
       return; // no question time
     }
-    if (player.tips.find(tip => tip.feedback.questionId == question.question.questionId && tip.feedback.correctAnswer != undefined)) {
+    if (player.tipData.find(tip => tip.feedback.questionId == question.question.questionId && tip.feedback.correctAnswer != undefined)) {
       return; // question answered
     }
     try {
@@ -292,7 +293,7 @@ export class DeterminationCore {
         if (player.LatestQuestion != question) {
           return; // question not current
         }
-        if (player.tips.find(tip => tip.feedback.questionId == question.question.questionId && tip.feedback.correctAnswer != undefined)) {
+        if (player.tipData.find(tip => tip.feedback.questionId == question.question.questionId && tip.feedback.correctAnswer != undefined)) {
           return; // question answered
         }
 
@@ -360,6 +361,7 @@ export class DeterminationCore {
         pictureId: nextQuestionBase.question.pictureId,
         timeLimit: nextQuestionBase.question.timeLimit,
         difficulty: nextQuestionBase.question.difficulty,
+        categories: nextQuestionBase.question.categories
       },
       options: nextQuestionBase.options,
       correct: nextQuestionBase.correct,
@@ -401,6 +403,18 @@ export class DeterminationCore {
   }
 
   /**
+   * Generates and returns a new JSON containing the data that players need to begin the game
+   * @returns - new JSON implementing the iQuestionQStartGameData-interface
+   */
+  private GetStartGameData(): iDeterminationStartGameData {
+    const startGameData: iDeterminationStartGameData = {
+      questionAmount: this.questions.length,
+      gameArguments: this.gameArguments
+    };
+    return startGameData;
+  }
+
+  /**
    * Generates a DeterminationQuestion out of a JSON implementing the iGeneralQuestion-interface
    * @param question - the question base's data
    * @returns - a JSON implementing the iDeterminationQuestionData-interface
@@ -436,6 +450,7 @@ export class DeterminationCore {
         timeLimit: question.timeLimit * 1.2, // 20% more time
         pictureId: question.pictureId,
         question: question.question,
+        categories: question.categories
       },
       options: answers,
       correct: letters[0]
@@ -570,6 +585,8 @@ export class DeterminationCore {
     const newPlayer: DeterminationPlayer = new DeterminationPlayer(
       player.GetArguments()
     );
+
+    newPlayer.Inform(MessageType.DeterminationStartGameData, this.GetStartGameData());
 
     if (this.gamePhase == DeterminationGamePhase.Setup) {
       this.players.push(newPlayer);
@@ -768,7 +785,7 @@ export class DeterminationCore {
       return;
     }
 
-    const givenTip: iDeterminationTipData | undefined = player.tips.find(x => x.tip.questionId == tip.questionId && x.tip.answerId == tip.answerId);
+    const givenTip: iDeterminationTipFeedback | undefined = player.tipData.find(x => x.tip.questionId == tip.questionId && x.tip.answerId == tip.answerId);
     // if the player already gave a tip for this answer of this question
     if (givenTip) {
       // process error
@@ -886,7 +903,7 @@ export class DeterminationCore {
 
         this.ProcessPlayerInputError(player, errorMessage);
 
-        player.tips.push({ tip: tip });
+        player.tipData.push({ tip: tip });
 
         this.DisqualifyPlayer(player); // suspicious input
 
@@ -898,12 +915,8 @@ export class DeterminationCore {
 
     feedback.points = points;
     feedback.score = player.score;
-
-    const tipData: iDeterminationTipData = {
-      feedback: feedback,
-      tip: tip
-    }
-    player.tips.push(tipData);
+    
+    player.tipData.push(feedback);
 
     const th: Tryharder = new Tryharder();
     if (

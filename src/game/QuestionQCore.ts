@@ -35,7 +35,8 @@ import { RunningGames } from "./RunningGames";
 
 //#region enums
 /**
- * The QuestionQGamePhase-enum contains all possible states of a QuestionQ-game.
+ * The QuestionQGamePhase-enum contains all possible states of a QuestionQ-game.!!!
+ * @value 0: Setup - 
  */
 export enum QuestionQGamePhase {
   Setup = 0,
@@ -200,6 +201,8 @@ export class QuestionQCore {
       }
       if (this.gamePhase == QuestionQGamePhase.Running) {
         this.players.push(newPlayer);
+        const sd: iQuestionQStartGameData = this.GetStartGameData();
+        newPlayer.Inform(MessageType.QuestionQStartGameData, sd);
         if (newPlayer.state == PlayerState.Launch) {
           newPlayer.state = PlayerState.Playing;
           newPlayer.StartPing();
@@ -328,7 +331,7 @@ export class QuestionQCore {
       score: player.score,
       roles: player.roles,
       state: player.state,
-      questionIds: player.questions.map(qd => qd[0].questionId),
+      questionIds: player.tips.map(td => td.feedback.questionId),
       correctAnswers: player.tips.filter(td => td.feedback.correct).length,
       totalValuedTime: this.GetSum(player.tips.map(td => td.feedback.duration)),
       totalTimeCorrection: this.GetSum(player.tips.map(td => td.feedback.timeCorrection))
@@ -363,15 +366,22 @@ export class QuestionQCore {
     this.questions = [];
     QuestionModel.find({ id: { $in: questionIds } })
       .then((res: any) => {
+        let otherOptions: string[];
+        const am: ArrayManager = new ArrayManager();
         for (let question of res) {
           try {
+            otherOptions = question.otherOptions;
+            am.collection = otherOptions;
+            otherOptions = am.ShuffleArray().slice(0, 3);
+
             this.questions.push({
               questionId: question.id,
               question: question.question,
               answer: question.answer,
-              otherOptions: question.otherOptions,
+              otherOptions: otherOptions,
               timeLimit: question.timeLimit,
               difficulty: question.difficulty,
+              categories: question.categories,
               explanation: question.explanation,
               pictureId: question.pictureId
             });
@@ -382,7 +392,7 @@ export class QuestionQCore {
             );
           }
         }
-        let am: ArrayManager = new ArrayManager(this.questions);
+        am.collection = this.questions;
         this.questions = am.ShuffleArray();
         this.LogSilly(
           "Questions (" + JSON.stringify(this.questions) + ") loaded in game " + this.gameId
@@ -518,6 +528,7 @@ export class QuestionQCore {
         pictureId: question.pictureId,
         question: question.question,
         options: answers,
+        categories: question.categories,
         questionTime: new Date()
       },
       letters[0]

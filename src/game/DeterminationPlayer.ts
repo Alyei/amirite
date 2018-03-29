@@ -20,9 +20,9 @@ export class DeterminationPlayer extends PlayerBase implements iDeterminationPla
     public questions: iDeterminationQuestionData[];
 
     /**
-     * - contains every tip the player has given
+     * - contains every feedback the player got including its corresponding tip
      */
-    public tips: iDeterminationTipData[];
+    public tipData: iDeterminationTipData[];
 
     /**
      * Getter for the last question added to the player's questions
@@ -46,7 +46,7 @@ export class DeterminationPlayer extends PlayerBase implements iDeterminationPla
 
         this.score = 0;
         this.questions = [];
-        this.tips = [];
+        this.tipData = [];
     }
     //#endregion
 
@@ -62,7 +62,7 @@ export class DeterminationPlayer extends PlayerBase implements iDeterminationPla
         state: this.state,
         score: this.score,
         questions: this.questions,
-        tips: this.tips
+        tipData: this.tipData
       }
     }
     //#endregion

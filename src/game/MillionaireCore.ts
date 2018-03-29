@@ -31,7 +31,9 @@ import {
   iMillionaireCallJokerClue,
   iMillionaireChooseQuestionResponse,
   iMillionairePassRequest,
-  iChangePlayerRolesRequest
+  iChangePlayerRolesRequest,
+  iMillionaireAddQuestionsRequest,
+  iMillionaireAddQuestionsResponse
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { RunningGames } from "./RunningGames";
@@ -160,6 +162,7 @@ export class MillionaireCore {
               difficulty: question.difficulty,
               explanation: question.explanation,
               pictureId: question.pictureId,
+              categories: question.categories,
               questionCounter: 0
             });
           } catch {
@@ -326,7 +329,8 @@ export class MillionaireCore {
         question: question.question,
         pictureId: question.pictureId,
         options: answers,
-        difficulty: question.difficulty
+        difficulty: question.difficulty,
+        categories: question.categories
       },
       correctAnswer: letters[0],
       questionTime: new Date(),
@@ -443,7 +447,7 @@ export class MillionaireCore {
   public Save(): void {
     const gameData: iMillionaireGameData = this.GetGameData();
 
-    this.playerData = this.playerData
+    gameData.players = this.playerData
       .filter(x => !gameData.players.find(y => x.username == y.username))
       .concat(gameData.players);
 
@@ -574,6 +578,59 @@ export class MillionaireCore {
   //#endregion
 
   //#region userActions
+  /**
+   * Adds new questions to the game.
+   * @param username - the name of the user who ordered the new questions
+   * @param questionIds - list of IDs of the questions that are to load from the database
+   */
+  public AddQuestions(username: string, aqr: iMillionaireAddQuestionsRequest) {
+    QuestionModel.find({ id: { $in: aqr.questionIds } })
+      .then((res: any) => {
+        const mod: MillionairePlayer | undefined = this.players.find(p => p.username == username);
+        if (!mod) {
+          return; // player not found
+        }
+        if (undefined == [PlayerRole.Host, PlayerRole.Mod].find(mr => mod.roles.find(r => r == mr) != undefined)) {
+          return; // no permission
+        }
+        if (!this.questions)
+          this.questions = [];
+        
+        const response: iMillionaireAddQuestionsResponse = {
+          questionIds: []
+        };
+        for (let question of res) {
+          try {
+            if (!this.questions.find(q => q.questionId == question.id)) {
+              this.questions.push({
+                questionId: question.id,
+                question: question.question,
+                answer: question.answer,
+                otherOptions: question.otherOptions,
+                difficulty: question.difficulty,
+                explanation: question.explanation,
+                pictureId: question.pictureId,
+                categories: question.categories,
+                questionCounter: 0
+              });
+              response.questionIds.push(question.id);
+            }
+            else
+              this.LogSilly("The question '" + question.id + "' is already in the game");
+          } catch {
+            this.LogInfo(
+              "Failed to load question (" + JSON.stringify(question) + ")"
+            );
+          }
+        }
+        this.LogSilly("Current questions (" + JSON.stringify(this.questions) + ")");
+        mod.Inform(MessageType.MillionaireAddQuestionsResponse, response);
+      })
+      .catch((err: any) => {
+        logger.log("info", "Could not load questions in %s.", this.gameId);
+      });
+  }
+
   /**
    * Changes a user's roles if the conditions are met
    * @param username - username of the responsible player

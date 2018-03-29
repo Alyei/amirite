@@ -98,6 +98,14 @@ export class MillionaireGame implements iGame {
         }
         break;
       }
+      case MessageType.MillionaireAddQuestionsRequest: {
+        try {
+          this.gameCore.AddQuestions(username, JSON.parse(data));
+        } catch (err) {
+          this.ProcessUserError(username, { message: err.message, data: err });
+        }
+        break;
+      }
       case MessageType.MillionaireChooseMillionaireResponse: {
         try {
           this.gameCore.ChooseMillionaire(username, JSON.parse(data));
