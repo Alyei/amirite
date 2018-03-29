@@ -1,3 +1,4 @@
+//#region imports
 import {
   PlayerState,
   PlayerRole,
@@ -5,32 +6,58 @@ import {
   iQuestionQPlayerData
 } from "../models/GameModels";
 import { logger } from "../server/logging";
+<<<<<<< HEAD
 import { settings } from "../server/helper";
+=======
+//#endregion
+>>>>>>> gs_commentary
 
+//#region interfaces
+/**
+ * The iPlayerBaseArguments-interface contains all properties that are essential for each player.
+ */
 export interface iPlayerBaseArguments {
   username: string;
   socket: SocketIO.Socket;
   roles: PlayerRole[];
   state: PlayerState;
 }
+//#endregion
 
+//#region classes
+/**
+ * The PlayerBase-class provides provides all essential functions of a player.
+ */
 export class PlayerBase {
-  public state: PlayerState;
+  //#region fields
   private ping: number;
-  public performPing: boolean = false;
   private pingArray: number[] = [];
   private pingIntervalTimer: any;
   private startTime: [number, number];
   private endTime: [number, number];
   private socketListener: any;
+  //#endregion
 
+  //#region properties
+  /**
+   * Getter for the current latency of the player in milliseconds
+   */
   get Ping(): number {
     this.GetPingAverage();
     return this.ping;
   }
 
   /**
-   * Initializes PlayerBase with the passed arguments.
+   * - indicates the player's state
+   */
+  public state: PlayerState;
+
+  public performPing: boolean = false;
+  //#endregion
+
+  //#region constructors
+  /**
+   * Initializes a PlayerBase using the passed arguments
    * @param username - defines the player's username
    * @param socket - the socket that is used to communicate with the player
    * @param roles - roles the player has
@@ -46,9 +73,11 @@ export class PlayerBase {
     if (this.roles.find(x => x == PlayerRole.Player) != undefined)
       this.state = PlayerState.Launch;
   }
+  //#endregion
 
+  //#region publicFunctions
   /**
-   * Uses the object's socket to emit the passed data with the message type as socket event.
+   * Uses the object's socket to emit the passed data with the message type as socket event
    * @param messageType - socket event / data format
    * @param data - to be sent
    * @returns - whether no error happened
@@ -71,7 +100,8 @@ export class PlayerBase {
   }
 
   /**
-   * @return The arguments that have been passed to the object's constructor so it can be used to initialize inheriting objects.
+   * Returns a new JSON containing the data essential for creating a subtype of PlayerBase
+   * @returns - the arguments that have been passed to the object's constructor so it can be used to initialize inheriting objects
    */
   public GetArguments(): iPlayerBaseArguments {
     return {
@@ -82,6 +112,26 @@ export class PlayerBase {
     };
   }
 
+  /**
+   * Starts the process of calculating the latency by adding the listener
+   * for the `clack` event, setting `this.performPing` to true, and running
+   * `this.GetPing()`.
+   */
+  public StartPing(): void {
+    this.performPing = true;
+    this.GetPing();
+  }
+
+  /**
+   * Stops the process of calculating the latency by removing removing
+   * the listener at `this.socketListener` and setting `this.performPing` to false.
+   */
+  public StopPing(): void {
+    this.performPing = false;
+  }
+  //#endregion
+
+  //#region privateFunctions
   /**
    * Starts the pingcheck to the client by reading the interval from `server.conf`, and creating
    * an intervalTimer for `this.PingLogic()` for the specified inter
@@ -148,22 +198,6 @@ export class PlayerBase {
       this.ping = 0;
     }
   }
-
-  /**
-   * Starts the process of calculating the latency by adding the listener
-   * for the `clack` event, setting `this.performPing` to true, and running
-   * `this.GetPing()`.
-   */
-  public StartPing(): void {
-    this.performPing = true;
-    this.GetPing();
-  }
-
-  /**
-   * Stops the process of calculating the latency by removing removing
-   * the listener at `this.socketListener` and setting `this.performPing` to false.
-   */
-  public StopPing(): void {
-    this.performPing = false;
-  }
+  //#endregion
 }
+//#endregion

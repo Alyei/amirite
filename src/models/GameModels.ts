@@ -128,7 +128,11 @@ export enum MessageType {
   DuelChooseCategoryRequest,
   DuelChooseCategoryReply,
   DuelSetReadyState,
+<<<<<<< HEAD
   DuelPlayerData
+=======
+  DuelPlayerData,
+>>>>>>> gs_commentary
 }
 
 /**
@@ -888,7 +892,11 @@ export interface iMillionaireAudienceJokerRequest {
  * @property possibleResponses: number - the amount of player's that can give a clue
  */
 export interface iMillionaireAudienceJokerResponse {
+<<<<<<< HEAD
   questionId: string;
+=======
+  questionId: string
+>>>>>>> gs_commentary
   possibleResponses: number;
 }
 
@@ -1092,7 +1100,7 @@ export interface iDuelHostArguments {
   pointDeductionBase: number;
   pointDeductionBase2: number;
   pointDeductionWhenTooSlow: number;
-  postFeedbackGap: number; // ms to next question
+  postfeedbackGap: number; // ms to next question
   choosingTime1: number;
   choosingTime2: number;
   maxCategoryChoiceRange: number;
@@ -1184,4 +1192,8 @@ export interface iDuelChooseCategoryReply {
   category: string;
 }
 //#endregion
+<<<<<<< HEAD
 //#endregion
+=======
+//#endregion
+>>>>>>> gs_commentary
