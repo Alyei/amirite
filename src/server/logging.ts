@@ -14,6 +14,8 @@ let logger: any = new winston.Logger({
     new winston.transports.Console({
       colorize: true,
       timestamp: true,
+      handleExceptions: true,
+      humanReadableUnhandledException: true,
       level: settings.server.logging_level
     })
   ]
