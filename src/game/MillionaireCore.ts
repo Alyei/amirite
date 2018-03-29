@@ -1,3 +1,4 @@
+//#region imports
 import {
   Gamemode,
   iMillionairePlayerData,
@@ -30,7 +31,9 @@ import {
   iMillionaireCallJokerClue,
   iMillionaireChooseQuestionResponse,
   iMillionairePassRequest,
-  iChangePlayerRolesRequest
+  iChangePlayerRolesRequest,
+  iMillionaireAddQuestionsRequest,
+  iMillionaireAddQuestionsResponse
 } from "../models/GameModels";
 import { PlayerBase } from "./PlayerBase";
 import { RunningGames } from "./RunningGames";
@@ -40,23 +43,68 @@ import { MillionairePlayer } from "./MillionairePlayer";
 import { Tryharder } from "./Tryharder";
 import { ArrayManager } from "./ArrayManager";
 import { PlayerAlreadyHostsGame } from "../server/Errors";
-import { fail } from "assert";
 import { timingSafeEqual } from "crypto";
 import { platform } from "os";
+//#endregion
 
+//#region enums
+/**
+ * The MillionaireGamePhase-enum contains all possible states of a Millionaire-game.
+ */
 export enum MillionaireGamePhase {
   Setup = 0,
   Running
 }
+//#endregion
 
+//#region classes
+/**
+ * The MillionaireCore-class combines the Millionaire-game's mechanics with user input.
+ * It is used to run a Millionaire-game.
+ */
 export class MillionaireCore {
-  readonly gamemode: Gamemode = Gamemode.Millionaire;
+  //#region fields
+  /**
+   * - represents the current Millionaire
+   */
   private millionaire: MillionairePlayer;
-  public players: MillionairePlayer[];
-  private playerData: iMillionairePlayerData[];
-  private questions: iMillionaireQuestionData[];
-  private gamePhase: MillionaireGamePhase;
 
+  /**
+   * - contains the data of every player in the game
+   */
+  private playerData: iMillionairePlayerData[];
+
+  /**
+   * - contains the data of every question that has been asked this round
+   */
+  private questions: iMillionaireQuestionData[];
+
+  /**
+   * - indicates the current state of the game
+   */
+  private gamePhase: MillionaireGamePhase;
+  //#endregion
+
+  //#region properties
+  /**
+   * - indicates the gamemode of the game
+   */
+  readonly gamemode: Gamemode = Gamemode.Millionaire;
+
+  /**
+   * - contains the data of every player of the game
+   */
+  public players: MillionairePlayer[];
+  //#endregion
+
+  //#region constructors
+  /**
+   * Creates a new instance of the DuelCore-class
+   * @param gameId - the game's id
+   * @param runningGames - list of every game instance currently running
+   * @param gameArguments - Duel-specific game arguments
+   * @param questionIds - list of the questions' IDs
+   */
   public constructor(
     readonly gameId: string,
     private runningGames: RunningGames,
@@ -73,27 +121,32 @@ export class MillionaireCore {
 
       if (questionIds) this.LoadQuestions(questionIds);
     }
-  }
 
+    this.Start();
+  }
+  //#endregion
+  
+  //#region gameMechanics
+  //#region privateFunctions
   /**
-   * Logs magnificient information.
+   * Logs important information
    * @param toLog - information that is to log
    */
   private LogInfo(toLog: string) {
-    logger.log("info", this.gameId + " - " + toLog);
+    logger.log("info", "Game: " + this.gameId + " - " + toLog);
   }
 
   /**
-   * Logs less unique information.
+   * Logs less unique information
    * @param toLog - information that is to log
    */
   private LogSilly(toLog: string) {
-    logger.log("silly", this.gameId + " - " + toLog);
+    logger.log("silly", "Game: " + this.gameId + " - " + toLog);
   }
 
   /**
-   * Loads the questions' data from the DB.
-   * @param questionIds - list of IDs of the questions that are to load from the DB
+   * Loads the questions' data from the database
+   * @param questionIds - list of IDs of the questions that are to load from the database
    */
   private LoadQuestions(questionIds: string[]) {
     this.questions = [];
@@ -109,6 +162,7 @@ export class MillionaireCore {
               difficulty: question.difficulty,
               explanation: question.explanation,
               pictureId: question.pictureId,
+              categories: question.categories,
               questionCounter: 0
             });
           } catch {
@@ -124,47 +178,20 @@ export class MillionaireCore {
       });
   }
 
-  public ChangePlayerRoles(username: string, changes: iChangePlayerRolesRequest) {
-    const host: PlayerBase | undefined = this.players.find(p => p.username == username);
-    if (!host) {
-      return; // player not found
-    }
-    if (host.roles.find(r => r == PlayerRole.Host) == undefined) {
-      return; // not the host
-    }
-
-    const player: MillionairePlayer | undefined = this.players.find(p => p.username == changes.username);
-    if (!player) {
-      return; // player not found
-    }
-    if (changes.toAdd) {
-      for (let role of changes.toAdd) {
-        if (player.roles.find(r => r == role) == undefined)
-          player.roles.push(role);
-      }
-    }
-    if (changes.toRemove) {
-      player.roles = player.roles.filter(r => changes.toRemove.find(rem => rem == r) == undefined || r == PlayerRole.Host);
-    }
-
-    player.state = PlayerState.Disqualified;
-
-    if (player.roles.find(r => [PlayerRole.Spectator, PlayerRole.Host, PlayerRole.Mod].find(pr => pr == r) != undefined) != undefined) {
-      player.state = PlayerState.Spectating;
-    }
-    if (player.roles.find(r => r == PlayerRole.Player) != undefined) {
-      player.state = PlayerState.Launch;
-    }
-
-    this.UpdatePlayerData(player);
-  }
-
-  UpdatePlayerData(player: MillionairePlayer) {
+  /**
+   * Notifies every player of the new data for a player
+   * @param player - the player whose data us updated
+   */
+  private UpdatePlayerData(player: MillionairePlayer) {
     for(let p of this.players) {
       p.Inform(MessageType.MillionairePlayerData, p.GetPlayerData());
     }
   }
 
+  /**
+   * Loads a saved game from the database
+   * @param gameId - the ID of the game that is to load
+   */
   private LoadGame(gameId: string) {
     MillionaireGameDataModel.find({ id: gameId })
       .then((res: any) => {
@@ -186,6 +213,9 @@ export class MillionaireCore {
       });
   }
 
+  /**
+   * Applies every player's saved date to them
+   */
   private ApplyPlayerData() {
     for (let playerData of this.playerData) {
       const player: undefined | MillionairePlayer = this.players.find(
@@ -236,44 +266,7 @@ export class MillionaireCore {
   }
 
   /**
-   * Saves the game's data into the DB
-   */
-  public Save(): void {
-    const gameData: iMillionaireGameData = this.GetGameData();
-
-    this.playerData = this.playerData
-      .filter(x => !gameData.players.find(y => x.username == y.username))
-      .concat(gameData.players);
-
-    const gameDataModel = new MillionaireGameDataModel(gameData);
-    gameDataModel.save((err: any) => {
-      if (err) {
-        logger.log(
-          "info",
-          "failed to save game (%s); error: %s",
-          gameData,
-          err
-        );
-        return;
-      }
-      this.LogSilly("the game has been saved");
-    });
-  }
-
-  /**
-   * Returns an array of the players' data.
-   * @returns - array of the players' data according to the iQuestionQPlayerData-interface
-   */
-  public GetPlayerData(players: MillionairePlayer[]): iMillionairePlayerData[] {
-    const result: iMillionairePlayerData[] = [];
-    for (let player of players) {
-      result.push(player.GetPlayerData());
-    }
-    return result;
-  }
-
-  /**
-   * Sends the game's data to all players.
+   * Sends the game's data to all players
    */
   private SendGameData(): void {
     const gameData = this.GetGameData();
@@ -299,17 +292,24 @@ export class MillionaireCore {
   }
 
   /**
-   * Generates a QuestionQQuestion out of a JSON implementing the iGeneralQuestion-interface.
+   * Generates MillionairePlayerQuestion-data out of a JSON implementing the iMillionaireQuestionData-interface
    * @param question - the question base's data
-   * @returns - a [iQuestionQQuestion, string]-tuple combinig the questioning data with the correct answer's ID
+   * @returns - a new JSON implementing the iMillionairePlayerQuestion-interface
    */
-  public GetMillionairePlayerQuestion(
+  private GetMillionairePlayerQuestion(
     question: iMillionaireQuestionData
   ): iMillionairePlayerQuestionData {
+    if (question.otherOptions.length < 3) {
+      return; // invalid count of other options (at least 3)
+    }
+
     question.questionCounter++;
 
     const am: ArrayManager = new ArrayManager("A B C D".split(" "));
     const letters: string[] = am.ShuffleArray();
+    am.collection = question.otherOptions;
+    const otherOptions: string[] = am.ShuffleArray();
+
     const answers: iMillionaireAnswerOption[] = [];
     answers.push({
       answerId: letters[0],
@@ -318,7 +318,7 @@ export class MillionaireCore {
     for (let i: number = 1; i < letters.length; i++) {
       answers.push({
         answerId: letters[i],
-        answer: question.otherOptions[i - 1]
+        answer: otherOptions[i - 1]
       });
     }
     answers.sort((a, b) => a.answerId.charCodeAt(0) - b.answerId.charCodeAt(0));
@@ -329,30 +329,13 @@ export class MillionaireCore {
         question: question.question,
         pictureId: question.pictureId,
         options: answers,
-        difficulty: question.difficulty
+        difficulty: question.difficulty,
+        categories: question.categories
       },
       correctAnswer: letters[0],
       questionTime: new Date(),
       explanation: question.explanation
     };
-  }
-
-  /**
-   * Disqualifies a user by their name
-   * @param username - user to disqualify
-   * @returns - whether the user was found
-   */
-  public DisqualifyUser(username: string): boolean {
-    let player: MillionairePlayer | undefined = this.players.find(
-      x => x.username == username
-    );
-    if (!player) {
-      this.LogInfo("could not find player '" + username + "'");
-      return false;
-    }
-
-    this.DisqualifyPlayer(player);
-    return true;
   }
 
   /**
@@ -386,7 +369,135 @@ export class MillionaireCore {
   }
 
   /**
-   * Adds a new user to the game, if it did not end already.
+   * Asks every moderator and the host to choose the next millionaire
+   */
+  private GetNextMillionaire() {
+    const cmr: iMillionaireChooseMillionaireRequest = {
+      players: this.GetPlayerData(
+        this.players.filter(
+          player =>
+            player.state == PlayerState.Launch
+        ) || []
+      )
+    };
+    this.InformMods(MessageType.MillionaireChooseMillionaireRequest, cmr);
+  }
+
+  /**
+   * Asks every moderator and the host to choose the next question
+   */
+  private GetNextQuestion() {
+    const questionRange: iMillionaireChooseQuestionRequest = {
+      questions: this.questions
+    };
+    this.InformMods(
+      MessageType.MillionaireChooseQuestionRequest,
+      questionRange
+    );
+  }
+
+  /**
+   * Sends a message to every moderator and the host
+   * @param msgType - the type of the data that is to be sent
+   * @param data - the data that is to be sent
+   */
+  private InformMods(msgType: MessageType, data: any) {
+    const mods: PlayerBase[] = this.players.filter(
+      player =>
+        undefined ==
+        [PlayerRole.Host, PlayerRole.Mod].find(
+          modRole => player.roles.find(pr => pr == modRole) != undefined
+        )
+    );
+    for (let mod of mods) {
+      mod.Inform(msgType, data);
+    }
+  }
+
+  /**
+   * Ends the tenure of the current millionaire
+   */
+  private EndOfMillionaire() {
+    if (!this.millionaire) {
+      return; // no millionaire
+    }
+
+    for (let player of this.players.filter(
+      p => p.roles.find(pr => pr == PlayerRole.Player) != undefined && p.state != PlayerState.Disqualified
+    )) {
+      player.state = PlayerState.Launch;
+    }
+    this.millionaire.scoreArchive.push({
+      score: this.millionaire.score,
+      date: new Date()
+    });
+    this.millionaire.score = 0;
+    this.millionaire.checkpoint = 0;
+    this.millionaire.currentQuestion = undefined;
+    this.millionaire = undefined;
+    this.Save();
+    this.GetNextMillionaire();
+  }
+  //#endregion
+
+  //#region publicFunctions
+  /**
+   * Saves the game's data into the database
+   */
+  public Save(): void {
+    const gameData: iMillionaireGameData = this.GetGameData();
+
+    gameData.players = this.playerData
+      .filter(x => !gameData.players.find(y => x.username == y.username))
+      .concat(gameData.players);
+
+    const gameDataModel = new MillionaireGameDataModel(gameData);
+    gameDataModel.save((err: any) => {
+      if (err) {
+        logger.log(
+          "info",
+          "failed to save game (%s); error: %s",
+          gameData,
+          err
+        );
+        return;
+      }
+      this.LogSilly("the game has been saved");
+    });
+  }
+
+  /**
+   * Returns an array of the players' data
+   * @returns - array of the players' data according to the iMillionairePlayerData-interface
+   */
+  public GetPlayerData(players: MillionairePlayer[]): iMillionairePlayerData[] {
+    const result: iMillionairePlayerData[] = [];
+    for (let player of players) {
+      result.push(player.GetPlayerData());
+    }
+    return result;
+  }
+
+  /**
+   * Disqualifies a user by their name
+   * @param username - user to disqualify
+   * @returns - whether the user was found
+   */
+  public DisqualifyUser(username: string): boolean {
+    let player: MillionairePlayer | undefined = this.players.find(
+      x => x.username == username
+    );
+    if (!player) {
+      this.LogInfo("could not find player '" + username + "'");
+      return false;
+    }
+
+    this.DisqualifyPlayer(player);
+    return true;
+  }
+
+  /**
+   * Adds a new user to the game
    * @param player - the player to add
    * @returns - whether the user could be added
    */
@@ -435,42 +546,136 @@ export class MillionaireCore {
   }
 
   /**
-   * Starts the game, if all conditions are met.
+   * Starts the game, if all conditions are met
    * @returns - whether the game has been started
    */
   public Start(): boolean {
-    this.gamePhase = MillionaireGamePhase.Running;
+    if (this.gamePhase == MillionaireGamePhase.Setup) {
+      this.gamePhase = MillionaireGamePhase.Running;
+
+      this.GetNextMillionaire();
+
+      return true;
+    }
 
     this.GetNextMillionaire();
 
-    return true;
+    return false;
   }
 
-  private GetNextMillionaire() {
-    const cmr: iMillionaireChooseMillionaireRequest = {
-      players: this.GetPlayerData(
-        this.players.filter(
-          player =>
-            player.state == PlayerState.Launch
-        ) || []
-      )
-    };
-    this.InformMods(MessageType.MillionaireChooseMillionaireRequest, cmr);
-  }
-
-  private InformMods(msgType: MessageType, data: any) {
-    const mods: PlayerBase[] = this.players.filter(
-      player =>
-        undefined ==
-        [PlayerRole.Host, PlayerRole.Mod].find(
-          modRole => player.roles.find(pr => pr == modRole) != undefined
-        )
+  /**
+   * Deinitializes the game by removing itself from the global list of game instances
+   */
+  public DeinitializeGame() {
+    this.runningGames.Sessions.splice(
+      this.runningGames.Sessions.findIndex(
+        x => x.generalArguments.gameId == this.gameId
+      ),
+      1
     );
-    for (let mod of mods) {
-      mod.Inform(msgType, data);
-    }
+  }
+  //#endregion
+  //#endregion
+
+  //#region userActions
+  /**
+   * Adds new questions to the game.
+   * @param username - the name of the user who ordered the new questions
+   * @param questionIds - list of IDs of the questions that are to load from the database
+   */
+  public AddQuestions(username: string, aqr: iMillionaireAddQuestionsRequest) {
+    QuestionModel.find({ id: { $in: aqr.questionIds } })
+      .then((res: any) => {
+        const mod: MillionairePlayer | undefined = this.players.find(p => p.username == username);
+        if (!mod) {
+          return; // player not found
+        }
+        if (undefined == [PlayerRole.Host, PlayerRole.Mod].find(mr => mod.roles.find(r => r == mr) != undefined)) {
+          return; // no permission
+        }
+        if (!this.questions)
+          this.questions = [];
+        
+        const response: iMillionaireAddQuestionsResponse = {
+          questionIds: []
+        };
+        for (let question of res) {
+          try {
+            if (!this.questions.find(q => q.questionId == question.id)) {
+              this.questions.push({
+                questionId: question.id,
+                question: question.question,
+                answer: question.answer,
+                otherOptions: question.otherOptions,
+                difficulty: question.difficulty,
+                explanation: question.explanation,
+                pictureId: question.pictureId,
+                categories: question.categories,
+                questionCounter: 0
+              });
+              response.questionIds.push(question.id);
+            }
+            else
+              this.LogSilly("The question '" + question.id + "' is already in the game");
+          } catch {
+            this.LogInfo(
+              "Failed to load question (" + JSON.stringify(question) + ")"
+            );
+          }
+        }
+        this.LogSilly("Current questions (" + JSON.stringify(this.questions) + ")");
+        mod.Inform(MessageType.MillionaireAddQuestionsResponse, response);
+      })
+      .catch((err: any) => {
+        logger.log("info", "Could not load questions in %s.", this.gameId);
+      });
   }
 
+  /**
+   * Changes a user's roles if the conditions are met
+   * @param username - username of the responsible player
+   * @param changes - role-modifications
+   */
+  public ChangePlayerRoles(username: string, changes: iChangePlayerRolesRequest) {
+    const host: PlayerBase | undefined = this.players.find(p => p.username == username);
+    if (!host) {
+      return; // player not found
+    }
+    if (host.roles.find(r => r == PlayerRole.Host) == undefined) {
+      return; // not the host
+    }
+
+    const player: MillionairePlayer | undefined = this.players.find(p => p.username == changes.username);
+    if (!player) {
+      return; // player not found
+    }
+    if (changes.toAdd) {
+      for (let role of changes.toAdd) {
+        if (player.roles.find(r => r == role) == undefined)
+          player.roles.push(role);
+      }
+    }
+    if (changes.toRemove) {
+      player.roles = player.roles.filter(r => changes.toRemove.find(rem => rem == r) == undefined || r == PlayerRole.Host);
+    }
+
+    player.state = PlayerState.Disqualified;
+
+    if (player.roles.find(r => [PlayerRole.Spectator, PlayerRole.Host, PlayerRole.Mod].find(pr => pr == r) != undefined) != undefined) {
+      player.state = PlayerState.Spectating;
+    }
+    if (player.roles.find(r => r == PlayerRole.Player) != undefined) {
+      player.state = PlayerState.Launch;
+    }
+
+    this.UpdatePlayerData(player);
+  }
+
+  /**
+   * Processes a player's request to choose the next millionaire
+   * @param username - the name of the player who sent the request
+   * @param choice - the request containing the name of the next millionaire
+   */
   public ChooseMillionaire(
     username: string,
     choice: iMillionaireChooseMillionaireResponse
@@ -514,6 +719,10 @@ export class MillionaireCore {
 
     this.millionaire.score = 0;
     this.millionaire.checkpoint = 0;
+    this.millionaire.jokers = [];
+    for (let j of this.gameArguments.jokers) {
+      this.millionaire.jokers.push(j);
+    }
     this.millionaire.millionaireCounter++;
 
     this.UpdatePlayerData(this.millionaire);
@@ -521,16 +730,11 @@ export class MillionaireCore {
     this.GetNextQuestion();
   }
 
-  private GetNextQuestion() {
-    const questionRange: iMillionaireChooseQuestionRequest = {
-      questions: this.questions
-    };
-    this.InformMods(
-      MessageType.MillionaireChooseQuestionRequest,
-      questionRange
-    );
-  }
-
+  /**
+   * Processes a player's request to choose the next question
+   * @param username - the name of the player who sent the request
+   * @param choice - the request containing the ID of the next question
+   */
   public ChooseQuestion(
     username: string,
     choice: iMillionaireChooseQuestionResponse
@@ -570,6 +774,12 @@ export class MillionaireCore {
       questionBase
     );
 
+    if (!this.millionaire.currentQuestion) {
+      this.questions = this.questions.filter(q => q != questionBase); // remove invalid question
+      this.GetNextQuestion();
+      return; // failed to generate question
+    }
+
     const th: Tryharder = new Tryharder();
     if (
       !th.Tryhard(
@@ -589,33 +799,11 @@ export class MillionaireCore {
     }
   }
 
-  private EndOfMillionaire() {
-    for (let player of this.players.filter(
-      p => p.roles.find(pr => pr == PlayerRole.Player) != undefined && p.state != PlayerState.Disqualified
-    )) {
-      player.state = PlayerState.Launch;
-    }
-    this.millionaire.scoreArchive.push({
-      score: this.millionaire.score,
-      date: new Date()
-    });
-    this.millionaire.score = 0;
-    this.millionaire.checkpoint = 0;
-    this.millionaire.currentQuestion = undefined;
-    this.millionaire = undefined;
-    this.Save();
-    this.GetNextMillionaire();
-  }
-
-  public DeinitializeGame() {
-    this.runningGames.Sessions.splice(
-      this.runningGames.Sessions.findIndex(
-        x => x.GeneralArguments.gameId == this.gameId
-      ),
-      1
-    );
-  }
-
+  /**
+   * Processes a player's request to end the millionaire's tenure
+   * @param username - the name of the player who sent the request
+   * @param passRequest - the request bearing no data
+   */
   public MillionairePasses(
     username: string,
     passRequest: iMillionairePassRequest
@@ -633,6 +821,11 @@ export class MillionaireCore {
     this.EndOfMillionaire();
   }
 
+  /**
+   * Processes a player's request to give the millionaire's tip
+   * @param username - the player who sent the tip
+   * @param tip - the tip the player gave
+   */
   public MillionaireGivesTip(username: string, tip: iMillionaireTip) {
     if (!this.millionaire) {
       logger.log("silly", "No millionaire was chosen in game %s.", this.gameId);
@@ -762,6 +955,11 @@ export class MillionaireCore {
     }
   }
 
+  /**
+   * Processes a player's request to use the millionaire's fifty/fifty-joker
+   * @param username - the name of the user who sent the request
+   * @param request - the request bearing no data
+   */
   public UseFiftyFiftyJoker(
     username: string,
     request: iMillionaireFiftyFiftyJokerRequest
@@ -802,6 +1000,7 @@ export class MillionaireCore {
     ]);
 
     const reply: iMillionaireFiftyFiftyJokerResponse = {
+      questionId: request.questionId,
       remainingOptions: am.ShuffleArray()
     };
 
@@ -828,6 +1027,11 @@ export class MillionaireCore {
     }
   }
 
+  /**
+   * Processes a player's request to use the millionaire's audience-joker
+   * @param username - the name of the user who sent the request
+   * @param request - the request bearing no data
+   */
   public UseAudienceJoker(
     username: string,
     request: iMillionaireAudienceJokerRequest
@@ -859,6 +1063,7 @@ export class MillionaireCore {
     this.millionaire.jokers.splice(ji, 1);
 
     const reply: iMillionaireAudienceJokerResponse = {
+      questionId: request.questionId,
       possibleResponses: this.players.filter(
         p =>
           p.roles.find(pr => pr == PlayerRole.Spectator) != undefined ||
@@ -890,6 +1095,11 @@ export class MillionaireCore {
     }
   }
 
+  /**
+   * Processes a player's clue for the millionaire's audience-joker
+   * @param username - the name of the user who sent the clue
+   * @param clue - the clue the player gave
+   */
   public GiveAudienceClue(
     username: string,
     clue: iMillionaireAudienceJokerPlayerClue
@@ -948,6 +1158,11 @@ export class MillionaireCore {
     }
   }
 
+  /**
+   * Processes a player's request to use the millionaire's call-joker
+   * @param username - the name of the user who sent the request
+   * @param request - the request bearing no data
+   */
   public UseCallJoker(username: string, request: iMillionaireCallJokerRequest) {
     if (!this.millionaire) {
       return; // no millionaire
@@ -1007,6 +1222,11 @@ export class MillionaireCore {
     }
   }
 
+  /**
+   * Processes a player's request to choose the target of the millionaire's call-joker
+   * @param username - the name of the user who sent the request
+   * @param request - the request containing the name of the call-joker-target
+   */
   public ChooseCall(
     username: string,
     request: iMillionaireCallJokerCallRequest
@@ -1049,11 +1269,22 @@ export class MillionaireCore {
       return; // player not found
     }
 
-    calledPlayer.Inform(MessageType.MillionaireCallJokerCallRequest, {}); // call user
+    const callRequest: iMillionaireCallJokerCallRequest = {
+      questionId: request.questionId,
+      username: calledPlayer.username
+    };
 
     this.millionaire.currentQuestion.callJokerData.call = request.username;
+
+    for (let p of this.players)
+      p.Inform(MessageType.MillionaireCallJokerCallRequest, callRequest);
   }
 
+  /**
+   * Processes a player's clue for the millionaire's call-joker
+   * @param username - the name of the user who sent the clue
+   * @param clue - the clue the player gave
+   */
   public PlayerGivesCallClue(
     username: string,
     clue: iMillionaireCallJokerClue
@@ -1105,4 +1336,6 @@ export class MillionaireCore {
       return; // unreachable
     }
   }
+  //#endregion
 }
+//#endregion

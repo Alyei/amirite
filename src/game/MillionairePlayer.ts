@@ -1,22 +1,59 @@
+//#region imports
 import { iMillionairePlayerData, PlayerRole, PlayerState, JokerType, iMillionairePlayerQuestionData, iMillionaireScoreEntry } from "../models/GameModels";
 import { PlayerBase, iPlayerBaseArguments } from "./PlayerBase";
+//#endregion
 
+//#region classes
+/**
+ * The MillionairePlayer-class provides all data for a player in a Millionaire-game by implementing the iMillionairePlayerData-interface and extending the PlayerBase-class.
+ */
 export class MillionairePlayer extends PlayerBase implements iMillionairePlayerData {
-    //username: string;
-    //state: PlayerState;
-    //role: PlayerRole;
-    checkpoint: number;
-    jokers: JokerType[];
-    currentQuestion?: iMillionairePlayerQuestionData;
-    questionData: iMillionairePlayerQuestionData[];
-    karmaScore: number;
-    score: number;
-    scoreArchive: iMillionaireScoreEntry[];
-    millionaireCounter: number;
-
+    //#region properties
     /**
-     * Creates an instance of the iMillionairePlayerData class.
-     * @param baseArguments - the arguments that have been returned by the parent's class GetArguments-method
+     * - indicates the player's current score
+     */
+    public score: number;
+    
+    /**
+     * - indicates the player's most recent checkpoint
+     */
+    public checkpoint: number;
+    
+    /**
+     * - contains the ID of every joker the player has left
+     */
+    public jokers: JokerType[];
+    
+    /**
+     * - represents the summarized data of the current question of the player
+     */
+    public currentQuestion?: iMillionairePlayerQuestionData;
+    
+    /**
+     * - contains summarized data of every question the player has been asked this round
+     */
+    public questionData: iMillionairePlayerQuestionData[];
+    
+    /**
+     * - indicates the player's current karma-score
+     */
+    public karmaScore: number;
+    
+    /**
+     * - contains the end score for every round of the player
+     */
+    public scoreArchive: iMillionaireScoreEntry[];
+    
+    /**
+     * - indicates how often the player was millionaire
+     */
+    public millionaireCounter: number;
+    //#endregion
+
+    //#region constructors
+    /**
+     * Creates an instance of the MillionairePlayer-class
+     * @param baseArguments - the arguments that have been returned by the parent class' GetArguments-method
      */
     constructor(baseArguments: iPlayerBaseArguments, jokers?: JokerType[]) {
         super(baseArguments.username, baseArguments.socket, baseArguments.roles);
@@ -31,7 +68,13 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
         this.questionData = [];
         this.jokers = jokers || [];
     }
+    //#endregion
 
+    //#region publicFunctions
+    /**
+     * Applies the data of a JSON impementing the iMillionairePlayerData-interface to the player
+     * @param playerData - JSON implementing the iMillionairePlayerData-interface
+     */
     public ApplyData(playerData: iMillionairePlayerData): void {
         //this.username = playerData.username;
         this.state = playerData.state;
@@ -46,7 +89,7 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
     }
 
     /**
-     * Returns the player's data as a new JSON.
+     * Returns the player's data as a new JSON
      * @returns - player data according to the iMillionairePlayerData-interface
      */
     public GetPlayerData(): iMillionairePlayerData {
@@ -63,4 +106,6 @@ export class MillionairePlayer extends PlayerBase implements iMillionairePlayerD
             scoreArchive: this.scoreArchive
         }
     }
+    //#endregion
 }
+//#endregion

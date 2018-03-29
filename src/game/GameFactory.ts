@@ -1,3 +1,4 @@
+//#region imports
 import {
   iGeneralHostArguments,
   MessageType,
@@ -6,7 +7,8 @@ import {
   iDeterminationHostArguments,
   iMillionaireHostArguments,
   PlayerRole,
-  iDuelHostArguments
+  iDuelHostArguments,
+  JokerType
 } from "../models/GameModels";
 import { QuestionQGame } from "./QuestionQGame";
 import { MillionaireGame } from "./MillionaireGame";
@@ -23,7 +25,12 @@ import { iGame } from "./iGame";
 import { MillionaireGameDataModel } from "../models/Schemas";
 import { DeterminationGame } from "./DeterminationGame";
 import { DuelGame } from "./DuelGame";
+//#endregion
 
+//#region classes
+/**
+ * The GameFactory-class' purpose is to instantiate games, so those can be played.
+ */
 export class GameFactory {
   public Sessions: RunningGames;
 
@@ -53,7 +60,7 @@ export class GameFactory {
       try {
         if (
           !this.Sessions.Sessions.find(
-            x => x.GeneralArguments.owner == generalArguments.owner
+            x => x.generalArguments.owner == generalArguments.owner
           )
         ) {
           switch (generalArguments.gamemode) {
@@ -88,8 +95,8 @@ export class GameFactory {
                 this.Sessions,
                 millionaireArguments || {
                   maxQuestions: 14,
-                  checkpoints: [2, 4, 8],
-                  jokers: [],
+                  checkpoints: [1000, 5000, 10000, 100000],
+                  jokers: [JokerType.Audience, JokerType.Call, JokerType.FiftyFifty],
                   scoreCalcA: 200,
                   scoreCalcB: 2
                 }
@@ -138,18 +145,18 @@ export class GameFactory {
                 namespaceSocket,
                 this.Sessions,
                 duelArguments || {
-                  scoreGoal: 5000,
-                  scoreMin: 1000,
-                  pointBase: 200,
-                  pointBase2: 300,
-                  pointDeductionBase: 100,
-                  pointDeductionBase2: 200,
-                  pointDeductionWhenTooSlow: 400,
-                  postFeedbackGap: 1000,
-                  choosingTime1: 10000,
-                  choosingTime2: 10000,
-                  maxCategoryChoiceRange: 5,
-                  maxDifficultyChoiceRange: 16
+                  scoreGoal: 100000,
+                  scoreMin: -10000,
+                  pointBase: 100,
+                  pointBase2: 100,
+                  pointDeductionBase: 50,
+                  pointDeductionBase2: 50,
+                  pointDeductionWhenTooSlow: 10,
+                  postfeedbackGap: 3000,
+                  choosingTime1: 5000,
+                  choosingTime2: 7000,
+                  maxCategoryChoiceRange: 3,
+                  maxDifficultyChoiceRange: 3
                 }
               );
               this.Initialize(newGame)
@@ -181,24 +188,24 @@ export class GameFactory {
     return new Promise((resolve: any, reject: any) => {
       game
         .AddPlayer(
-          game.GeneralArguments.owner,
-          game.GeneralArguments.ownerSocket,
+          game.generalArguments.owner,
+          game.generalArguments.ownerSocket,
           [PlayerRole.Host, PlayerRole.Player]
         )
         .then((res: any) => {
           logger.log(
             "info",
             "Added owner %s as player to game %s.",
-            game.GeneralArguments.owner,
-            game.GeneralArguments.gameId
+            game.generalArguments.owner,
+            game.generalArguments.gameId
           );
         })
         .catch((err: any) => {
           logger.log(
             "info",
             "Adding of player %s to game %s was unsuccessful.",
-            game.GeneralArguments.owner,
-            game.GeneralArguments.gameId
+            game.generalArguments.owner,
+            game.generalArguments.gameId
           );
           logger.log("silly", err);
           reject(err);
@@ -208,7 +215,7 @@ export class GameFactory {
           logger.log(
             "info",
             "New Millionaire game: %s hosted.",
-            game.GeneralArguments.gameId
+            game.generalArguments.gameId
           );
           resolve(res);
         })
@@ -218,3 +225,4 @@ export class GameFactory {
     });
   }
 }
+//#endregion
