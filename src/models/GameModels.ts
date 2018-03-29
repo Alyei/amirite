@@ -20,6 +20,12 @@ export interface iPlayerAction {
   data: any;
 }
 
+export interface iChangePlayerRolesRequest {
+  username: string;
+  toAdd?: PlayerRole[];
+  toRemove?: PlayerRole[];
+}
+
 export interface iJoinGame {
   gameId: string;
   username: string;
@@ -91,6 +97,7 @@ export enum MessageType {
   // general
   PlayerInputError = 100,
   SpectatingData,
+  ChangePlayerRolesRequest,
 
   // QuestionQ
   QuestionQQuestion = 1,
@@ -183,13 +190,6 @@ export interface iQuestionQGameData {
   gameArguments: iQuestionQHostArguments;
   playerStatistics: iQuestionQPlayerStatistic[];
 }
-export interface iQuestionQPlayerStatistic {
-  username: string;
-  score: number;
-  correctAnswers: number;
-  totalTime: number;
-  totalTimeCorrection: number;
-}
 export interface iQuestionQTip {
   questionId: string;
   answerId: string;
@@ -223,11 +223,21 @@ export interface iQuestionQPlayerDataAndExplanations {
 }
 export interface iQuestionQPlayerData {
   username: string;
-  role: PlayerRole;
+  roles: PlayerRole[];
   state: PlayerState;
   score: number;
   questions: [iQuestionQQuestion, string][];
   tips: iQuestionQTipData[];
+}
+export interface iQuestionQPlayerStatistic {
+  username: string;
+  score: number;
+  state: PlayerState;
+  roles: PlayerRole[];
+  questionIds: string[];
+  correctAnswers: number;
+  totalValuedTime: number;
+  totalTimeCorrection: number;
 }
 export interface iQuestionQTipData {
   tip: iQuestionQTip;
@@ -289,7 +299,7 @@ export interface iDeterminationTipData {
 }
 export interface iDeterminationPlayerData {
   username: string;
-  role: PlayerRole;
+  roles: PlayerRole[];
   state: PlayerState;
   score: number;
   questions: iDeterminationQuestionData[];
@@ -299,7 +309,7 @@ export interface iDeterminationPlayerStatistic {
   username: string;
   score: number;
   state: PlayerState;
-  role: PlayerRole;
+  roles: PlayerRole[];
   questionIds: string[];
   correctAnswers: number;
   totalValuedTime: number;
@@ -338,7 +348,7 @@ export interface iMillionaireTip {
 export interface iMillionairePlayerData {
   username: string;
   state: PlayerState;
-  role: PlayerRole;
+  roles: PlayerRole[];
   score: number;
   checkpoint: number;
   jokers: JokerType[];
@@ -488,7 +498,7 @@ export interface iDuelHostArguments {
   pointDeductionBase: number;
   pointDeductionBase2: number;
   pointDeductionWhenTooSlow: number;
-  postfeedbackGap: number; // ms to next question
+  postFeedbackGap: number; // ms to next question
   choosingTime1: number;
   choosingTime2: number;
   maxCategoryChoiceRange: number;
@@ -497,7 +507,7 @@ export interface iDuelHostArguments {
 export interface iDuelPlayerData {
   username: string;
   state: PlayerState;
-  role: PlayerRole;
+  roles: PlayerRole[];
   score: number;
 }
 export interface iDuelSetReadyState {

@@ -172,7 +172,7 @@ export class io {
 
     if (game) {
       game
-        .AddPlayer(opt.username, playerSocket, PlayerRole.Player)
+        .AddPlayer(opt.username, playerSocket, [PlayerRole.Player])
         .then((res: any) => {
           playerSocket.join(game.GeneralArguments.gameId);
           logger.log(

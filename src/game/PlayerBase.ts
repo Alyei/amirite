@@ -10,7 +10,7 @@ import { settings } from "../server/helper";
 export interface iPlayerBaseArguments {
   username: string;
   socket: SocketIO.Socket;
-  role: PlayerRole;
+  roles: PlayerRole[];
   state: PlayerState;
 }
 
@@ -33,17 +33,18 @@ export class PlayerBase {
    * Initializes PlayerBase with the passed arguments.
    * @param username - defines the player's username
    * @param socket - the socket that is used to communicate with the player
-   * @param role - optional role the player has
+   * @param roles - roles the player has
    */
   constructor(
     public username: string,
     protected socket: SocketIO.Socket,
-    public role: PlayerRole
+    public roles: PlayerRole[]
   ) {
     this.state = PlayerState.Spectating;
 
     // player
-    if (this.role == PlayerRole.Player) this.state = PlayerState.Launch;
+    if (this.roles.find(x => x == PlayerRole.Player) != undefined)
+      this.state = PlayerState.Launch;
   }
 
   /**
@@ -76,7 +77,7 @@ export class PlayerBase {
     return {
       username: this.username,
       socket: this.socket,
-      role: this.role,
+      roles: this.roles,
       state: this.state
     };
   }

@@ -155,6 +155,14 @@ export class MillionaireGame implements iGame {
         }
         break;
       }
+      case MessageType.ChangePlayerRolesRequest: {
+          try {
+              this.GameCore.ChangePlayerRoles(username, JSON.parse(data));
+          } catch (err) {
+              this.ProcessUserError(username, { message: err.message, data: err });
+          }
+          break;
+      }
       default: {
         const errorMessage: iGeneralPlayerInputError = {
           message: "invalid message type",
@@ -200,11 +208,11 @@ export class MillionaireGame implements iGame {
   public AddPlayer(
     username: string,
     socket: SocketIO.Socket,
-    role: PlayerRole
+    roles: PlayerRole[]
   ): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
-        resolve(this.GameCore.AddUser(new PlayerBase(username, socket, role)));
+        resolve(this.GameCore.AddUser(new PlayerBase(username, socket, roles)));
       } catch (err) {
         reject(err);
       }
@@ -239,8 +247,8 @@ export class MillionaireGame implements iGame {
         if (
           username == this.GeneralArguments.owner ||
           (player &&
-            undefined ==
-              [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
+            undefined !=
+              [PlayerRole.Mod, PlayerRole.Host].find(x => player.roles.find(pr => pr == x) != undefined))
         ) {
           resolve(this.GameCore.Start());
         } else {

@@ -23,7 +23,7 @@ export interface iGame {
   /**
    * Adds a new player to the game.
    */
-  AddPlayer: (username: string, socket: SocketIO.Socket, role: PlayerRole) => any;
+  AddPlayer: (username: string, socket: SocketIO.Socket, roles: PlayerRole[]) => any;
   /**
    * Disqualifies a player from the game.
    */

@@ -112,12 +112,12 @@ export class GameFactory {
               const newGame: iGame = new DeterminationGame(
                 generalArguments,
                 namespaceSocket,
-                this.Sessions,
                 determinationArguments || {
                   pointBase: 100,
                   pointBaseWrongAnswerIdentified: 100,
                   interQuestionGap: 1000
-                }
+                },
+                this.Sessions
               );
               this.Initialize(newGame)
                 .then((res: any) => {
@@ -145,7 +145,7 @@ export class GameFactory {
                   pointDeductionBase: 100,
                   pointDeductionBase2: 200,
                   pointDeductionWhenTooSlow: 400,
-                  postfeedbackGap: 1000,
+                  postFeedbackGap: 1000,
                   choosingTime1: 10000,
                   choosingTime2: 10000,
                   maxCategoryChoiceRange: 5,
@@ -183,7 +183,7 @@ export class GameFactory {
         .AddPlayer(
           game.GeneralArguments.owner,
           game.GeneralArguments.ownerSocket,
-          PlayerRole.Host
+          [PlayerRole.Host, PlayerRole.Player]
         )
         .then((res: any) => {
           logger.log(
