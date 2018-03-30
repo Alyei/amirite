@@ -173,12 +173,18 @@ export class Https {
     });
   }
 
+  this.app.post("/api/join", this.IsAuthenticated, (req: any, res: any) => {
+      res.status(200).json({
+        auth: "true"
+      })
+    });
+
   private IsAuthenticated(req: any, res: any, next: any): any {
     if (req.user) {
       return next();
     } else {
       return res.status(401).json({
-        error: "not authenticated"
+        auth: "false"
       });
     }
   }
