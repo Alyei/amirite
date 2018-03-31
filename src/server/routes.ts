@@ -129,15 +129,16 @@ export class Https {
       }
     );
 
-    this.app.post("/question", (req: any, res: any) => {
+    this.app.post("/api/questionupload", (req: any, res: any) => {
       this.questEdit
         .SaveQuestion(JSON.parse(req.body.data))
         .then((prom: any) => {
-          res.send("successful");
+          res.status(200).JSON({
+            success: true
+          });
         })
         .catch((err: any) => {
-          //implement statuscode
-          res.send("failed");
+          res.status(400).JSON({ success: false });
         });
     });
 
@@ -171,13 +172,13 @@ export class Https {
         }
       }
     });
-  }
 
-  this.app.post("/api/join", this.IsAuthenticated, (req: any, res: any) => {
+    this.app.post("/api/join", this.IsAuthenticated, (req: any, res: any) => {
       res.status(200).json({
         auth: "true"
-      })
+      });
     });
+  }
 
   private IsAuthenticated(req: any, res: any, next: any): any {
     if (req.user) {

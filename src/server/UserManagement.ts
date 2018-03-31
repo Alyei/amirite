@@ -58,20 +58,14 @@ export class Authentication {
       { passReqToCallback: true }, //True, so that the whole request can be accessed.
       (req: any, username: string, password: string, done: any) => {
         process.nextTick(() => {
-          //So everything is there - copied from guide
           UserModel.findOne({ username: username }, (err: any, user: any) => {
-            //Looks for the model with the username in the database.
             if (err) return done(err);
 
             if (user) {
               logger.log("silly", "Submitted username already exists");
-              return done(
-                null,
-                false,
-                req.flash("signupMessage", "Username already taken")
-              );
+              return done(null, false);
             } else {
-              let newUser: any = new UserModel({
+              const newUser: any = new UserModel({
                 username: username,
                 password: password,
                 email: req.body.email
@@ -85,11 +79,6 @@ export class Authentication {
                 "silly",
                 "%s: Hashed password and saved in database.",
                 username
-              );
-
-              req.flash(
-                "signupSuccessful",
-                "The account was created successfully."
               );
             }
           });
@@ -116,8 +105,7 @@ export class Authentication {
               console.log("User doesn't exist.");
               return done(
                 null,
-                false,
-                req.flash("loginMessage", "Username or password is wrong.")
+                false
               );
             }
 
