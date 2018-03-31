@@ -35,8 +35,10 @@ import { RunningGames } from "./RunningGames";
 
 //#region enums
 /**
- * The QuestionQGamePhase-enum contains all possible states of a QuestionQ-game.!!!
- * @value 0: Setup - 
+ * The QuestionQGamePhase-enum contains all possible states of a QuestionQ-game.
+ * @value 0: Setup - the game has not started yet
+ * @value 1: Running - the game is running
+ * @value 2: Ended - the game is finished
  */
 export enum QuestionQGamePhase {
   Setup = 0,
@@ -250,6 +252,9 @@ export class QuestionQCore {
    */
   public GetStartGameData(): iQuestionQStartGameData {
     const startGameData: iQuestionQStartGameData = {
+      gameId: this.gameId,
+      gamemode: this.gamemode,
+      playerStatistics: this.GetPlayerStatistics(),
       questionAmount: this.questions.length,
       gameArguments: this.gameArguments
     };

@@ -70,7 +70,7 @@ export class GameFactory {
                 namespaceSocket,
                 questionqArguments || {
                   pointBase: 100,
-                  interQuestionGap: 3000
+                  interQuestionGap: 1000
                 },
                 this.Sessions
               );
@@ -97,7 +97,7 @@ export class GameFactory {
                   maxQuestions: 14,
                   checkpoints: [1000, 5000, 10000, 100000],
                   jokers: [JokerType.Audience, JokerType.Call, JokerType.FiftyFifty],
-                  scoreCalcA: 200,
+                  scoreCalcA: 100,
                   scoreCalcB: 2
                 }
               );
@@ -121,7 +121,7 @@ export class GameFactory {
                 namespaceSocket,
                 determinationArguments || {
                   pointBase: 100,
-                  pointBaseWrongAnswerIdentified: 100,
+                  pointBaseWrongAnswerIdentified: 25,
                   interQuestionGap: 1000
                 },
                 this.Sessions
@@ -153,11 +153,11 @@ export class GameFactory {
                   pointDeductionBase2: 50,
                   pointDeductionWhenTooSlow: 10,
                   postfeedbackGap: 3000,
-                  choosingTime1: 5000,
-                  choosingTime2: 7000,
+                  choosingTime1: 10000,
+                  choosingTime2: 10000,
                   maxCategoryChoiceRange: 3,
                   maxDifficultyChoiceRange: 3
-                }
+              }
               );
               this.Initialize(newGame)
                 .then((res: any) => {

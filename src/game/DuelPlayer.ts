@@ -44,7 +44,8 @@ export class DuelPlayer extends PlayerBase implements iDuelPlayerData {
             username: this.username,
             roles: this.roles,
             state: this.state,
-            score: this.score
+            score: this.score,
+            ready: this.ready
         }
     }
     //#endregion

@@ -50,6 +50,8 @@ import { platform } from "os";
 //#region enums
 /**
  * The MillionaireGamePhase-enum contains all possible states of a Millionaire-game.
+ * @value 0: Setup - the game has not started yet
+ * @value 1: Running - the game is running
  */
 export enum MillionaireGamePhase {
   Setup = 0,
@@ -521,6 +523,8 @@ export class MillionaireCore {
 
       if (player.state != PlayerState.Disqualified) {
         const startGameData: iMillionaireStartGameData = {
+          gameId: this.gameId,
+          gamemode: this.gamemode,
           gameArguments: this.gameArguments,
           players: this.GetPlayerData(this.players)
         };

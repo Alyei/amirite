@@ -211,6 +211,15 @@ export enum JokerType {
 //#endregion
 
 //#region Duel
+/**
+ * The DuelChoice-enum contains every choice a player can choose to have.
+ * @value 0: Difficulty - the choice of the next question's difficulty
+ * @value 1: Category - the choice of the next question's category
+ */
+export enum DuelChoice {
+  Difficulty = 0,
+  Category
+}
 //#endregion
 //#endregion
 
@@ -352,10 +361,16 @@ export interface iQuestionQHostArguments {
 
 /**
  * The iQuestionQStartGameData-interface contains the data a client needs to begin the game.
+ * @property gameId: string - the game's ID
+ * @property gamemode: Gamemode - the game's gamemode
+ * @property playerStatistics: iQuestionQPlayerStatistic[] - the players' current statistics
  * @property questionAmount: number - the amount of questions that will be asked before a player finishes
  * @property gameArguments: iQuestionQGameArguments - the game arguments the game has been hosted with
  */
 export interface iQuestionQStartGameData {
+  gameId: string;
+  gamemode: Gamemode;
+  playerStatistics: iQuestionQPlayerStatistic[];
   questionAmount: number;
   gameArguments: iQuestionQHostArguments;
 }
@@ -529,12 +544,18 @@ export interface iDeterminationHostArguments {
 
 /**
  * The iQuestionQStartGameData-interface contains the data a client needs to begin the game.
+ * @property gameId: string - the game's ID
+ * @property gamemode: Gamemode - the game's gamemode
  * @property questionAmount: number - the amount of questions that will be asked before a player finishes
  * @property gameArguments: iQuestionQGameArguments - the game arguments the game has been hosted with
+ * @property playerStatistics: iDeterminationPlayerStatistic[] - the players' current statistics
  */
 export interface iDeterminationStartGameData {
+  gameId: string;
+  gamemode: Gamemode;
   questionAmount: number;
   gameArguments: iDeterminationHostArguments;
+  playerStatistics: iDeterminationPlayerStatistic[];
 }
 
 /**
@@ -729,6 +750,8 @@ export interface iMillionaireGameData {
  * @property millionaire?: iMillionairePlayerData - (optional) the current millionaire
  */
 export interface iMillionaireStartGameData {
+  gameId: string; //!!!
+  gamemode: Gamemode; //!!!
   gameArguments: iMillionaireHostArguments;
   players: iMillionairePlayerData[];
   millionaire?: iMillionairePlayerData;
@@ -1072,18 +1095,50 @@ export interface iMillionaireActionFeedback {
 //#endregion
 
 //#region Duel
+/**
+ * The iDuelStartGameData-interface contains all the data that a client needs to begin the game.
+ * @property gameId: string - the game's ID
+ * @property gamemode: Gamemode - the game's gamemode
+ * @property gameArguments: iDuelHostArguments - the game arguments the game has been hosted with
+ * @property players: iDuelPlayerData[] - the other players' data
+ */
 export interface iDuelStartGameData {
   gameId: string;
+  gamemode: Gamemode;
   gameArguments: iDuelHostArguments;
-  players: string[]; // usernames
+  players: iDuelPlayerData[];
 }
+
+/**
+ * The iDuelEndGameData-interface contains the data that is sent to all players at the end of the game.
+ * @property gameId: string - the game's ID
+ * @property gamemode: Gamemode - the game's gamemode
+ * @property gameArguments: iDuelHostArguments - the game arguments the game has been hosted with
+ * @property playerData: iDuelPlayerData[] - the players' data
+ * @property questions: iDuelPlayerQuestionData[] - data of every question the players have been asked during the game (including explanations)
+ */
 export interface iDuelEndGameData {
   gameId: string;
   gamemode: Gamemode;
   gameArguments: iDuelHostArguments;
   playerData: iDuelPlayerData[];
-  questionBases: iDuelQuestionBase[];
+  questions: iDuelPlayerQuestionData[];
 }
+
+/**
+ * The iDuelHostArguments-interface contains every modifier for a Duel-game.
+ * @property scoreGoal: number - the amount of points that are needed to win the game
+ * @property scoreMin: number - the score-value that determines how low a player's score can go before the player loses
+ * @property pointBase: number - the points for a correctly answered question are calculated by the formula: points = (pointBase + the question's time limit / (the answering duration + pointBase2)) x the question's difficulty
+ * @property pointBase2: number - the points for a correctly answered question are calculated by the formula: points = (pointBase + the question's time limit / (the answering duration + pointBase2)) x the question's difficulty
+ * @property pointDeductionBase: number - the points for a correctly answered question are calculated by the formula: points = (pointBase + the question's time limit / (the answering duration + pointBase2)) x the question's difficulty
+ * @property pointDeductionBase2: number - the points for a wrongly answered question are calculated by the formula: points = - (pointDeductionBase + the question's time limit / (the answering duration + pointDeductionBase2)) x the question's difficulty
+ * @property postFeedbackGap: number - the minimum amount of milliseconds a player has to process their feedback
+ * @property choosingTime1: number - the time limit a player has to choose their choice
+ * @property choosingTime2: number - the time limit a player has to choose the difficulty or category of the next question
+ * @property maxCategoryChoiceRange: number - the maximum amount of categories a player can choose from
+ * @property maxDifficultyChoiceRange: number - the maximum amount of difficulties a player can choose from
+ */
 export interface iDuelHostArguments {
   scoreGoal: number; // needed points to win
   scoreMin: number; // losing score
@@ -1098,18 +1153,49 @@ export interface iDuelHostArguments {
   maxCategoryChoiceRange: number;
   maxDifficultyChoiceRange: number;
 }
+
+/**
+ * The iDuelPlayerData-interface contains all data that is collected for a player.
+ * @property username: string - the player's username
+ * @property state: PlayerState - the player's current state
+ * @property roles: PlayerRole - the player's roles
+ * @property score: number - the player's score
+ * @property ready: boolean - the indicator for whether the player is ready to start the game
+ */
 export interface iDuelPlayerData {
   username: string;
   state: PlayerState;
   roles: PlayerRole[];
   score: number;
+  ready: boolean;
 }
+
+/**
+ * The iDuelSetReadyState-interface contains all data that is needed for a player to change their ready-state.
+ * @property ready: boolean - the indicator for whether the player is ready to begin the game
+ */
 export interface iDuelSetReadyState {
   ready: boolean;
 }
+
+/**
+ * The iDuelQuestionBase-interface contains all data that is needed to generate a question (iDuelPlayerQuestion) a player can be asked.
+ * @property questionCounter: number - a counter indicating how often the question has been asked during the game yet
+ */
 export interface iDuelQuestionBase extends iGeneralQuestion {
   questionCounter: number;
 }
+
+/**
+ * The iDuelPlayerQuestion-interface contains all data that is needed to question a player.
+ * @property questionId: string - the question's ID
+ * @property question: string - the question
+ * @property pictureId?: string - (optional) the ID of the question's picture
+ * @property options: iDuelAnswerOption[] - the four answer-options for the question containing the correct one
+ * @property timeLimit: number - the question's time limit in milliseconds
+ * @property difficulty: number - the question's difficulty
+ * @property categories?: string[] - (optional) the question's categories
+ */
 export interface iDuelPlayerQuestion {
   questionId: string;
   question: string;
@@ -1117,7 +1203,19 @@ export interface iDuelPlayerQuestion {
   options: iDuelAnswerOption[];
   timeLimit: number;
   difficulty: number;
+  categories?: string[];
 }
+
+/**
+ * The iDuelPlayerQuestionData-interface contains all data that is collected within a question-process.
+ * @property question: iDuelPlayerQuestion - the data of the question the players got
+ * @property correctAnswer: string - the ID of the correct answer-option
+ * @property questionTime: Date - a timestamp indicating the moment the question has been asked
+ * @property timeCorrections: { [id: string]: number } - a dictionary containing the current amount of time that won't bee calculated for each player (the player's username is the key for the time correction value)
+ * @property explanation?: string - (optional) an explanation for the question
+ * @property tip?: iDuelTipData - (optional) the tip that has been validated
+ * @property feedback?: iDuelTipFeedback - (optionoal) a feedback for the validated tip
+ */
 export interface iDuelPlayerQuestionData {
   question: iDuelPlayerQuestion;
   correctAnswer: string;
@@ -1128,18 +1226,46 @@ export interface iDuelPlayerQuestionData {
   tip?: iDuelTipData;
   feedback?: iDuelTipFeedback;
 }
+
+/**
+ * The iDuelAnswerOption-interface combines an answer-option of a question with its ID.
+ * @property answerId: string - the answer's ID
+ * @property answer: string - the answer
+ */
 export interface iDuelAnswerOption {
   answerId: string;
   answer: string;
 }
+
+/**
+ * The iDuelTimeCorrection-interface combines the name of a player with their time correction for the current question.
+ * @property username: string - the player's username
+ * @property timeCorrection: number - the amount of milliseconds that will be removed from the time difference between the moment the question has been asked and the moment the tip has been received
+ */
 export interface iDuelTimeCorrection {
   username: string;
   timeCorrection: number;
 }
+
+/**
+ * The iDuelTip-interface contains all data that is needed to give a tip for a question.
+ * @property questionId: string - the ID of the question to answer
+ * @property answerId: string - the ID of the chosen answer-option
+ */
 export interface iDuelTip {
   questionId: string;
   answerId: string;
 }
+
+/**
+ * The iDuelTipData-interface contains all data that is collected for a tip.
+ * @property username: string - the username of the player whose tip has been validated
+ * @property answerId: string - the ID of the answer-option the player chose
+ * @property duration: number - the amount of time it took the player to give the tip after being questioned
+ * @property timeCorrection: number - the amount of milliseconds that will be removed from the time difference between the moment the question has been asked and the moment the tip has been received
+ * @property correct?: boolean - (optional) indicator for whether the chosen answer-option is the correct one
+ * @property message?: string - (optional) a message telling the circumstances of the scoring
+ */
 export interface iDuelTipData {
   username: string;
   answerId: string;
@@ -1148,6 +1274,15 @@ export interface iDuelTipData {
   correct?: boolean;
   message?: string;
 }
+
+/**
+ * The iDuelTipFeedback-interface contains all data that is needed to give the players a feedback for the current question.
+ * @property questionId: string - the question's ID
+ * @property tip: iDuelTipData - data of the tip that has been validated
+ * @property scoring: { [id: string]: iDuelScoringData } - a dictionary containing each player's scoring data (the players' usernames are used as keys)
+ * @property correctAnswer: string - the ID of the correct answer-option
+ * @property explanation?: string - (optional) an explanation for the question
+ */
 export interface iDuelTipFeedback {
   questionId: string;
   tip: iDuelTipData;
@@ -1155,31 +1290,60 @@ export interface iDuelTipFeedback {
   correctAnswer: string;
   explanation?: string;
 }
+
+/**
+ * The iDuelScoringData-interface contains all data that results for a player of the validation of a tip for a question.
+ * @property points: number - the amount of points the player got
+ * @property score: score - the player's current score
+ * @property state: PlayerState - the player's current state
+ */
 export interface iDuelScoringData {
   points: number;
   score: number;
   state: PlayerState;
 }
 
-export enum DuelChoice {
-  Difficulty = 0,
-  Category
-}
+/**
+ * The iDuelChooseChoiceRequest-interface contains all data that is needed to request a player to choose the choice they want to have.
+ */
 export interface iDuelChooseChoiceRequest {}
+
+/**
+ * The iDuelChooseChoiceReply-interface contains all data that a player needs to send to choose the choice they want to have.
+ * @property choiceChoice: DuelChoice - the choice they want to have
+ */
 export interface iDuelChooseChoiceReply {
   choiceChoice: DuelChoice;
 }
 
+/**
+ * The iDuelChooseDifficultyRequest-interface contains all data that is needed to request a player to choose the next question's difficulty.
+ * @property difficulties: number[] - the difficulties the player can choose from
+ */
 export interface iDuelChooseDifficultyRequest {
   difficulties: number[];
 }
+
+/**
+ * The iDuelChooseDifficultyReply-interface contains all data that a player needs to send to choose the next question's difficulty.
+ * @property difficulty: number - the next question's difficulty
+ */
 export interface iDuelChooseDifficultyReply {
   difficulty: number;
 }
 
+/**
+ * The iDuelChooseCategoryRequest-interface contains all data that is needed to request a player to choose the next question's category.
+ * @property categories: number[] - the categories the player can choose from
+ */
 export interface iDuelChooseCategoryRequest {
   categories: string[];
 }
+
+/**
+ * The iDuelChooseCategoryReply-interface contains all data that a player needs to send to choose the next question's category.
+ * @property category: number - the next question's category
+ */
 export interface iDuelChooseCategoryReply {
   category: string;
 }

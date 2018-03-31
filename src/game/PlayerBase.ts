@@ -11,6 +11,10 @@ import { logger } from "../server/logging";
 //#region interfaces
 /**
  * The iPlayerBaseArguments-interface contains all properties that are essential for each player.
+ * @property username: string - the player's username
+ * @property socket: SocketIO.Socket - the socket that is used to communicate with the player
+ * @property roles: PlayerRole[] - the player's roles
+ * @property state: PlayerState - the player's state
  */
 export interface iPlayerBaseArguments {
   username: string;
