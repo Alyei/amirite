@@ -884,8 +884,8 @@ export class MillionaireCore {
       feedback.message = "correct";
       // score formula
       feedback.points =
-        (this.millionaire.score + this.gameArguments.scoreCalcA) *
-        this.gameArguments.scoreCalcB;
+        this.gameArguments.scoreCalcA +
+        (this.millionaire.score * this.gameArguments.scoreCalcB);
 
       this.millionaire.score += feedback.points;
       feedback.score = this.millionaire.score;

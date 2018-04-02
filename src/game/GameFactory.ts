@@ -98,7 +98,7 @@ export class GameFactory {
                   checkpoints: [1000, 5000, 10000, 100000],
                   jokers: [JokerType.Audience, JokerType.Call, JokerType.FiftyFifty],
                   scoreCalcA: 100,
-                  scoreCalcB: 2
+                  scoreCalcB: 1
                 }
               );
               this.Initialize(newGame)

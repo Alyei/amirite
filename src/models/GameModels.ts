@@ -715,15 +715,15 @@ export interface iDeterminationPlayerData {
  * @property maxQuestions: number - the maximum amount of questions a millionaire may get
  * @property checkpoints: number - the score-values that indicate the checkpoints
  * @property jokers: JokerType[] - the list of jokers the millionaire has
- * @property scoreCalcA: number - the points for a correctly answered question are calculated by the formula: points = (current score + scoreCalcA) * scoreCalcB
- * @property scoreCalcB: number - the points for a correctly answered question are calculated by the formula: points = (current score + scoreCalcA) * scoreCalcB
+ * @property scoreCalcA: number - the points for a correctly answered question are calculated by the formula: points = scoreCalcA + (current score * scoreCalcB)
+ * @property scoreCalcB: number - the points for a correctly answered question are calculated by the formula: points = scoreCalcA + (current score * scoreCalcB)
  */
 export interface iMillionaireHostArguments {
   maxQuestions: number; // maximum amount of questions per player
   // questionsPerDifficulty: number; // amount of questions per difficulty
   checkpoints: number[]; // score checkpoints
   jokers: JokerType[]; // jokers per player per millionaire
-  scoreCalcA: number; // (current score + scoreCalcA) * scoreCalcB = points for a correctly answered question
+  scoreCalcA: number; // scoreCalcA + (current score * scoreCalcB) = points for a correctly answered question
   scoreCalcB: number;
 }
 
