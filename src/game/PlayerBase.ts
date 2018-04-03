@@ -27,6 +27,7 @@ export interface iPlayerBaseArguments {
 //#region classes
 /**
  * The PlayerBase-class provides provides all essential functions of a player.
+ * @author Andrej Ressanovic, Georg Schubbauer
  */
 export class PlayerBase {
   //#region fields

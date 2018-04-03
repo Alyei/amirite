@@ -4,7 +4,8 @@ import { logger } from "../server/logging";
 
 //#region classes
 /**
- * The Tryharder-class' purpose is to try to execute a boolean-returning function four a couple times with a time gap in-between
+ * The Tryharder-class' purpose is to try to execute a boolean-returning function four a couple times with a time gap in-between.
+ * @author Georg Schubbauer
  */
 export class Tryharder {
     //#region publicFunctions

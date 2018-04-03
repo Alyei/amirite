@@ -30,6 +30,7 @@ import { DuelGame } from "./DuelGame";
 //#region classes
 /**
  * The GameFactory-class' purpose is to instantiate games, so those can be played.
+ * @author Andrej Ressanovic, Georg Schubbauer
  */
 export class GameFactory {
   public Sessions: RunningGames;

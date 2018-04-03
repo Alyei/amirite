@@ -6,6 +6,7 @@ import { PlayerBase, iPlayerBaseArguments } from "./PlayerBase";
 //#region classes
 /**
  * The MillionairePlayer-class provides all data for a player in a Millionaire-game by implementing the iMillionairePlayerData-interface and extending the PlayerBase-class.
+ * @author Georg Schubbauer
  */
 export class MillionairePlayer extends PlayerBase implements iMillionairePlayerData {
     //#region properties

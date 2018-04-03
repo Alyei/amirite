@@ -27,6 +27,7 @@ export enum DuelGamePhase {
 /**
  * The DuelCore-class combines the Duel-game's mechanics with user input.
  * It is used to run a Duel-game.
+ * @author Georg Schubbauer
  */
 export class DuelCore {
     //#region fields

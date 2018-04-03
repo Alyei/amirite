@@ -1,6 +1,7 @@
 ﻿//#region classes
 /**
  * The purpose of the ArrayManager-class is to manage an array.
+ * @author Georg Schubbauer
  */
 export class ArrayManager {
     //#region constructors

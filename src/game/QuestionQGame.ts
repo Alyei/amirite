@@ -26,6 +26,7 @@ import { RunningGames } from "./RunningGames";
 //#region classes
 /**
  * The QuestionQGame-class manages a single QuestionQ-game.
+ * @author Georg Schubbauer
  */
 export class QuestionQGame implements iGame {
   //#region fields

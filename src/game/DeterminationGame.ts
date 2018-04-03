@@ -29,6 +29,7 @@ import { RunningGames } from "./RunningGames";
 //#region classes
 /**
  * The DeterminationGame-class manages a single Determination-game.
+ * @author Georg Schubbauer
  */
 export class DeterminationGame implements iGame {
   //#region fields

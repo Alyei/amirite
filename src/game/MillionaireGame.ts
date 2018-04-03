@@ -27,6 +27,7 @@ import { RunningGames } from "./RunningGames";
 //#region classes
 /**
  * The MillionaireGame-class manages a single Millionaire-game.
+ * @author Georg Schubbauer
  */
 export class MillionaireGame implements iGame {
   //#region fields

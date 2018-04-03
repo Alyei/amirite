@@ -24,6 +24,7 @@ import { RunningGames } from "./RunningGames";
 //#region classes
 /**
  * The DuelGame-class manages a single Duel-game.
+ * @author Georg Schubbauer
  */
 export class DuelGame implements iGame {
     //#region fields

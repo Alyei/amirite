@@ -63,6 +63,7 @@ export enum MillionaireGamePhase {
 /**
  * The MillionaireCore-class combines the Millionaire-game's mechanics with user input.
  * It is used to run a Millionaire-game.
+ * @author Georg Schubbauer
  */
 export class MillionaireCore {
   //#region fields

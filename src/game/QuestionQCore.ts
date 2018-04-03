@@ -51,6 +51,7 @@ export enum QuestionQGamePhase {
 /**
  * The QuestionQCore-class combines the user input with the gamemode mechanics.
  * It runs the game and eventually saves the results to the database.
+ * @author Georg Schubbauer
  */
 export class QuestionQCore {
   //#region fields
