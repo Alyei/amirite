@@ -701,7 +701,7 @@ export class MillionaireCore {
     );
     if (
       !this.millionaire ||
-      this.millionaire.roles.find(mr => mr == PlayerRole.Player) != undefined ||
+      this.millionaire.roles.find(mr => mr == PlayerRole.Player) == undefined ||
       this.millionaire.state == PlayerState.Disqualified
     ) {
       this.millionaire = undefined;
