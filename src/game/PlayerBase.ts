@@ -27,7 +27,7 @@ export interface iPlayerBaseArguments {
 //#region classes
 /**
  * The PlayerBase-class provides provides all essential functions of a player.
- * @author Andrej Ressanovic, Georg Schubbauer
+ * @author Andrej Resanovic, Georg Schubbauer
  */
 export class PlayerBase {
   //#region fields
@@ -69,7 +69,7 @@ export class PlayerBase {
     public roles: PlayerRole[]
   ) {
     this.state = PlayerState.Spectating;
-    
+
     // player
     if (this.roles.find(x => x == PlayerRole.Player) != undefined)
       this.state = PlayerState.Launch;

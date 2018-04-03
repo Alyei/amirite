@@ -32,7 +32,6 @@ export class Https {
    * @function
    */
   private setRoutes(): void {
-    //When the user visits '/' he should be sent .../public/index.html
     this.app.get("/", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "index.ejs"));
     });
