@@ -30,7 +30,7 @@ import { DuelGame } from "./DuelGame";
 //#region classes
 /**
  * The GameFactory-class' purpose is to instantiate games, so those can be played.
- * @author Andrej Ressanovic, Georg Schubbauer
+ * @author Andrej Resanovic, Georg Schubbauer
  */
 export class GameFactory {
   public Sessions: RunningGames;
@@ -97,7 +97,11 @@ export class GameFactory {
                 millionaireArguments || {
                   maxQuestions: 14,
                   checkpoints: [1000, 5000, 10000, 100000],
-                  jokers: [JokerType.Audience, JokerType.Call, JokerType.FiftyFifty],
+                  jokers: [
+                    JokerType.Audience,
+                    JokerType.Call,
+                    JokerType.FiftyFifty
+                  ],
                   scoreCalcA: 100,
                   scoreCalcB: 1
                 }
@@ -158,7 +162,7 @@ export class GameFactory {
                   choosingTime2: 10000,
                   maxCategoryChoiceRange: 3,
                   maxDifficultyChoiceRange: 3
-              }
+                }
               );
               this.Initialize(newGame)
                 .then((res: any) => {
@@ -185,6 +189,10 @@ export class GameFactory {
     });
   }
 
+  /**
+   * Initializes a new game by adding the host as owner and adding it to the running games.
+   * @param game - Game that should be started.
+   */
   private Initialize(game: iGame): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       game

@@ -156,7 +156,7 @@ export class io {
   }
 
   /**
-   * Parses IJoinGame-style JSONs.
+   * Parses option strings to option objects.
    * @param optS - THe iJoinGame object as String.
    */
   private ParseOptions(optS: any): iJoinGame {
