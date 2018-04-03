@@ -199,7 +199,7 @@ export class GameFactory {
         .AddPlayer(
           game.generalArguments.owner,
           game.generalArguments.ownerSocket,
-          [PlayerRole.Host, PlayerRole.Player]
+          [PlayerRole.Host]
         )
         .then((res: any) => {
           logger.log(

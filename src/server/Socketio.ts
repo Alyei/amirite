@@ -7,6 +7,7 @@ import { GameFactory } from "../game/GameFactory";
 import {
   iGeneralHostArguments,
   iPlayerAction,
+  iHostGame,
   iJoinGame,
   iLeaveGame,
   iStartGame,
@@ -62,17 +63,22 @@ export class io {
   private HostGame(
     playerSocket: SocketIO.Socket,
     gameSocket: SocketIO.Namespace,
-    username: string,
+    optS: string,
     gamemode: GModels.Gamemode
   ): void {
-    let args: iGeneralHostArguments = {
-      gameId: generateGameId(),
-      gamemode: gamemode,
-      owner: username,
-      ownerSocket: playerSocket,
-      questionIds: ["1234567890", "YxUy07SElM"]
-    };
+    let opt: iHostGame = undefined;
+
     try {
+      opt = JSON.parse(optS);
+
+      let args: iGeneralHostArguments = {
+        gameId: generateGameId(),
+        gamemode: gamemode,
+        owner: opt.GeneralArgs.username,
+        ownerSocket: playerSocket,
+        questionIds: ["1234567890", "YxUy07SElM"]
+      };
+
       this.GameFactory.CreateGame(args, gameSocket)
         .then((res: any) => {
           playerSocket.join(args.gameId);
@@ -83,8 +89,18 @@ export class io {
           playerSocket.emit("err", err);
         });
     } catch (err) {
-      logger.log("info", err);
-      playerSocket.emit("err");
+      logger.log(
+        "warn",
+        "Error while parsing a 'host game' request: " + err.toString()
+      );
+      console.error(optS);
+      playerSocket.emit(
+        "err",
+        JSON.stringify({
+          event: "host game",
+          error: "parse"
+        })
+      );
     }
   }
 
@@ -94,19 +110,37 @@ export class io {
    * @param {string}optS Options in the format of `iLeaveGame`.
    */
   private LeaveGame(playerSocket: SocketIO.Socket, optS: string) {
-    const opt: iLeaveGame = JSON.parse(optS);
-    for (let item of this.GameSessions.Sessions) {
-      if (item.generalArguments.gameId == opt.gameId) {
-        item
-          .RemovePlayer(opt.username)
-          .then((res: any) => {
-            playerSocket.emit("success");
-          })
-          .catch((err: any) => {
-            logger.log("info", err.message);
-            playerSocket.emit("err");
-          });
+    let opt: iLeaveGame = undefined;
+
+    try {
+      opt = JSON.parse(optS);
+
+      for (let item of this.GameSessions.Sessions) {
+        if (item.generalArguments.gameId == opt.gameId) {
+          item
+            .RemovePlayer(opt.username)
+            .then((res: any) => {
+              playerSocket.emit("success");
+            })
+            .catch((err: any) => {
+              logger.log("info", err.message);
+              playerSocket.emit("err");
+            });
+        }
       }
+    } catch (err) {
+      logger.log(
+        "warn",
+        "Error while parsing a 'leave game' request: " + err.toString()
+      );
+      console.error(optS);
+      playerSocket.emit(
+        "err",
+        JSON.stringify({
+          event: "leave game",
+          error: "parse"
+        })
+      );
     }
   }
 
@@ -115,63 +149,60 @@ export class io {
    * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
    * @param {string}optS Options in the format of `iStartGame`.
    */
-  private StartGame(playerSocket: SocketIO.Socket, optS: any) {
-    let opt: iStartGame;
-    console.log(optS);
-    if (typeof optS === "string") {
+  private StartGame(playerSocket: SocketIO.Socket, optS: string) {
+    let opt: iStartGame = undefined;
+
+    try {
       opt = JSON.parse(optS);
-    } else {
-      opt = optS;
-    }
-    for (let item of this.GameSessions.Sessions) {
-      if (item.generalArguments.gameId == opt.gameId) {
-        item
-          .StartGame(opt.username)
-          .then((res: any) => {
-            if (res) {
-              logger.log("info", "Game %s started.", opt.gameId);
-              playerSocket.emit("success");
-            } else {
-              logger.log("info", "Game %s is already running.", opt.gameId);
-            }
-          })
-          .catch((err: any) => {
-            if (err == -1) {
-              logger.log("info", "Non-owner tried to launch a game");
-              playerSocket.emit("err", "permission denied");
-            } else {
-              logger.log(
-                "info",
-                "Something went wrong while starting game %s: " + err.stack,
-                opt.gameId
-              );
-              playerSocket.emit("err");
-            }
-          });
-      } else {
-        logger.log("info", "Can't start game %s. It doesn't exist.");
-        playerSocket.emit("err");
-      }
-    }
-  }
 
-  /**
-   * Parses option strings to option objects.
-   * @param optS - THe iJoinGame object as String.
-   */
-  private ParseOptions(optS: any): iJoinGame {
-    let options: iJoinGame;
-    if (typeof optS === "string") {
-      try {
-        options = JSON.parse(optS);
-      } catch (e) {
-        throw new Error("Could not parse options.");
+      for (let item of this.GameSessions.Sessions) {
+        if (item.generalArguments.gameId == opt.gameId) {
+          item
+            .StartGame(opt.username)
+            .then((res: any) => {
+              if (res) {
+                logger.log("info", "Game %s started.", opt.gameId);
+                playerSocket.emit("success");
+              } else {
+                logger.log("info", "Game %s is already running.", opt.gameId);
+              }
+            })
+            .catch((err: any) => {
+              if (err == -1) {
+                logger.log("info", "Non-owner tried to launch a game");
+                playerSocket.emit("err", "permission denied");
+              } else {
+                logger.log(
+                  "info",
+                  "Something went wrong while starting game %s: " + err.stack,
+                  opt.gameId
+                );
+                playerSocket.emit("err");
+              }
+            });
+        } else {
+          logger.log("info", "Can't start game %s. It doesn't exist.");
+          playerSocket.emit("err");
+        }
       }
-    } else {
-      options = optS;
-    }
+    } catch (err) {
+      logger.log(
+        "warn",
+        "Error while parsing a 'start game' request: " + err.message
+      );
 
-    return options;
+      console.error(optS);
+
+      logger.log("warn", optS);
+
+      playerSocket.emit(
+        "err",
+        JSON.stringify({
+          event: "start game",
+          error: "parse"
+        })
+      );
+    }
   }
 
   /**
@@ -179,31 +210,50 @@ export class io {
    * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
    * @param {string}optS Options in the format of `iJoinGame`.
    */
-  private JoinGame(playerSocket: SocketIO.Socket, optS: any): void {
-    let opt: iJoinGame = this.ParseOptions(optS);
+  private JoinGame(playerSocket: SocketIO.Socket, optS: string): void {
+    let opt: iJoinGame = undefined;
 
-    const game: iGame | undefined = this.GameSessions.Sessions.find(
-      x => x.generalArguments.gameId == opt.gameId
-    );
+    try {
+      opt = JSON.parse(optS);
 
-    if (game) {
-      game
-        .AddPlayer(opt.username, playerSocket, [PlayerRole.Player])
-        .then((res: any) => {
-          playerSocket.join(game.generalArguments.gameId);
-          logger.log(
-            "info",
-            "Player %s joined game %s.",
-            opt.username,
-            game.generalArguments.gameId
-          );
+      const game: iGame | undefined = this.GameSessions.Sessions.find(
+        x => x.generalArguments.gameId == opt.gameId
+      );
+
+      if (game) {
+        game
+          .AddPlayer(opt.username, playerSocket, [PlayerRole.Player])
+          .then((res: any) => {
+            playerSocket.join(game.generalArguments.gameId);
+            logger.log(
+              "info",
+              "Player %s joined game %s.",
+              opt.username,
+              game.generalArguments.gameId
+            );
+          })
+          .catch((err: any) => {
+            logger.log("info", "Error: " + err.message);
+            playerSocket.emit("err");
+          });
+      } else {
+        logger.log("info", "Game could not be found.");
+      }
+    } catch (err) {
+      logger.log(
+        "warn",
+        "Error while parsing a 'join game' request: " + err.message
+      );
+
+      console.error(optS);
+
+      playerSocket.emit(
+        "err",
+        JSON.stringify({
+          event: "join game",
+          error: "parse"
         })
-        .catch((err: any) => {
-          logger.log("info", "Error: " + err.message);
-          playerSocket.emit("err");
-        });
-    } else {
-      logger.log("info", "Game could not be found.");
+      );
     }
   }
 
@@ -212,17 +262,36 @@ export class io {
    * @param {SocketIO.Socket}playerSocket The player's SocketIO.Socket.
    * @param {string}optS Options in the format of `iPlayerAction`.
    */
-  private PlayerAction(playerSocket: SocketIO.Socket, msgS: string): void {
-    const msg: iPlayerAction = JSON.parse(msgS);
-    console.log(msgS);
-    for (let item of this.GameSessions.Sessions) {
-      if (item.generalArguments.gameId == msg.gameId) {
-        item.ProcessUserInput(
-          msg.username,
-          msg.msgType,
-          JSON.stringify(msg.data)
-        );
+  private PlayerAction(playerSocket: SocketIO.Socket, optS: string): void {
+    let opt: iPlayerAction = undefined;
+
+    try {
+      opt = JSON.parse(optS);
+
+      for (let item of this.GameSessions.Sessions) {
+        if (item.generalArguments.gameId == opt.gameId) {
+          item.ProcessUserInput(
+            opt.username,
+            opt.msgType,
+            JSON.stringify(opt.data)
+          );
+        }
       }
+    } catch (err) {
+      logger.log(
+        "warn",
+        "Error while parsing a 'player action' request: " + err.message
+      );
+
+      console.error(optS);
+
+      playerSocket.emit(
+        "error",
+        JSON.stringify({
+          event: "playeraction",
+          error: "parse"
+        })
+      );
     }
   }
 
@@ -233,12 +302,11 @@ export class io {
     this.QuestionQ.on("connection", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
 
-      playerSocket.on("host game", (username: string) => {
-        console.log(username);
+      playerSocket.on("host game", (optS: string) => {
         this.HostGame(
           playerSocket,
           this.QuestionQ,
-          username,
+          optS,
           GModels.Gamemode.QuestionQ
         );
       });
@@ -267,11 +335,11 @@ export class io {
   private DeterminationConf(): void {
     this.Determination.on("connection", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
-      playerSocket.on("host game", (username: string) => {
+      playerSocket.on("host game", (optS: string) => {
         this.HostGame(
           playerSocket,
           this.Determination,
-          username,
+          optS,
           GModels.Gamemode.Determination
         );
       });
@@ -302,29 +370,24 @@ export class io {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
 
       playerSocket.on("host game", (optS: string) => {
-        const opt: any = JSON.parse(optS);
         this.HostGame(
           playerSocket,
           this.Millionaire,
-          opt.GeneralArgs.username,
+          optS,
           GModels.Gamemode.Millionaire
         );
       });
 
       playerSocket.on("join game", (optS: string) => {
-        const opt: any = JSON.parse(optS);
-        this.JoinGame(playerSocket, opt);
+        this.JoinGame(playerSocket, optS);
       });
 
       playerSocket.on("start game", (optS: string) => {
-        console.log(optS);
-        const opt: any = JSON.parse(optS);
-        this.StartGame(playerSocket, opt);
+        this.StartGame(playerSocket, optS);
       });
 
       playerSocket.on("leave game", (optS: string) => {
-        const opt: any = JSON.parse(optS);
-        this.LeaveGame(playerSocket, opt);
+        this.LeaveGame(playerSocket, optS);
       });
 
       playerSocket.on("action", (optS: string) => {
@@ -341,29 +404,19 @@ export class io {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
 
       playerSocket.on("host game", (optS: string) => {
-        const opt: any = JSON.parse(optS);
-        this.HostGame(
-          playerSocket,
-          this.Duel,
-          opt.GeneralArgs.username,
-          GModels.Gamemode.Duel
-        );
+        this.HostGame(playerSocket, this.Duel, optS, GModels.Gamemode.Duel);
       });
 
       playerSocket.on("join game", (optS: string) => {
-        console.log(optS);
-        const opt: any = JSON.parse(optS);
-        this.JoinGame(playerSocket, opt);
+        this.JoinGame(playerSocket, optS);
       });
 
       playerSocket.on("start game", (optS: string) => {
-        const opt: any = JSON.parse(optS);
-        this.StartGame(playerSocket, opt);
+        this.StartGame(playerSocket, optS);
       });
 
       playerSocket.on("leave game", (optS: string) => {
-        const opt: any = JSON.parse(optS);
-        this.LeaveGame(playerSocket, opt);
+        this.LeaveGame(playerSocket, optS);
       });
 
       playerSocket.on("action", (optS: string) => {

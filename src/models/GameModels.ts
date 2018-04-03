@@ -128,7 +128,7 @@ export enum MessageType {
   DuelChooseCategoryRequest,
   DuelChooseCategoryReply,
   DuelSetReadyState,
-  DuelPlayerData,
+  DuelPlayerData
 }
 
 /**
@@ -276,6 +276,15 @@ export interface iChangePlayerRolesRequest {
   toRemove?: PlayerRole[];
 }
 
+/** The iHostGame-interface contains the data to host a game.
+ * @property generalArgs: General gamehosting options (e.g. username)
+ * @property hostData: Gamemode-specific options
+ */
+export interface iHostGame {
+  GeneralArgs: any;
+  HostData: any;
+}
+
 /**
  * The iJoinGame-interface contains the data to join a game.
  * @property gameId: string - the ID of the game to join
@@ -289,14 +298,13 @@ export interface iJoinGame {
 }
 
 /**
- * The iJoinGame-interface contains the data to leave a game.
+ * The iLeaveGame-interface contains the data to leave a game.
  * @property gameId: string - the ID og the game to leave
  * @property username: string - the name of the user to leave
  */
 export interface iLeaveGame {
   gameId: string;
   username: string;
-  //reason?
 }
 
 /**
@@ -911,7 +919,7 @@ export interface iMillionaireAudienceJokerRequest {
  * @property possibleResponses: number - the amount of player's that can give a clue
  */
 export interface iMillionaireAudienceJokerResponse {
-  questionId: string
+  questionId: string;
   possibleResponses: number;
 }
 
