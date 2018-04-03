@@ -4,7 +4,6 @@ import { generateGameId } from "./Helper";
 import { RunningGames } from "../game/RunningGames";
 import { logger } from "./Logging";
 import { GameFactory } from "../game/GameFactory";
-import { PlayerCommunication } from "./PlayerCom";
 import {
   iGeneralHostArguments,
   iPlayerAction,
@@ -18,6 +17,11 @@ import * as GModels from "../models/GameModels";
 import { iGame } from "../game/iGame";
 import { ENOSTR } from "constants";
 
+/**
+ * Handles the various socket.io-namespaces for the gamemodes.
+ * @class
+ * @author Andrej Resanovic
+ */
 export class io {
   public server: SocketIO.Server;
   public QuestionQ: SocketIO.Namespace;
@@ -26,14 +30,15 @@ export class io {
   public Duel: SocketIO.Namespace;
   public GameSessions: RunningGames;
   public GameFactory: GameFactory;
-  public PlayerComm: PlayerCommunication;
 
-  constructor(
-    app: any,
-    sessions: RunningGames,
-    factory: GameFactory,
-    playercom: PlayerCommunication
-  ) {
+  /**
+   * Initializes the io class.
+   * @param app - The express app.
+   * @param sessions - The RunningGames object.
+   * @param factory - The GameFactory object.
+   * @param playercom -
+   */
+  constructor(app: any, sessions: RunningGames, factory: GameFactory) {
     this.server = socketio.listen(app);
     //Setting up namespaces
     this.QuestionQ = this.server.of("/questionq");
@@ -43,7 +48,6 @@ export class io {
 
     this.GameSessions = sessions;
     this.GameFactory = factory;
-    this.PlayerComm = playercom;
     this.QuestionQConf();
     this.DeterminationConf();
     this.MillionaireConf();
@@ -151,6 +155,10 @@ export class io {
     }
   }
 
+  /**
+   * Parses IJoinGame-style JSONs.
+   * @param optS - THe iJoinGame object as String.
+   */
   private ParseOptions(optS: any): iJoinGame {
     let options: iJoinGame;
     if (typeof optS === "string") {

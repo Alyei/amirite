@@ -100,19 +100,6 @@ export class Https {
       }
     );
 
-    /*this.app.post("/api/signup", (req: any, res: any) => {
-      console.log("THIS COMING IN");
-      console.log(req.body);
-      console.log("_______________________________________");
-      console.log(req.body.data);
-      res.send("successful");
-    });*/
-    /*this.passport.authenticate("local-signup", {
-      successRedirect: "/profile", //Redirect to the secure profile section.
-      failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
-      failureFlash: true //Allow flash messages.
-      });*/
-
     this.app.post(
       "/api/login",
       this.passport.authenticate("local-login"),

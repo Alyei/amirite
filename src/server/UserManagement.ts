@@ -9,6 +9,7 @@ import { logger } from "./Logging";
 /**
  * Contains the various authentication/signup methods.
  * @class
+ * @author Andrej Resanovic
  */
 export class Authentication {
   private LoginStrategy: local.Strategy;
@@ -103,10 +104,7 @@ export class Authentication {
             if (!user) {
               //If the user doesn't exist
               console.log("User doesn't exist.");
-              return done(
-                null,
-                false
-              );
+              return done(null, false);
             }
 
             //Waits for the password check.
