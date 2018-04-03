@@ -3,14 +3,13 @@ import * as crypto from "crypto";
 import { Mongoose } from "mongoose";
 import { logger } from "./logging";
 import * as iQuestion from "../models/iQuestion";
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 /**
  * Hashes the model's password and saves it to the database.
  * @function
  * @param {any} model - The usermodel that should be saved.
- * @author Andrej Resanovic
  */
 let hashPwAndSave = function(model: any): void {
   try {
@@ -28,14 +27,13 @@ let hashPwAndSave = function(model: any): void {
       });
     });
   } catch (err) {
-    logger.log("error", err);
+    logger.log("error", err.message);
   }
 };
 
 /**
  * Generates a random, 10 character long, id.
  * @returns The id.
- * @author Andrej Resanovic
  */
 let generateId = function(): string {
   return crypto
@@ -49,7 +47,6 @@ let generateId = function(): string {
 /**
  * Generates a random, 6 character long, game id.
  * @returns The game id.
- * @author Andrej Resanovic
  */
 let generateGameId = function(): string {
   return crypto
@@ -61,12 +58,16 @@ let generateGameId = function(): string {
     .toUpperCase();
 };
 
-/**
- * Parses the settings file and exposes it for use.
- * @author Andrej Resanovic
- */
-const settings = JSON.parse(
-  readFileSync(join(__dirname, "..", "..", "config.json")).toString()
-);
+let settings: any = undefined;
+if (existsSync(join(__dirname, "..", "..", "config.json"))) {
+  settings = JSON.parse(
+    readFileSync(join(__dirname, "..", "..", "config.json")).toString()
+  );
+} else {
+  console.error(
+    "Could not find config.json. Read the docs for more information."
+  );
 
+  process.exit(-1);
+}
 export { hashPwAndSave, generateId, generateGameId, settings };
