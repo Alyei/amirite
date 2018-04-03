@@ -10,6 +10,7 @@ import { join } from "path";
  * Hashes the model's password and saves it to the database.
  * @function
  * @param {any} model - The usermodel that should be saved.
+ * @author Andrej Resanovic
  */
 let hashPwAndSave = function(model: any): void {
   try {
@@ -34,6 +35,7 @@ let hashPwAndSave = function(model: any): void {
 /**
  * Generates a random, 10 character long, id.
  * @returns The id.
+ * @author Andrej Resanovic
  */
 let generateId = function(): string {
   return crypto
@@ -47,6 +49,7 @@ let generateId = function(): string {
 /**
  * Generates a random, 6 character long, game id.
  * @returns The game id.
+ * @author Andrej Resanovic
  */
 let generateGameId = function(): string {
   return crypto
@@ -58,6 +61,10 @@ let generateGameId = function(): string {
     .toUpperCase();
 };
 
+/**
+ * Parses the settings file and exposes it for use.
+ * @author Andrej Resanovic
+ */
 const settings = JSON.parse(
   readFileSync(join(__dirname, "..", "..", "config.json")).toString()
 );

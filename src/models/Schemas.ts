@@ -5,7 +5,8 @@ import { Gamemode } from "./GameModels";
 //import { Gamemode, iQuestionQHostArguments } from "./GameModels";
 
 /**
- * The mongoose-schema of the userobject for the database.
+ * The mongoose schema of the userobject.
+ * @author Andrej Resanovic
  */
 let userSchema: mongoose.Schema = new mongoose.Schema({
   username: {
@@ -43,6 +44,10 @@ let userSchema: mongoose.Schema = new mongoose.Schema({
   }
 });
 
+/**
+ * Mongoose schema of a question object.
+ * @author Andrej Resanovic
+ */
 let Question: mongoose.Schema = new mongoose.Schema({
   id: {
     type: String,
@@ -86,6 +91,10 @@ let Question: mongoose.Schema = new mongoose.Schema({
   }
 });
 
+/**
+ * Mongoose schema of gamedata for QuestionQ.
+ * @author Georg Schubbauer
+ */
 let QuestionQGameData = new mongoose.Schema({
   gameId: {
     type: String,
@@ -115,6 +124,10 @@ let QuestionQGameData = new mongoose.Schema({
   }
 });
 
+/**
+ * Mongoose schema of gamedata for Determination.
+ * @author Georg Schubbauer
+ */
 let DeterminationGameData = new mongoose.Schema({
   gameId: {
     type: String,
@@ -135,6 +148,10 @@ let DeterminationGameData = new mongoose.Schema({
   }
 });
 
+/**
+ * Mongoose schema of gamedata for Duel.
+ * @author Georg Schubbauer
+ */
 let DuelGameData = new mongoose.Schema({
   gameId: {
     type: String,
@@ -159,6 +176,10 @@ let DuelGameData = new mongoose.Schema({
   }
 });
 
+/**
+ * Mongoose schema of gamedata for Millionaire.
+ * @author Georg Schubbauer
+ */
 let MillionaireGameData = new mongoose.Schema({
   gameId: {
     type: String,
@@ -181,55 +202,48 @@ let MillionaireGameData = new mongoose.Schema({
     type: [],
     required: true
   }
-})
-
-let Room: mongoose.Schema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-    match: /^[0-9a-z]{10}$/i
-  },
-  owner: {
-    required: true,
-    type: String,
-    unique: false
-  },
-  members: {
-    type: [{ username: String, role: Number }],
-    required: true
-  },
-  name: {
-    type: String,
-    required: true,
-    match: /^[0-9a-z]{0,32}$/i
-  }
 });
 
+/**
+ * Model of the question schema.
+ */
 const QuestionModel: any = mongoose.model("question", Question);
 
+/**
+ * Model of the usermodel schema.
+ */
 const UserModel: any = mongoose.model("user", userSchema);
 
+/**
+ * Model of QuestionQ gamedata schema.
+ */
 const QuestionQGameDataModel: any = mongoose.model(
   "questionQGameData",
   QuestionQGameData
 );
+
+/**
+ * Model of Determination gamedata schema.
+ */
 const DeterminationGameDataModel: any = mongoose.model(
   "determinationGameData",
   DeterminationGameData
 );
+
+/**
+ * Model of Millionaire gamedate schema.
+ */
 const MillionaireGameDataModel: any = mongoose.model(
   "millionaireGameData",
   MillionaireGameData
 );
-const DuelGameDataModel: any = mongoose.model(
-  "duelGameData",
-  DuelGameData
-);
+const DuelGameDataModel: any = mongoose.model("duelGameData", DuelGameData);
 
-const RoomModel: any = mongoose.model("room", Room);
-
-/**
- * @returns The usermodel.
- */
-export { UserModel, QuestionModel, RoomModel, QuestionQGameDataModel, DeterminationGameDataModel, MillionaireGameDataModel, DuelGameDataModel };
+export {
+  UserModel,
+  QuestionModel,
+  QuestionQGameDataModel,
+  DeterminationGameDataModel,
+  MillionaireGameDataModel,
+  DuelGameDataModel
+};

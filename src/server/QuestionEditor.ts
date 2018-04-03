@@ -4,6 +4,11 @@ import { QuestionModel } from "../models/Schemas";
 import { logger } from "./logging";
 import { generateId } from "./helper";
 
+/**
+ * Contains the function that saves new questions to the database.
+ * @class
+ * @author Andrej Resanovic
+ */
 export class Editor {
   /**
    * Saves the question to the database.

@@ -1,6 +1,10 @@
 import winston = require("winston");
 import { settings } from "./helper";
 
+/**
+ * Custom winston logging-object.
+ * @author Andrej Resanovic
+ */
 let logger: any = new winston.Logger({
   transports: [
     new winston.transports.File({

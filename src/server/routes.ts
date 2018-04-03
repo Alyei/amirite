@@ -100,19 +100,6 @@ export class Https {
       }
     );
 
-    /*this.app.post("/api/signup", (req: any, res: any) => {
-      console.log("THIS COMING IN");
-      console.log(req.body);
-      console.log("_______________________________________");
-      console.log(req.body.data);
-      res.send("successful");
-    });*/
-    /*this.passport.authenticate("local-signup", {
-      successRedirect: "/profile", //Redirect to the secure profile section.
-      failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
-      failureFlash: true //Allow flash messages.
-      });*/
-
     this.app.post(
       "/api/login",
       this.passport.authenticate("local-login"),
@@ -129,15 +116,16 @@ export class Https {
       }
     );
 
-    this.app.post("/question", (req: any, res: any) => {
+    this.app.post("/api/questionupload", (req: any, res: any) => {
       this.questEdit
         .SaveQuestion(JSON.parse(req.body.data))
         .then((prom: any) => {
-          res.send("successful");
+          res.status(200).JSON({
+            success: true
+          });
         })
         .catch((err: any) => {
-          //implement statuscode
-          res.send("failed");
+          res.status(400).JSON({ success: false });
         });
     });
 
@@ -171,6 +159,12 @@ export class Https {
         }
       }
     });
+
+    this.app.post("/api/join", this.IsAuthenticated, (req: any, res: any) => {
+      res.status(200).json({
+        auth: "true"
+      });
+    });
   }
 
   private IsAuthenticated(req: any, res: any, next: any): any {
@@ -178,7 +172,7 @@ export class Https {
       return next();
     } else {
       return res.status(401).json({
-        error: "not authenticated"
+        auth: "false"
       });
     }
   }
