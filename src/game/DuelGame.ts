@@ -24,6 +24,7 @@ import { RunningGames } from "./RunningGames";
 //#region classes
 /**
  * The DuelGame-class manages a single Duel-game.
+ * @author Georg Schubbauer
  */
 export class DuelGame implements iGame {
     //#region fields
@@ -66,8 +67,8 @@ export class DuelGame implements iGame {
                 pointDeductionBase2: 50,
                 pointDeductionWhenTooSlow: 10,
                 postfeedbackGap: 3000,
-                choosingTime1: 5000,
-                choosingTime2: 7000,
+                choosingTime1: 10000,
+                choosingTime2: 10000,
                 maxCategoryChoiceRange: 3,
                 maxDifficultyChoiceRange: 3
             },

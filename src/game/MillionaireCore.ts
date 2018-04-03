@@ -50,6 +50,8 @@ import { platform } from "os";
 //#region enums
 /**
  * The MillionaireGamePhase-enum contains all possible states of a Millionaire-game.
+ * @value 0: Setup - the game has not started yet
+ * @value 1: Running - the game is running
  */
 export enum MillionaireGamePhase {
   Setup = 0,
@@ -61,6 +63,7 @@ export enum MillionaireGamePhase {
 /**
  * The MillionaireCore-class combines the Millionaire-game's mechanics with user input.
  * It is used to run a Millionaire-game.
+ * @author Georg Schubbauer
  */
 export class MillionaireCore {
   //#region fields
@@ -521,6 +524,8 @@ export class MillionaireCore {
 
       if (player.state != PlayerState.Disqualified) {
         const startGameData: iMillionaireStartGameData = {
+          gameId: this.gameId,
+          gamemode: this.gamemode,
           gameArguments: this.gameArguments,
           players: this.GetPlayerData(this.players)
         };
@@ -880,8 +885,8 @@ export class MillionaireCore {
       feedback.message = "correct";
       // score formula
       feedback.points =
-        (this.millionaire.score + this.gameArguments.scoreCalcA) *
-        this.gameArguments.scoreCalcB;
+        this.gameArguments.scoreCalcA +
+        (this.millionaire.score * this.gameArguments.scoreCalcB);
 
       this.millionaire.score += feedback.points;
       feedback.score = this.millionaire.score;

@@ -6,6 +6,7 @@ import { PlayerBase, iPlayerBaseArguments } from "./PlayerBase";
 //#region classes
 /**
  * The DuelPlayer-class provides all data for a player in a Duel-game by implementing the iDuelPlayerData-interface and extending the PlayerBase-class.
+ * @author Georg Schubbauer
  */
 export class DuelPlayer extends PlayerBase implements iDuelPlayerData {
     //#region properties
@@ -44,7 +45,8 @@ export class DuelPlayer extends PlayerBase implements iDuelPlayerData {
             username: this.username,
             roles: this.roles,
             state: this.state,
-            score: this.score
+            score: this.score,
+            ready: this.ready
         }
     }
     //#endregion

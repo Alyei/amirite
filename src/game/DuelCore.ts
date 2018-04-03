@@ -12,6 +12,9 @@ import { Tryharder } from "./Tryharder";
 //#region enums
 /**
  * The DuelGamePhase-enum contains all possible states of a Duel-game.
+ * @value 0: Setup - the game has not started yet
+ * @value 1: Running - the game is running
+ * @value 2: Ended - the game is finished
  */
 export enum DuelGamePhase {
     Setup = 0,
@@ -24,6 +27,7 @@ export enum DuelGamePhase {
 /**
  * The DuelCore-class combines the Duel-game's mechanics with user input.
  * It is used to run a Duel-game.
+ * @author Georg Schubbauer
  */
 export class DuelCore {
     //#region fields
@@ -136,7 +140,7 @@ export class DuelCore {
             gamemode: this.gamemode,
             gameArguments: this.gameArguments,
             playerData: this.players.map(player => player.GetPlayerData()),
-            questionBases: this.questionBases,
+            questions: this.questions,
         } as iDuelEndGameData;
     }
 
@@ -242,7 +246,8 @@ export class DuelCore {
     public GetStartGameData(): iDuelStartGameData {
         const startGameData: iDuelStartGameData = {
             gameId: this.gameId,
-            players: this.players.map(player => player.username),
+            gamemode: this.gamemode,
+            players: this.players.map(p => p.GetPlayerData()),
             gameArguments: this.gameArguments
         };
         return startGameData;
@@ -430,7 +435,8 @@ export class DuelCore {
                 question: question.question,
                 options: answers,
                 timeLimit: question.timeLimit,
-                difficulty: question.difficulty
+                difficulty: question.difficulty,
+                categories: question.categories
             },
             correctAnswer: letters[0],
             questionTime: new Date(),
@@ -684,20 +690,15 @@ export class DuelCore {
     private LogSilly(toLog: string) {
         logger.log("silly", this.gameId + " - " + toLog);
     }
+
     /**
-     * Sends detailed data of the player to priviledged spectators (host & mods)
-     * and statistics of the player to usual spectators
+     * Sends data of the player to all players
      * @param player - player to be spectated
      */
     private SpectatePlayer(player: DuelPlayer) {
       const playerStats: iDuelPlayerData = player.GetPlayerData();
   
-      /*const privilegedSpectators: QuestionQPlayer[] = this.players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
-      for (let ps of privilegedSpectators) {
-        ps.Inform(MessageType.QuestionQPlayerData, player.GetPlayerData());
-      }*/
-  
-      const spectators: PlayerBase[] = this.players // no filter .filter(x => x.state == PlayerState.Spectating);
+      const spectators: PlayerBase[] = this.players
       for (let spec of spectators) {
         spec.Inform(MessageType.DuelPlayerData, playerStats);
       }

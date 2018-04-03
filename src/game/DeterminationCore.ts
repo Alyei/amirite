@@ -33,6 +33,9 @@ import { RunningGames } from "./RunningGames";
 //#region enums
 /**
  * The DeterminationGamePhase-enum contains all possible states of a Determination-game.
+ * @value 0: Setup - the game has not started yet
+ * @value 1: Running - the game is running
+ * @value 2: Ended - the game is finished
  */
 enum DeterminationGamePhase {
   Setup = 0,
@@ -45,6 +48,7 @@ enum DeterminationGamePhase {
 /**
  * The DeterminationCore-class combines the user input with the gamemode mechanics.
  * It runs the game and eventually saves the results to the database.
+ * @author Georg Schubbauer
  */
 export class DeterminationCore {
   //#region fields
@@ -408,6 +412,9 @@ export class DeterminationCore {
    */
   private GetStartGameData(): iDeterminationStartGameData {
     const startGameData: iDeterminationStartGameData = {
+      gameId: this.gameId,
+      gamemode: this.gamemode,
+      playerStatistics: this.GetPlayerStatistics(),
       questionAmount: this.questions.length,
       gameArguments: this.gameArguments
     };

@@ -6,6 +6,7 @@ import { PlayerBase, iPlayerBaseArguments } from "./PlayerBase";
 //#region classes
 /**
  * The DeterminationPlayer-class provides all data for a player in a Determination-game by implementing the iDeterminationPlayerData-interface and extending the PlayerBase-class.
+ * @author Georg Schubbauer
  */
 export class DeterminationPlayer extends PlayerBase implements iDeterminationPlayerData {
     //#region properties
