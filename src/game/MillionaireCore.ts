@@ -303,6 +303,7 @@ export class MillionaireCore {
     question: iMillionaireQuestionData
   ): iMillionairePlayerQuestionData {
     if (question.otherOptions.length < 3) {
+      this.LogSilly("invalid count of other options (at least 3)\r\n" + JSON.stringify(question));
       return; // invalid count of other options (at least 3)
     }
 
@@ -746,16 +747,19 @@ export class MillionaireCore {
   ) {
     const mod: PlayerBase = this.players.find(mod => mod.username == username);
     if (!mod) {
+      this.LogSilly("user not found");
       return; // user not found
     }
     if (
       undefined ==
       [PlayerRole.Host, PlayerRole.Mod].find(role => mod.roles.find(mr => mr == role) != undefined)
     ) {
+      this.LogSilly("user not permitted");
       return; // not permitted
     }
 
     if (!this.millionaire) {
+      this.LogSilly("no millionaire");
       return; // no millionaire
     }
 
@@ -763,6 +767,7 @@ export class MillionaireCore {
       this.millionaire.currentQuestion &&
       !this.millionaire.currentQuestion.tip
     ) {
+      this.LogSilly("unanswered question remaining");
       //return; // unanswered question remaining
     }
 
@@ -772,6 +777,7 @@ export class MillionaireCore {
       q => q.questionId == choice.questionId
     );
     if (!questionBase) {
+      this.LogSilly("question not found");
       return; // question not found
     }
 
@@ -782,6 +788,7 @@ export class MillionaireCore {
     if (!this.millionaire.currentQuestion) {
       this.questions = this.questions.filter(q => q != questionBase); // remove invalid question
       this.GetNextQuestion();
+      this.LogSilly("failed to generate question");
       return; // failed to generate question
     }
 
