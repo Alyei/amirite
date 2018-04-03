@@ -45,6 +45,7 @@ import { ArrayManager } from "./ArrayManager";
 import { PlayerAlreadyHostsGame } from "../server/Errors";
 import { timingSafeEqual } from "crypto";
 import { platform } from "os";
+import { Model, model, ModelFindOneAndUpdateOptions } from "mongoose";
 //#endregion
 
 //#region enums
@@ -303,6 +304,7 @@ export class MillionaireCore {
     question: iMillionaireQuestionData
   ): iMillionairePlayerQuestionData {
     if (question.otherOptions.length < 3) {
+      this.LogSilly("invalid count of other options (at least 3)\r\n" + JSON.stringify(question));
       return; // invalid count of other options (at least 3)
     }
 
@@ -454,19 +456,24 @@ export class MillionaireCore {
       .filter(x => !gameData.players.find(y => x.username == y.username))
       .concat(gameData.players);
 
-    const gameDataModel = new MillionaireGameDataModel(gameData);
-    gameDataModel.save((err: any) => {
-      if (err) {
-        logger.log(
-          "info",
-          "failed to save game (%s); error: %s",
-          gameData,
-          err
-        );
-        return;
-      }
-      this.LogSilly("the game has been saved");
-    });
+    try {
+      MillionaireGameDataModel.remove({ gameId: gameData.gameId }, (err: any) => { if (err) {this.LogSilly("erronimo");return}});
+
+      const gameDataModel = new MillionaireGameDataModel(gameData);
+      gameDataModel.save((err: any) => {
+        if (err) {
+          logger.log(
+            "info",
+            "failed to save game; error: %s",
+            err
+          );
+          return;
+        }
+        this.LogSilly("the game has been saved");
+      });
+    } catch (err) {
+      this.LogSilly("failed to save game\r\n" + err.message + "\r\n\r\n" + JSON.stringify(gameData));
+    }
   }
 
   /**
@@ -746,16 +753,19 @@ export class MillionaireCore {
   ) {
     const mod: PlayerBase = this.players.find(mod => mod.username == username);
     if (!mod) {
+      this.LogSilly("user not found");
       return; // user not found
     }
     if (
       undefined ==
       [PlayerRole.Host, PlayerRole.Mod].find(role => mod.roles.find(mr => mr == role) != undefined)
     ) {
+      this.LogSilly("user not permitted");
       return; // not permitted
     }
 
     if (!this.millionaire) {
+      this.LogSilly("no millionaire");
       return; // no millionaire
     }
 
@@ -763,6 +773,7 @@ export class MillionaireCore {
       this.millionaire.currentQuestion &&
       !this.millionaire.currentQuestion.tip
     ) {
+      this.LogSilly("unanswered question remaining");
       //return; // unanswered question remaining
     }
 
@@ -772,6 +783,7 @@ export class MillionaireCore {
       q => q.questionId == choice.questionId
     );
     if (!questionBase) {
+      this.LogSilly("question not found");
       return; // question not found
     }
 
@@ -782,6 +794,7 @@ export class MillionaireCore {
     if (!this.millionaire.currentQuestion) {
       this.questions = this.questions.filter(q => q != questionBase); // remove invalid question
       this.GetNextQuestion();
+      this.LogSilly("failed to generate question");
       return; // failed to generate question
     }
 

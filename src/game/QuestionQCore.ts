@@ -147,7 +147,7 @@ export class QuestionQCore {
         logger.log(
           "info",
           "failed to save game (%s); error: %s",
-          gameData,
+          JSON.stringify(gameData),
           err
         );
         return;
@@ -511,6 +511,7 @@ export class QuestionQCore {
     question: iGeneralQuestion
   ): [iQuestionQQuestion, string] | undefined {
     if (question.otherOptions.length < 3) {
+      this.LogSilly("invalid count of other options (at least 3)\r\n" + JSON.stringify(question));
       return; // invalid count of other options (at least 3)
     }
 
@@ -654,10 +655,11 @@ export class QuestionQCore {
           string
         ] | undefined = this.GetQuestionQQuestion(nextQuestionBase);
 
-        if (nextQuestion) {
+        if (!nextQuestion) {
           this.questions = this.questions.filter(q => q != nextQuestionBase);
           this.QuestionPlayer(player);
-          return; // error when generating question
+          this.LogSilly("error when generating question");
+          return; // 
         }
 
         // set time correction

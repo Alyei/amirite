@@ -511,6 +511,7 @@ export class DuelCore {
         
         if (!questionBase) {
             this.Stop();
+            this.LogSilly("no valid questionBase found");
             return; // no valid questionBase found
         }
         this.currentQuestion = this.GetDuelPlayerQuestion(questionBase);
@@ -518,6 +519,7 @@ export class DuelCore {
             //this.Stop();
             this.questionBases = this.questionBases.filter(q => q != questionBase);
             this.GetNextQuestion();
+            this.LogSilly("failed question generation");
             return; // failed question generation
         }
 
