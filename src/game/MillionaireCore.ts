@@ -45,6 +45,7 @@ import { ArrayManager } from "./ArrayManager";
 import { PlayerAlreadyHostsGame } from "../server/Errors";
 import { timingSafeEqual } from "crypto";
 import { platform } from "os";
+import { Model, model, ModelFindOneAndUpdateOptions } from "mongoose";
 //#endregion
 
 //#region enums
@@ -455,19 +456,24 @@ export class MillionaireCore {
       .filter(x => !gameData.players.find(y => x.username == y.username))
       .concat(gameData.players);
 
-    const gameDataModel = new MillionaireGameDataModel(gameData);
-    gameDataModel.save((err: any) => {
-      if (err) {
-        logger.log(
-          "info",
-          "failed to save game (%s); error: %s",
-          gameData,
-          err
-        );
-        return;
-      }
-      this.LogSilly("the game has been saved");
-    });
+    try {
+      MillionaireGameDataModel.remove({ gameId: gameData.gameId }, (err: any) => { if (err) {this.LogSilly("erronimo");return}});
+
+      const gameDataModel = new MillionaireGameDataModel(gameData);
+      gameDataModel.save((err: any) => {
+        if (err) {
+          logger.log(
+            "info",
+            "failed to save game; error: %s",
+            err
+          );
+          return;
+        }
+        this.LogSilly("the game has been saved");
+      });
+    } catch (err) {
+      this.LogSilly("failed to save game\r\n" + err.message + "\r\n\r\n" + JSON.stringify(gameData));
+    }
   }
 
   /**
