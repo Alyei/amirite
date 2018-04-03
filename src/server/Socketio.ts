@@ -230,10 +230,11 @@ export class io {
    * Configures the events for the QuestionQ gamemode.
    */
   private QuestionQConf(): void {
-    this.QuestionQ.on("connection of", (playerSocket: SocketIO.Socket) => {
+    this.QuestionQ.on("connection", (playerSocket: SocketIO.Socket) => {
       logger.log("info", "New user connected: %s", playerSocket.client.id);
 
       playerSocket.on("host game", (username: string) => {
+        console.log(username);
         this.HostGame(
           playerSocket,
           this.QuestionQ,
