@@ -2,13 +2,13 @@ html,
 body {
   height: 100%;
   width: 100%;
-  background: url(https://osu.ppy.sh/images/backgrounds/page-333@2x.png);
-  color: whitesmoke;
+  background: url("background.png");
+  color: #cccccc;
 }
 
 .QuestionQGrid,
 .GameEndScreenGrid {
-  /*url(https://osu.ppy.sh/images/backgrounds/page-000.png);*/
+  font-style: Roboto;
   background-attachment: fixed;
   background-size: cover;
   height: 100%;
@@ -23,7 +23,7 @@ body {
 }
 .QuestionBox,
 .AnswerBox {
-  background-color: whitesmoke;
+  background-color: #cccccc;
   color: black;
 }
 
@@ -108,14 +108,14 @@ body {
 }
 .Score {
   margin-top: 1.5ex;
-  color: whitesmoke;
+  color: #cccccc;
 }
 .row {
   display: flex;
 }
 
 .GameEndScreenGrid {
-  color: whitesmoke;
+  color: #cccccc;
 }
 .GameEndRow {
 }

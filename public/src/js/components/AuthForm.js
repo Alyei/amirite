@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, FormGroup, FormControl } from 'react-bootstrap';
 
-export default class Form extends React.Component {
+export default class AuthForm extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -51,13 +51,18 @@ export default class Form extends React.Component {
         password: this.state.password,
       }),
     })
-      .then((res) => {
-        if (res.status === 200) return res.json();
-        else return { status: res.status };
+      .then((response) => {
+        if (!response.ok) {
+          throw Error(response.statusText);
+        }
+        return response.json();
       })
       .then((responseJson) => {
         this.props.setAuth(true, responseJson.user.username);
-        this.props.overlayClose();
+        this.props.closeModal();
+      })
+      .catch((error) => {
+        console.log(error);
       });
   }
 

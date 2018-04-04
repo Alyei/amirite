@@ -1,5 +1,7 @@
-
+.modal-content {
+  background-color: #2f3030;
+}
 @font-face {
-    font-family: Roboto;
-    src: "https://fonts.googleapis.com/css?family=Roboto:400,400i,700";
-  }
+  font-family: Roboto;
+  src: "https://fonts.googleapis.com/css?family=Roboto:400,400i,700";
+}

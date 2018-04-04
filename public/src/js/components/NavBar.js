@@ -22,8 +22,7 @@ class NavBar extends React.Component {
     };
     this.OpenRegister = this.OpenRegister.bind(this);
     this.OpenLogin = this.OpenLogin.bind(this);
-    this.OverlayClose = this.OverlayClose.bind(this);
-    this.handleLinkToHomePage = this.handleLinkToHomePage.bind(this);
+    this.CloseModal = this.CloseModal.bind(this);
     this.handleLinkToProfile = this.handleLinkToProfile.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
   }
@@ -34,7 +33,7 @@ class NavBar extends React.Component {
     this.props.onRef(undefined);
   }
 
-  OverlayClose() {
+  CloseModal() {
     this.setState({ showModal: false });
   }
   OpenLogin() {
@@ -42,11 +41,6 @@ class NavBar extends React.Component {
   }
   OpenRegister() {
     this.setState({ defTab: 2, showModal: true });
-  }
-  handleLinkToHomePage(event) {
-    this.props.history.push({
-      pathname: '/',
-    });
   }
 
   handleLinkToProfile(event) {
@@ -59,14 +53,24 @@ class NavBar extends React.Component {
     fetch('https://localhost:443/api/logout', {
       method: 'POST',
       credentials: 'include',
-    }).then((res) => {
-      console.log(res);
-      if (res.status === 200) {
-        console.log(this);
-        this.props.history.push({ pathname: '/' });
-        this.props.setAuth(false, null);
-      } else return { status: res.status };
-    });
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw Error(response.statusText);
+        }
+        return response;
+      })
+      .then((res) => {
+        console.log(res);
+        if (res.status === 200) {
+          console.log(this);
+          this.props.history.push({ pathname: '/' });
+          this.props.setAuth(false, null);
+        } else return { status: res.status };
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   PublicNavElements() {
@@ -115,11 +119,11 @@ class NavBar extends React.Component {
       <Navbar className="MainNavBar" staticTop inverse collapseOnSelect>
         <Navbar.Header>
           <Navbar.Brand className="MainNavBarBrand">
-            <a href="" onClick={this.handleLinkToHomePage}>
-              Amirite
+            <a href="/" className="navbar-left">
+              <img src="logo.svg" className="NavBarHeaderLogo" /> amirite
             </a>
           </Navbar.Brand>
-          <Navbar.Toggle />
+          {this.props.isAuthenticated === false ? <Navbar.Toggle /> : null}
         </Navbar.Header>
         {this.props.isAuthenticated === false ? (
           <Navbar.Collapse className="navbar-collapse">
@@ -136,7 +140,7 @@ class NavBar extends React.Component {
         <Overlay
           defTab={this.state.defTab}
           showModal={this.state.showModal}
-          overlayClose={this.OverlayClose}
+          closeModal={this.CloseModal}
           setAuth={this.props.setAuth}
         />
         {this.props.children}

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import React from 'react';
 
 import NavBar from './js/components/NavBar';
@@ -12,7 +12,7 @@ export default class Routes extends React.Component {
     this.state = {
       isAuthenticated: false,
       username: undefined,
-      navBarRef: null,
+      navBarRef: undefined,
     };
     this.handleNotAuthenticated = this.handleNotAuthenticated.bind(this);
     this.handleSetAuth = this.handleSetAuth.bind(this);
@@ -33,7 +33,7 @@ export default class Routes extends React.Component {
           return res.json();
         } else if (res.status === 401) {
           this.setState({ isAuthenticated: false });
-          return { username: null };
+          return { username: undefined };
         } else {
           throw 'unexpected error';
         }
@@ -64,33 +64,40 @@ export default class Routes extends React.Component {
             setAuth={this.handleSetAuth}
             username={this.state.username}
           />
-          <Route path="/" exact component={() => <HomePage />} />
-          {this.state.navBarRef !== null &&
-          this.state.username !== undefined ? (
-            <div>
-              <Route
-                path="/profile/:username"
-                component={(props) => (
-                  <HostGame
-                    isAuthenticated={this.state.isAuthenticated}
-                    notAuth={this.handleNotAuthenticated}
-                    username={this.state.username}
-                    {...props}
-                  />
-                )}
-              />
-              <Route
-                path="/game/:gameid"
-                component={(props) => (
-                  <GameModeManager
-                    NavBarRef={this.Navbar}
-                    username={this.state.username}
-                    {...props}
-                  />
-                )}
-              />
-            </div>
-          ) : null}
+          <Switch>
+            <Route path="/" exact component={() => <HomePage />} />
+            {this.state.navBarRef !== undefined &&
+            this.state.username !== undefined ? (
+              <div>
+                <Route
+                  path="/profile/:username"
+                  component={(props) => (
+                    <HostGame
+                      isAuthenticated={this.state.isAuthenticated}
+                      notAuth={this.handleNotAuthenticated}
+                      username={this.state.username}
+                      {...props}
+                    />
+                  )}
+                />
+                <Route
+                  path="/game/:gameid"
+                  component={(props) => (
+                    <GameModeManager
+                      NavBarRef={this.Navbar}
+                      username={this.state.username}
+                      {...props}
+                    />
+                  )}
+                />
+              </div>
+            ) : null}
+            <Route
+              render={function() {
+                return <p>404 not Found</p>;
+              }}
+            />
+          </Switch>
         </div>
       </Router>
     );

@@ -9,6 +9,12 @@ class HostGame extends React.Component {
     super(props);
     this.state = {
       gamemodes: ['QuestionQ', 'Determination', 'Duel', 'Millionaire'],
+      gamemodeConf: {
+        QuestionQ: [('pointBase': 10)],
+        Determination: [],
+        Duel: [],
+        Millionaire: [],
+      },
       selectedMode: '',
       username: null,
       socket: null,
@@ -32,9 +38,22 @@ class HostGame extends React.Component {
     Socket.Connect(this.state.selectedMode)
       .then((sock) => {
         this.setState({ socket: sock });
-        this.state.socket.emit('host game', this.state.username);
+        if (
+          this.state.selectedMode === 'Duel' ||
+          this.state.selectedMode === 'Millionaire'
+        ) {
+          this.state.socket.emit(
+            'host game',
+            JSON.stringify({
+              GeneralArgs: {
+                username: this.state.username,
+              },
+            })
+          );
+        } else {
+          this.state.socket.emit('host game', this.state.username);
+        }
         this.state.socket.on('gameid', (gameid) => {
-          console.log('got game with id', gameid);
           this.props.history.push({
             pathname: '/game/' + gameid,
             host: true,
@@ -52,7 +71,6 @@ class HostGame extends React.Component {
         return (
           <label key={element}>
             <input
-              ref={element}
               type="radio"
               value={element}
               checked={this.state.selectedMode === element}

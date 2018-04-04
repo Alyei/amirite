@@ -42,37 +42,37 @@ export default class GameModeManager extends React.Component {
   }
   //#region StartUp
   componentWillMount() {
-    this.getGameType(this.props).then((gamemode) => {
-      console.log(gamemode);
-      if (this.props.location.socketio !== undefined) {
-        this.setState(
-          { socket: this.props.location.socketio },
-          (this.sockMsgType = this.state.socket.MessageType),
-          function() {
+    this.getGameType(this.props)
+      .then((jsonGamemode) => {
+        var gamemode = JSON.parse(jsonGamemode);
+        return gamemode.gamemode;
+      })
+      .then((gamemode) => {
+        console.log(this.props);
+        if (this.props.location.socketio !== undefined) {
+          this.setState({ socket: this.props.location.socketio }, function() {
             this.setSockets();
-            this.setState({ selectedMode: this.state.socket.nsp.substring(1) });
-          }
-        );
-        if (this.props.location.host !== true) {
-          this.handleJoinGame();
-        }
-      } else {
-        Socket.Connect(gamemode)
-          .then((res) => {
-            this.setState(
-              { socket: res },
-              (this.sockMsgType = this.state.socket.MessageType)
-            );
-          })
-          .then(() => {
-            this.setSockets();
-            this.setState({ selectedMode: gamemode });
-            if (this.props.location.host !== true) {
-              this.handleJoinGame();
-            }
+            this.setState({
+              selectedMode: this.state.socket.nsp.substring(1),
+            });
           });
-      }
-    });
+          if (this.props.location.host !== true) {
+            this.handleJoinGame();
+          }
+        } else {
+          Socket.Connect(gamemode)
+            .then((res) => {
+              this.setState({ socket: res });
+            })
+            .then(() => {
+              this.setSockets();
+              this.setState({ selectedMode: gamemode });
+              if (this.props.location.host !== true) {
+                this.handleJoinGame();
+              }
+            });
+        }
+      });
   }
   async getGameType(props) {
     console.log(props.match.params.gameid);
@@ -120,10 +120,14 @@ export default class GameModeManager extends React.Component {
   }
 
   newSocketEvent(event, listener) {
+    console.log('new socket listener', event, listener);
     this.state.socket.on(event, listener);
     var newSocketEventArray = this.state.openSocketEvents.slice();
     newSocketEventArray.push(event);
-    this.setState({ openSocketEvents: newSocketEventArray });
+    this.setState({ openSocketEvents: newSocketEventArray }, function() {
+      console.log('open sockets', this.state.openSocketEvents);
+    });
+    console.log('socket', this.state.socket);
   }
   //#endregion StartUp
   //#region CloseDown
@@ -157,19 +161,19 @@ export default class GameModeManager extends React.Component {
   }
   setQuestionQSockets() {
     this.newSocketEvent(
-      this.sockMsgType.QuestionQQuestion,
+      this.state.socket.MessageType.QuestionQQuestion,
       this.QuestionQ.setQuestion
     );
     this.newSocketEvent(
-      this.sockMsgType.QuestionQTipFeedback,
+      this.state.socket.MessageType.QuestionQTipFeedback,
       this.QuestionQ.handleFeedback
     );
     this.newSocketEvent(
-      this.sockMsgType.QuestionQPlayerData,
+      this.state.socket.MessageType.QuestionQPlayerDataAndExplanations,
       this.QuestionQ.handlePlayerFinished
     );
     this.newSocketEvent(
-      this.sockMsgType.QuestionQGameData,
+      this.state.socket.MessageType.QuestionQGameData,
       this.QuestionQ.handleGameFinished
     );
   }
@@ -189,19 +193,19 @@ export default class GameModeManager extends React.Component {
   }
   setDeterminationSockets() {
     this.newSocketEvent(
-      this.sockMsgType.DeterminationQuestion,
+      this.state.socket.MessageType.DeterminationQuestion,
       this.Determination.setQuestion
     );
     this.newSocketEvent(
-      this.sockMsgType.DeterminationTipFeedback,
+      this.state.socket.MessageType.DeterminationTipFeedback,
       this.Determination.handleFeedback
     );
     this.newSocketEvent(
-      this.sockMsgType.DeterminationPlayerData,
+      this.state.socket.MessageType.DeterminationPlayerData,
       this.Determination.handlePlayerFinished
     );
     this.newSocketEvent(
-      this.sockMsgType.DeterminationGameData,
+      this.state.socket.MessageType.DeterminationGameData,
       this.Determination.handleGameFinished
     );
   }
@@ -220,29 +224,32 @@ export default class GameModeManager extends React.Component {
     );
   }
   setDuelSockets() {
-    this.newSocketEvent(this.sockMsgType.DuelQuestion, this.Duel.setQuestion);
     this.newSocketEvent(
-      this.sockMsgType.DuelTipFeedback,
+      this.state.socket.MessageType.DuelQuestion,
+      this.Duel.setQuestion
+    );
+    this.newSocketEvent(
+      this.state.socket.MessageType.DuelTipFeedback,
       this.Duel.handleFeedback
     );
     this.newSocketEvent(
-      this.sockMsgType.DuelStartGameData,
+      this.state.socket.MessageType.DuelStartGameData,
       this.Duel.setParameters
     );
     this.newSocketEvent(
-      this.sockMsgType.DuelChoiceRequest,
+      this.state.socket.MessageType.DuelChoiceRequest,
       this.Duel.handleChoice
     );
     this.newSocketEvent(
-      this.sockMsgType.DuelChooseDifficultyRequest,
+      this.state.socket.MessageType.DuelChooseDifficultyRequest,
       this.Duel.handleDifficultyChoice
     );
     this.newSocketEvent(
-      this.sockMsgType.DuelChooseCategoryRequest,
+      this.state.socket.MessageType.DuelChooseCategoryRequest,
       this.Duel.handleCategoryChoice
     );
     this.newSocketEvent(
-      this.sockMsgType.DuelEndGameData,
+      this.state.socket.MessageType.DuelEndGameData,
       this.Duel.handleGameFinished
     );
   }
@@ -262,58 +269,58 @@ export default class GameModeManager extends React.Component {
   }
   setMillionaireSockets() {
     this.newSocketEvent(
-      this.sockMsgType.MillionaireQuestion,
+      this.state.socket.MessageType.MillionaireQuestion,
       this.Millionaire.setQuestion
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireTipFeedback,
+      this.state.socket.MessageType.MillionaireTipFeedback,
       this.Millionaire.handleFeedback
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireAudienceJokerResponse,
+      this.state.socket.MessageType.MillionaireAudienceJokerResponse,
       this.Millionaire.handleAudienceRes
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireAudienceJokerClue,
+      this.state.socket.MessageType.MillionaireAudienceJokerClue,
       this.Millionaire.handleAudienceClue
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireFiftyFiftyJokerResponse,
+      this.state.socket.MessageType.MillionaireFiftyFiftyJokerResponse,
       this.Millionaire.handleFiftyRes
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireCallJokerResponse,
+      this.state.socket.MessageType.MillionaireCallJokerResponse,
       this.Millionaire.handleCallRes
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireCallJokerClue,
+      this.state.socket.MessageType.MillionaireCallJokerClue,
       this.Millionaire.handleCallClue
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionairePlayerData,
+      this.state.socket.MessageType.MillionairePlayerData,
       this.Millionaire.handlePlayerFinished
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireGameData,
+      this.state.socket.MessageType.MillionaireGameData,
       this.Millionaire.handleGameFinished
     );
   }
 
   setMillionaireSpectatorSockets() {
     this.newSocketEvent(
-      this.sockMsgType.SpectatingData,
+      this.state.socket.MessageType.SpectatingData,
       this.Millionaire.handleGameFinished
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireCallJokerRequest,
+      this.state.socket.MessageType.MillionaireCallJokerRequest,
       this.Millionaire.handleGameFinished
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireAudienceJokerRequest,
+      this.state.socket.MessageType.MillionaireAudienceJokerRequest,
       this.Millionaire.handleGameFinished
     );
     this.newSocketEvent(
-      this.sockMsgType.MillionaireGameData,
+      this.state.socket.MessageType.MillionaireGameData,
       this.Millionaire.handleGameFinished
     );
   }

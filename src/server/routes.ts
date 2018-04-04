@@ -103,7 +103,7 @@ export class Https {
       "/api/login",
       this.passport.authenticate("local-login"),
       (req: any, res: any) => {
-        res.redirect("/socket");
+        res.json({user: req.user, sessionID: req.sessionID}); 
       }
     );
 
@@ -150,11 +150,11 @@ export class Https {
       res.send("test");
     });
 
-    this.app.post("/game", this.IsAuthenticated, (req: any, res: any) => {
+    this.app.post("/api/game", this.IsAuthenticated, (req: any, res: any) => {
       const msg = req.body.data;
       for (let game of this.sessions.Sessions) {
         if (game.generalArguments.gameId == msg.gameId) {
-          res.send(game.generalArguments.gamemode);
+          res.send({gamemode: game.generalArguments.gamemode});
         }
       }
     });
@@ -164,6 +164,13 @@ export class Https {
         auth: "true"
       });
     });
+    this.app.get("/api/username", this.IsAuthenticated, (req: any, res: any) => { 
+      res.send({username: req.user.username}); 
+    }); 
+    this.app.post("/api/logout", this.IsAuthenticated, (req: any, res: any) => { 
+      req.logout(); 
+      res.send("successful"); 
+    }); 
   }
 
   private IsAuthenticated(req: any, res: any, next: any): any {

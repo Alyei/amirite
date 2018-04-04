@@ -10,6 +10,7 @@ export function Connect(gamemodeToConnect) {
         'https://localhost:443/' + gamemodeToConnect.toLowerCase()
       );
 
+      console.log(socket);
       socket.PropTypes = {
         MessageType: PropTypes.oneOf(Object.keys(MessageTypes)),
         GameMode: PropTypes.oneOf(Object.keys(GameModes)),
@@ -89,6 +90,7 @@ const GameModes = {
   QuestionQ: '0',
   Determination: '1',
   Millionaire: '2',
+  Duel: '3',
 };
 
 export function closeSocket() {

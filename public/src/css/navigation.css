@@ -1,17 +1,26 @@
 .MainNavBar {
-  font-family: Roboto;
+  font-style: Roboto;
   font-size: 150%;
   border: none;
   border-radius: 0;
   margin: 0;
-  color: darkgray;
+  color: #cccccc;
 }
+.MainNavBarBrand {
+  display: flex;
+  align-items: center;
+}
+.NavBarHeaderLogo {
+  max-width: 60%;
+  max-height: 100%;
+}
+
 .Main_LogReg {
   background: rgb(33, 33, 33);
-  font-family: Roboto;
+  font-style: Roboto;
   border: none;
   border-radius: 0;
-  color: darkgray;
+  color: #cccccc;
   padding-top: 0;
   padding-bottom: 0;
 }
