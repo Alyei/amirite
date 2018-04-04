@@ -32,7 +32,6 @@ export class Https {
    * @function
    */
   private setRoutes(): void {
-    //When the user visits '/' he should be sent .../public/index.html
     this.app.get("/", (req: any, res: any) => {
       res.render(path.join(__dirname, "..", "..", "public", "index.ejs"));
     });
@@ -100,19 +99,6 @@ export class Https {
       }
     );
 
-    /*this.app.post("/api/signup", (req: any, res: any) => {
-      console.log("THIS COMING IN");
-      console.log(req.body);
-      console.log("_______________________________________");
-      console.log(req.body.data);
-      res.send("successful");
-    });*/
-    /*this.passport.authenticate("local-signup", {
-      successRedirect: "/profile", //Redirect to the secure profile section.
-      failureRedirect: "/signup", //Redirect back to the signup page if there is an error.
-      failureFlash: true //Allow flash messages.
-      });*/
-
     this.app.post(
       "/api/login",
       this.passport.authenticate("local-login"),
@@ -129,15 +115,16 @@ export class Https {
       }
     );
 
-    this.app.post("/question", (req: any, res: any) => {
+    this.app.post("/api/questionupload", (req: any, res: any) => {
       this.questEdit
         .SaveQuestion(JSON.parse(req.body.data))
         .then((prom: any) => {
-          res.send("successful");
+          res.status(200).JSON({
+            success: true
+          });
         })
         .catch((err: any) => {
-          //implement statuscode
-          res.send("failed");
+          res.status(400).JSON({ success: false });
         });
     });
 
@@ -166,10 +153,16 @@ export class Https {
     this.app.post("/game", this.IsAuthenticated, (req: any, res: any) => {
       const msg = req.body.data;
       for (let game of this.sessions.Sessions) {
-        if (game.GeneralArguments.gameId == msg.gameId) {
-          res.send(game.GeneralArguments.gamemode);
+        if (game.generalArguments.gameId == msg.gameId) {
+          res.send(game.generalArguments.gamemode);
         }
       }
+    });
+
+    this.app.post("/api/join", this.IsAuthenticated, (req: any, res: any) => {
+      res.status(200).json({
+        auth: "true"
+      });
     });
   }
 
@@ -178,7 +171,7 @@ export class Https {
       return next();
     } else {
       return res.status(401).json({
-        error: "not authenticated"
+        auth: "false"
       });
     }
   }

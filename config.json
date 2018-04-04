@@ -3,7 +3,11 @@
     "tls_cert": "/assets/server.pem",
     "tls_key": "/assets/server.pem",
     "https_port": 443,
-    "http_port": 80
+    "http_port": 80,
+    "logging_level": "silly",
+    "db_connection": "mongodb://localhost:27017/amirite"
   },
-  "games": {}
+  "game": {
+    "ping_check_interval": 2000
+  }
 }

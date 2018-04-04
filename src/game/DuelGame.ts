@@ -1,3 +1,4 @@
+//#region imports
 import {
     MessageType,
     Gamemode,
@@ -8,8 +9,6 @@ import {
     PlayerRole
 } from "../models/GameModels";
 import { logger } from "../server/logging";
-
-// game modes
 import { DuelCore } from "./DuelCore";
 import { iGame } from "./iGame";
 import { PlayerBase } from "./PlayerBase";
@@ -20,45 +19,67 @@ import {
 } from "../server/Errors";
 import { Tryharder } from "./Tryharder";
 import { RunningGames } from "./RunningGames";
+//#endregion
 
+//#region classes
+/**
+ * The DuelGame-class manages a single Duel-game.
+ * @author Georg Schubbauer
+ */
 export class DuelGame implements iGame {
-    private GameCore: DuelCore;
-
+    //#region fields
     /**
-     * Creates an instance of a Duel-Game.
-     * @param GeneralArguments - general game arguments
+     * - provides the game's data and mechanics
+     */
+    private gameCore: DuelCore;
+    //#endregion
+
+    //#region properties
+    /**
+     * - indicates the game's gamemode
+     */
+    readonly gamemode: Gamemode = Gamemode.Duel;
+    //#endregion
+
+    //#region constructors
+    /**
+     * Creates an instance of a Duel-Game
+     * @param generalArguments - general game arguments
      * @param namespace - the namespace socket (unused)
-     * @param _gameCoreArguments - game specific arguments for Duel
+     * @param runningGames - list of every game instance currently running
+     * @param gameCoreArguments - game specific arguments for Duel
      */
     public constructor(
-        readonly GeneralArguments: iGeneralHostArguments,
+        readonly generalArguments: iGeneralHostArguments,
         public namespace: SocketIO.Namespace,
         runningGames: RunningGames,
-        private _gameCoreArguments?: iDuelHostArguments
+        private gameCoreArguments?: iDuelHostArguments
     ) {
-        this.GameCore = new DuelCore(
-            this.GeneralArguments.gameId,
+        this.gameCore = new DuelCore(
+            this.generalArguments.gameId,
             runningGames,
-            this._gameCoreArguments || {
+            this.gameCoreArguments || {
                 scoreGoal: 100000,
                 scoreMin: -10000,
                 pointBase: 100,
                 pointBase2: 100,
                 pointDeductionBase: 50,
                 pointDeductionBase2: 50,
-                poindDetuctionWhenTooSlow: 10,
+                pointDeductionWhenTooSlow: 10,
                 postfeedbackGap: 3000,
-                choosingTime1: 5000,
-                choosingTime2: 7000,
+                choosingTime1: 10000,
+                choosingTime2: 10000,
                 maxCategoryChoiceRange: 3,
                 maxDifficultyChoiceRange: 3
             },
-            this.GeneralArguments.questionIds
+            this.generalArguments.questionIds
         );
     }
+    //#endregion
 
+    //#region publicFunctions
     /**
-     * Processes game actions received from users.
+     * Processes game actions received from users
      * @param username - the user who performs the action
      * @param msgType - the type of the action
      * @param data - the action's data
@@ -81,7 +102,7 @@ export class DuelGame implements iGame {
         switch (msgType) {
             case MessageType.DuelTip: {
                 try {
-                    this.GameCore.PlayerGivesTip(username, JSON.parse(data));
+                    this.gameCore.PlayerGivesTip(username, JSON.parse(data));
                 } catch (err) {
                     this.ProcessUserError(username, { message: err.message, data: err });
                 }
@@ -89,7 +110,7 @@ export class DuelGame implements iGame {
             }
             case MessageType.DuelChoiceReply: {
                 try {
-                    this.GameCore.ChooseChoice(username, JSON.parse(data));
+                    this.gameCore.ChooseChoice(username, JSON.parse(data));
                 } catch (err) {
                     this.ProcessUserError(username, { message: err.message, data: err });
                 }
@@ -97,7 +118,7 @@ export class DuelGame implements iGame {
             }
             case MessageType.DuelChooseDifficultyReply: {
                 try {
-                    this.GameCore.ChooseDifficulty(username, JSON.parse(data));
+                    this.gameCore.ChooseDifficulty(username, JSON.parse(data));
                 } catch (err) {
                     this.ProcessUserError(username, { message: err.message, data: err });
                 }
@@ -105,7 +126,7 @@ export class DuelGame implements iGame {
             }
             case MessageType.DuelChooseCategoryReply: {
                 try {
-                    this.GameCore.ChooseCategory(username, JSON.parse(data));
+                    this.gameCore.ChooseCategory(username, JSON.parse(data));
                 } catch (err) {
                     this.ProcessUserError(username, { message: err.message, data: err });
                 }
@@ -113,7 +134,7 @@ export class DuelGame implements iGame {
             }
             case MessageType.DuelSetReadyState: {
                 try {
-                    this.GameCore.SetReadyState(username, JSON.parse(data));
+                    this.gameCore.SetReadyState(username, JSON.parse(data));
                 } catch (err) {
                     this.ProcessUserError(username, { message: err.message, data: err });
                 }
@@ -131,13 +152,103 @@ export class DuelGame implements iGame {
     }
 
     /**
-     * Processes an user caused error.
+     * Adds a user with their corresponding socket to the game's players array
+     * @param username - the user's username
+     * @param socket - the user's socket. Access the id through `socket.id`
+     * @returns promise with the new players-array
+     */
+    public AddPlayer(
+        username: string,
+        socket: SocketIO.Socket,
+        roles: PlayerRole[]
+    ): Promise<any> {
+        return new Promise((resolve: any, reject: any) => {
+            try {
+                resolve(this.gameCore.AddUser(new PlayerBase(username, socket, roles)));
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    /**
+     * Disqualifies the player from the game
+     * @param username - the username of the player to be disqualified
+     * @returns - promise
+     */
+    public RemovePlayer(username: string): Promise<any> {
+        return new Promise((resolve: any, reject: any) => {
+            try {
+                resolve(this.gameCore.DisqualifyUser(username));
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    /**
+     * Starts the game
+     * @param username - the user who orders the game start
+     * @returns - promise
+     */
+    public StartGame(username: string): Promise<any> {
+        return new Promise((resolve: any, reject: any) => {
+            try {
+                const player: PlayerBase | undefined = this.gameCore.players.find(x =>
+                    x.username == username
+                );
+                if (
+                    username == this.generalArguments.owner ||
+                    (player && undefined != [PlayerRole.Mod, PlayerRole.Host].find(x => player.roles.find(pr => pr == x) != undefined))
+                ) {
+                    resolve(this.gameCore.Start());
+                } else {
+                    reject(-1);
+                }
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+    //#endregion
+
+    //#region privateFunctions
+    /**
+     * Logs important game information
+     * @param toLog - the information to log
+     */
+    private LogInfo(toLog: string) {
+        logger.log(
+            "info",
+            "Game: " +
+            this.generalArguments.gameId +
+            " - " +
+            toLog
+        );
+    }
+
+    /**
+     * Logs silly game information
+     * @param toLog - the information to log
+     */
+    private LogSilly(toLog: string) {
+        logger.log(
+            "silly",
+            "Game: " +
+            this.generalArguments.gameId +
+            " - " +
+            toLog
+        );
+    }
+
+    /**
+     * Processes an user caused error
      * @param username - the user who caused the error
      * @param errorMessage - the error's error message
      */
     private ProcessUserError(username: string, errorMessage: iGeneralPlayerInputError): void {
         this.LogInfo(JSON.stringify(errorMessage));
-        const user: PlayerBase | undefined = this.GameCore.players.find(x => x.username == username);
+        const user: PlayerBase | undefined = this.gameCore.players.find(x => x.username == username);
         if (user) {
             const th: Tryharder = new Tryharder();
             th.Tryhard(
@@ -149,91 +260,6 @@ export class DuelGame implements iGame {
             );
         }
     }
-
-    /**
-     * Adds a user with their corresponding socket to the game's players array.
-     * @param username - The user's username.
-     * @param socket - The user's socket. Access the id through `socket.id`.
-     * @returns Promise with the new players-array.
-     */
-    public AddPlayer(
-        username: string,
-        socket: SocketIO.Socket,
-        role: PlayerRole
-    ): Promise<any> {
-        return new Promise((resolve: any, reject: any) => {
-            try {
-                resolve(this.GameCore.AddUser(new PlayerBase(username, socket, role)));
-            } catch (err) {
-                reject(err);
-            }
-        });
-    }
-
-    /**
-     * Disqualifies the player from the game.
-     * @param username The username of the player to be disqualified.
-     * @returns Promise.
-     */
-    public RemovePlayer(username: string): Promise<any> {
-        return new Promise((resolve: any, reject: any) => {
-            try {
-                resolve(this.GameCore.DisqualifyUser(username));
-            } catch (err) {
-                reject(err);
-            }
-        });
-    }
-
-    /**
-     * Starts the game.
-     * @param username - The user who ordered the game start
-     */
-    public StartGame(username: string): Promise<any> {
-        return new Promise((resolve: any, reject: any) => {
-            try {
-                const player: PlayerBase | undefined = this.GameCore.players.find(x =>
-                    x.username == username
-                );
-                if (
-                    username == this.GeneralArguments.owner ||
-                    (player && [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
-                ) {
-                    resolve(this.GameCore.Start());
-                } else {
-                    reject(-1);
-                }
-            } catch (err) {
-                reject(err);
-            }
-        });
-    }
-
-    /**
-     * Logs magnificient game information.
-     * @param toLog - the information to log
-     */
-    private LogInfo(toLog: string) {
-        logger.log(
-            "info",
-            "Game: " +
-            this.GeneralArguments.gameId +
-            " - " +
-            toLog
-        );
-    }
-
-    /**
-     * Logs silly game information.
-     * @param toLog - the information to log
-     */
-    private LogSilly(toLog: string) {
-        logger.log(
-            "silly",
-            "Game: " +
-            this.GeneralArguments.gameId +
-            " - " +
-            toLog
-        );
-    }
+    //#endregion
 }
+//#endregion

@@ -1,3 +1,4 @@
+//#region imports
 import {
   iGeneralHostArguments,
   MessageType,
@@ -6,7 +7,8 @@ import {
   iDeterminationHostArguments,
   iMillionaireHostArguments,
   PlayerRole,
-  iDuelHostArguments
+  iDuelHostArguments,
+  JokerType
 } from "../models/GameModels";
 import { QuestionQGame } from "./QuestionQGame";
 import { MillionaireGame } from "./MillionaireGame";
@@ -23,7 +25,13 @@ import { iGame } from "./iGame";
 import { MillionaireGameDataModel } from "../models/Schemas";
 import { DeterminationGame } from "./DeterminationGame";
 import { DuelGame } from "./DuelGame";
+//#endregion
 
+//#region classes
+/**
+ * The GameFactory-class' purpose is to instantiate games, so those can be played.
+ * @author Andrej Resanovic, Georg Schubbauer
+ */
 export class GameFactory {
   public Sessions: RunningGames;
 
@@ -53,7 +61,7 @@ export class GameFactory {
       try {
         if (
           !this.Sessions.Sessions.find(
-            x => x.GeneralArguments.owner == generalArguments.owner
+            x => x.generalArguments.owner == generalArguments.owner
           )
         ) {
           switch (generalArguments.gamemode) {
@@ -63,7 +71,7 @@ export class GameFactory {
                 namespaceSocket,
                 questionqArguments || {
                   pointBase: 100,
-                  interQuestionGap: 3000
+                  interQuestionGap: 1000
                 },
                 this.Sessions
               );
@@ -88,10 +96,14 @@ export class GameFactory {
                 this.Sessions,
                 millionaireArguments || {
                   maxQuestions: 14,
-                  checkpoints: [2, 4, 8],
-                  jokers: [],
-                  scoreCalcA: 200,
-                  scoreCalcB: 2
+                  checkpoints: [1000, 5000, 10000, 100000],
+                  jokers: [
+                    JokerType.Audience,
+                    JokerType.Call,
+                    JokerType.FiftyFifty
+                  ],
+                  scoreCalcA: 100,
+                  scoreCalcB: 1
                 }
               );
               this.Initialize(newGame)
@@ -112,12 +124,12 @@ export class GameFactory {
               const newGame: iGame = new DeterminationGame(
                 generalArguments,
                 namespaceSocket,
-                this.Sessions,
                 determinationArguments || {
                   pointBase: 100,
-                  pointBaseWrongAnswerIdentified: 100,
+                  pointBaseWrongAnswerIdentified: 25,
                   interQuestionGap: 1000
-                }
+                },
+                this.Sessions
               );
               this.Initialize(newGame)
                 .then((res: any) => {
@@ -138,18 +150,18 @@ export class GameFactory {
                 namespaceSocket,
                 this.Sessions,
                 duelArguments || {
-                  scoreGoal: 5000,
-                  scoreMin: 1000,
-                  pointBase: 200,
-                  pointBase2: 300,
-                  pointDeductionBase: 100,
-                  pointDeductionBase2: 200,
-                  pointDeductionWhenTooSlow: 400,
-                  postfeedbackGap: 1000,
+                  scoreGoal: 100000,
+                  scoreMin: -10000,
+                  pointBase: 100,
+                  pointBase2: 100,
+                  pointDeductionBase: 50,
+                  pointDeductionBase2: 50,
+                  pointDeductionWhenTooSlow: 10,
+                  postfeedbackGap: 3000,
                   choosingTime1: 10000,
                   choosingTime2: 10000,
-                  maxCategoryChoiceRange: 5,
-                  maxDifficultyChoiceRange: 16
+                  maxCategoryChoiceRange: 3,
+                  maxDifficultyChoiceRange: 3
                 }
               );
               this.Initialize(newGame)
@@ -177,28 +189,32 @@ export class GameFactory {
     });
   }
 
+  /**
+   * Initializes a new game by adding the host as owner and adding it to the running games.
+   * @param game - Game that should be started.
+   */
   private Initialize(game: iGame): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       game
         .AddPlayer(
-          game.GeneralArguments.owner,
-          game.GeneralArguments.ownerSocket,
-          PlayerRole.Host
+          game.generalArguments.owner,
+          game.generalArguments.ownerSocket,
+          [PlayerRole.Host]
         )
         .then((res: any) => {
           logger.log(
             "info",
             "Added owner %s as player to game %s.",
-            game.GeneralArguments.owner,
-            game.GeneralArguments.gameId
+            game.generalArguments.owner,
+            game.generalArguments.gameId
           );
         })
         .catch((err: any) => {
           logger.log(
             "info",
             "Adding of player %s to game %s was unsuccessful.",
-            game.GeneralArguments.owner,
-            game.GeneralArguments.gameId
+            game.generalArguments.owner,
+            game.generalArguments.gameId
           );
           logger.log("silly", err);
           reject(err);
@@ -208,7 +224,7 @@ export class GameFactory {
           logger.log(
             "info",
             "New Millionaire game: %s hosted.",
-            game.GeneralArguments.gameId
+            game.generalArguments.gameId
           );
           resolve(res);
         })
@@ -218,3 +234,4 @@ export class GameFactory {
     });
   }
 }
+//#endregion

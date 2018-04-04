@@ -1,3 +1,7 @@
+/**
+ * Should be thrown when a game could not be found.
+ * @author Andrej Resanovic
+ */
 export class GameNotFoundError extends Error {
   /**
    * @param gameid - The game's ID.
@@ -8,6 +12,10 @@ export class GameNotFoundError extends Error {
   }
 }
 
+/**
+ * Should be thrown when a player could not be found.
+ * @author Andrej Resanovic
+ */
 export class PlayerNotFoundError extends Error {
   /**
    * @param username The player's username.
@@ -18,6 +26,10 @@ export class PlayerNotFoundError extends Error {
   }
 }
 
+/**
+ * Should be thrown when a game-room could not be found.
+ * @author Andrej Resanovic
+ */
 export class GameRoomNotFoundError extends Error {
   /**
    * @param gameid The game's id.
@@ -28,6 +40,10 @@ export class GameRoomNotFoundError extends Error {
   }
 }
 
+/**
+ * Should be thrown when a game could not be added to the running games.
+ * @author Andrej Resanovic
+ */
 export class GameCouldNotBeAddedError extends Error {
   /**
    * @param gameid The game's ID.
@@ -42,6 +58,10 @@ export class GameCouldNotBeAddedError extends Error {
   }
 }
 
+/**
+ * Should be thrown when a player who is already hosting a game tries to host another.
+ * @author Andrej Resanovic
+ */
 export class PlayerAlreadyHostsGame extends Error {
   /**
    * @param username The player's username.
@@ -54,6 +74,10 @@ export class PlayerAlreadyHostsGame extends Error {
   }
 }
 
+/**
+ * Should be thrown when a player could not be added to a game.
+ * @author Andrej Resanovic
+ */
 export class PlayerCouldNotBeAddedError extends Error {
   /**
    * @param username The player's username.
@@ -68,6 +92,10 @@ export class PlayerCouldNotBeAddedError extends Error {
   }
 }
 
+/**
+ * Should be thrown when a question could not be added to a game.
+ * @author Andrej Resanovic
+ */
 export class QuestionCouldNotBeAddedError extends Error {
   /**
    * @param id The question's ID.
@@ -80,6 +108,10 @@ export class QuestionCouldNotBeAddedError extends Error {
   }
 }
 
+/**
+ * Should be thrown when logging goes wrong somehow.
+ * @author Andrej Resanovic
+ */
 export class LoggingFailedError extends Error {
   /**
    * @param msg Reason for logging-failure.
@@ -95,6 +127,10 @@ export class LoggingFailedError extends Error {
   }
 }
 
+/**
+ * Should be thrown when a game could not be created.
+ * @author Andrej Resanovic
+ */
 export class GameCreationError extends Error {
   /**
    * @param msg Reason for game-creation-failure.

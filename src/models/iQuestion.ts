@@ -1,3 +1,8 @@
+/**
+ * Interface for a question.
+ * @interface
+ * @author Andrej Resanovic
+ */
 export interface Question {
   id: string;
   difficulty: number;

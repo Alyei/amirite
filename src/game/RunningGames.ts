@@ -32,7 +32,7 @@ export class RunningGames {
         this.Sessions.push(game);
         resolve(this.Sessions);
       } catch (err) {
-        reject("Game " + game.GeneralArguments.gameId + " could not be added.");
+        reject("Game " + game.generalArguments.gameId + " could not be added.");
       }
     });
   }

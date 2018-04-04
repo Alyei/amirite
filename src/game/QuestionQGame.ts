@@ -1,3 +1,4 @@
+//#region imports
 import {
   MessageType,
   Gamemode,
@@ -10,8 +11,6 @@ import {
   PlayerRole
 } from "../models/GameModels";
 import { logger } from "../server/logging";
-
-// game modes
 import { QuestionQCore } from "./QuestionQCore";
 import { iGame } from "./iGame";
 import { PlayerBase } from "./PlayerBase";
@@ -22,33 +21,55 @@ import {
 } from "../server/Errors";
 import { Tryharder } from "./Tryharder";
 import { RunningGames } from "./RunningGames";
+//#endregion
 
+//#region classes
+/**
+ * The QuestionQGame-class manages a single QuestionQ-game.
+ * @author Georg Schubbauer
+ */
 export class QuestionQGame implements iGame {
-  private GameCore: QuestionQCore;
-
+  //#region fields
   /**
-   * Creates an instance of a QuestionQ-Game.
-   * @param GeneralArguments - general game arguments
+   * - provides the game's data and mechanics
+   */
+  private gameCore: QuestionQCore;
+  //#endregion
+
+  //#region properties
+  /**
+   * - indicates the game's gamemode
+   */
+  readonly gamemode: Gamemode = Gamemode.QuestionQ;
+  //#endregion
+
+  //#region constructors
+  /**
+   * Creates an instance of a QuestionQ-Game
+   * @param generalArguments - general game arguments
    * @param namespace - the namespace socket (unused)
-   * @param _gameCoreArguments - game specific arguments for QuestionQ
+   * @param gameCoreArguments - game specific arguments for QuestionQ
+   * @param runningGames - list of every game instance currently running
    */
   public constructor(
-    readonly GeneralArguments: iGeneralHostArguments,
+    readonly generalArguments: iGeneralHostArguments,
     public namespace: SocketIO.Namespace,
-    private _gameCoreArguments: iQuestionQHostArguments,
+    private gameCoreArguments: iQuestionQHostArguments,
     runningGames: RunningGames
   ) {
-    this.GameCore = new QuestionQCore(
-      this.GeneralArguments.gameId,
-      this.GeneralArguments.questionIds,
+    this.gameCore = new QuestionQCore(
+      this.generalArguments.gameId,
+      this.generalArguments.questionIds,
       [],
-      this._gameCoreArguments,
+      this.gameCoreArguments,
       runningGames
     );
   }
+  //#endregion
 
+  //#region publicFunctions
   /**
-   * Processes game actions received from users.
+   * Processes game actions received from users
    * @param username - the user who performs the action
    * @param msgType - the type of the action
    * @param data - the action's data
@@ -72,11 +93,19 @@ export class QuestionQGame implements iGame {
     switch (msgType) {
       case MessageType.QuestionQTip: {
         try {
-          this.GameCore.PlayerGivesTip(username, JSON.parse(data));
+          this.gameCore.PlayerGivesTip(username, JSON.parse(data));
         } catch (err) {
           this.ProcessUserError(username, { message: err.message, data: err });
         }
         break;
+      }
+      case MessageType.ChangePlayerRolesRequest: {
+          try {
+              this.gameCore.ChangePlayerRoles(username, JSON.parse(data));
+          } catch (err) {
+              this.ProcessUserError(username, { message: err.message, data: err });
+          }
+          break;
       }
       default: {
         let errorMessage: iGeneralPlayerInputError = {
@@ -90,44 +119,19 @@ export class QuestionQGame implements iGame {
   }
 
   /**
-   * Processes an user caused error.
-   * @param username - the user who caused the error
-   * @param errorMessage - the error's error message
-   */
-  private ProcessUserError(
-    username: string,
-    errorMessage: iGeneralPlayerInputError
-  ): void {
-    this.LogInfo(JSON.stringify(errorMessage));
-    const user: PlayerBase | undefined = this.GameCore.Players.find(
-      x => x.username == username
-    );
-    if (user) {
-      const th: Tryharder = new Tryharder();
-      th.Tryhard(
-        () => {
-          return user.Inform(MessageType.PlayerInputError, errorMessage);
-        },
-        3000,
-        3
-      );
-    }
-  }
-
-  /**
-   * Adds a user with their corresponding socket to the game's players array.
-   * @param username - The user's username.
-   * @param socket - The user's socket. Access the id through `socket.id`.
-   * @returns Promise with the new players-array.
+   * Adds a user with their corresponding socket to the game's players array
+   * @param username - the user's username
+   * @param socket - the user's socket. Access the id through `socket.id`
+   * @returns promise with the new players-array
    */
   public AddPlayer(
     username: string,
     socket: SocketIO.Socket,
-    role: PlayerRole
+    roles: PlayerRole[]
   ): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
-        resolve(this.GameCore.AddUser(new PlayerBase(username, socket, role)));
+        resolve(this.gameCore.AddUser(new PlayerBase(username, socket, roles)));
       } catch (err) {
         reject(err);
       }
@@ -135,14 +139,14 @@ export class QuestionQGame implements iGame {
   }
 
   /**
-   * Disqualifies the player from the game.
-   * @param username The username of the player to be disqualified.
-   * @returns Promise.
+   * Disqualifies the player from the game
+   * @param username - the username of the player to be disqualified
+   * @returns - promise
    */
   public RemovePlayer(username: string): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
-        resolve(this.GameCore.DisqualifyUser(username));
+        resolve(this.gameCore.DisqualifyUser(username));
       } catch (err) {
         reject(err);
       }
@@ -150,21 +154,22 @@ export class QuestionQGame implements iGame {
   }
 
   /**
-   * Starts the game.
-   * @param username - The user who ordered the game start
+   * Starts the game
+   * @param username - the user who orders the game start
+   * @returns - promise
    */
   public StartGame(username: string): Promise<any> {
     return new Promise((resolve: any, reject: any) => {
       try {
-        const player: PlayerBase | undefined = this.GameCore.Players.find(
+        const player: PlayerBase | undefined = this.gameCore.Players.find(
           x => x.username == username
         );
         if (
-          username == this.GeneralArguments.owner ||
+          username == this.generalArguments.owner ||
           (player &&
-            [PlayerRole.Mod, PlayerRole.Host].find(x => x == player.role))
+            undefined != [PlayerRole.Mod, PlayerRole.Host].find(x => player.roles.find(pr => pr == x) != undefined))
         ) {
-          resolve(this.GameCore.Start());
+          resolve(this.gameCore.Start());
         } else {
           reject(-1);
         }
@@ -173,23 +178,56 @@ export class QuestionQGame implements iGame {
       }
     });
   }
+  //#endregion
 
+  //#region privateFunctions
   /**
-   * Logs magnificient game information.
+   * Logs important game information
    * @param toLog - the information to log
    */
   private LogInfo(toLog: string) {
-    logger.log("info", "Game: " + this.GeneralArguments.gameId + " - " + toLog);
+      logger.log(
+          "info",
+          "Game: " +
+          this.generalArguments.gameId +
+          " - " +
+          toLog
+      );
   }
 
   /**
-   * Logs silly game information.
+   * Logs silly game information
    * @param toLog - the information to log
    */
   private LogSilly(toLog: string) {
-    logger.log(
-      "silly",
-      "Game: " + this.GeneralArguments.gameId + " - " + toLog
-    );
+      logger.log(
+          "silly",
+          "Game: " +
+          this.generalArguments.gameId +
+          " - " +
+          toLog
+      );
   }
+
+  /**
+   * Processes an user caused error
+   * @param username - the user who caused the error
+   * @param errorMessage - the error's error message
+   */
+  private ProcessUserError(username: string, errorMessage: iGeneralPlayerInputError): void {
+      this.LogInfo(JSON.stringify(errorMessage));
+      const user: PlayerBase | undefined = this.gameCore.Players.find(x => x.username == username);
+      if (user) {
+          const th: Tryharder = new Tryharder();
+          th.Tryhard(
+              () => {
+                  return user.Inform(MessageType.PlayerInputError, errorMessage);
+              },
+              3000,
+              3
+          );
+      }
+  }
+  //#endregion
 }
+//#endregion

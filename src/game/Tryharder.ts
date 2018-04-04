@@ -1,8 +1,16 @@
+//#region imports
 import { logger } from "../server/logging";
+//#endregion
 
+//#region classes
+/**
+ * The Tryharder-class' purpose is to try to execute a boolean-returning function four a couple times with a time gap in-between.
+ * @author Georg Schubbauer
+ */
 export class Tryharder {
+    //#region publicFunctions
     /**
-     * Waits for the passed amount of time... That's it actually.
+     * Waits for the passed amount of time... That's it actually
      * @param time - time to rest in milliseconds
      */
     private Sleep (time: number) {
@@ -10,7 +18,7 @@ export class Tryharder {
       }
 
     /**
-     * Tries to execute the passed method and retries it after the passed amount of timer when it fails.
+     * Tries to execute the passed method and retries it after the passed amount of timer when it fails
      * @param toTry - the method that is executed
      * @param timeGap - the time gap between every try
      * @param maxTries - the maximum amount of tries
@@ -34,4 +42,6 @@ export class Tryharder {
         }
         return false;
     }
+    //#endregion
 }
+//#endregion

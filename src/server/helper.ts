@@ -3,7 +3,7 @@ import * as crypto from "crypto";
 import { Mongoose } from "mongoose";
 import { logger } from "./logging";
 import * as iQuestion from "../models/iQuestion";
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 /**
@@ -27,7 +27,7 @@ let hashPwAndSave = function(model: any): void {
       });
     });
   } catch (err) {
-    logger.log("error", err);
+    logger.log("error", err.message);
   }
 };
 
@@ -58,8 +58,16 @@ let generateGameId = function(): string {
     .toUpperCase();
 };
 
-const settings = JSON.parse(
-  readFileSync(join(__dirname, "..", "..", "config.json")).toString()
-);
+let settings: any = undefined;
+if (existsSync(join(__dirname, "..", "..", "config.json"))) {
+  settings = JSON.parse(
+    readFileSync(join(__dirname, "..", "..", "config.json")).toString()
+  );
+} else {
+  console.error(
+    "Could not find config.json. Read the docs for more information."
+  );
 
+  process.exit(-1);
+}
 export { hashPwAndSave, generateId, generateGameId, settings };
