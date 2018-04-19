@@ -127,7 +127,7 @@ export class DuelCore {
         this.LoadQuestions(questionIds);
     }
     //#endregion
-
+    
     //#region gameMechanics
     //#region publicFunctions
     /**
@@ -139,7 +139,7 @@ export class DuelCore {
             gameId: this.gameId,
             gamemode: this.gamemode,
             gameArguments: this.gameArguments,
-            playerData: this.players.map(player => player.GetPlayerData()),
+            players: this.players.map(player => player.GetPlayerData()),
             questions: this.questions,
         } as iDuelEndGameData;
     }
@@ -183,6 +183,13 @@ export class DuelCore {
             }
             this.LogSilly("the game has been saved");
         });
+
+        for (let p of this.players) {
+          try {
+            p.SaveGameId(this.gameId);
+            this.LogSilly("the game's ID has been added to " + p.username + "'s game list");
+          } catch { this.LogInfo("failed to add the game's ID to " + p.username + "'s game list"); }
+        }
     }
 
     /**
@@ -286,13 +293,12 @@ export class DuelCore {
         data: any
     ): boolean {
         const th: Tryharder = new Tryharder();
-        const result: boolean = th.Tryhard(() =>
-            {
-                return player.Inform(
-                    msgType,
-                    data
-                );
-            },
+        const result: boolean = th.Tryhard(() => {
+            return player.Inform(
+                msgType,
+                data
+            );
+        },
             3000, // delay
             3 // tries
         );
@@ -338,9 +344,9 @@ export class DuelCore {
                     JSON.stringify(this.questionBases),
                     this.gameId
                 );
-        }).catch((err: any) => {
+            }).catch((err: any) => {
                 logger.log("info", "Could not load questions in %s.", this.gameId);
-        });
+            });
     }
 
     /**
@@ -378,17 +384,17 @@ export class DuelCore {
             this.timers[
                 player.username + ":" + question.question.questionId
             ] = global.setTimeout(() => {
-                    if (this.currentQuestion != question) {
-                        return; // question not current
-                    }
-                    if (question.tip) {
-                        return; // already answered
-                    }
-                    this.PlayerGivesTip(player.username, {
-                        questionId: question.question.questionId,
-                        answerId: "none"
-                    });
-                },
+                if (this.currentQuestion != question) {
+                    return; // question not current
+                }
+                if (question.tip) {
+                    return; // already answered
+                }
+                this.PlayerGivesTip(player.username, {
+                    questionId: question.question.questionId,
+                    answerId: "none"
+                });
+            },
                 player.Ping / 2
             );
         } catch (err) {
@@ -405,7 +411,7 @@ export class DuelCore {
         question: iDuelQuestionBase
     ): iDuelPlayerQuestionData {
         if (question.otherOptions.length < 3) {
-          return; // invalid count of other options (at least 3)
+            return; // invalid count of other options (at least 3)
         }
 
         question.questionCounter++;
@@ -429,19 +435,19 @@ export class DuelCore {
         answers.sort((a, b) => a.answerId.charCodeAt(0) - b.answerId.charCodeAt(0));
 
         try {
-        return {
-            question: {
-                questionId: question.questionId,
-                question: question.question,
-                options: answers,
-                timeLimit: question.timeLimit,
-                difficulty: question.difficulty,
-                categories: question.categories
-            },
-            correctAnswer: letters[0],
-            questionTime: new Date(),
-            timeCorrections: {}
-        };
+            return {
+                question: {
+                    questionId: question.questionId,
+                    question: question.question,
+                    options: answers,
+                    timeLimit: question.timeLimit,
+                    difficulty: question.difficulty,
+                    categories: question.categories
+                },
+                correctAnswer: letters[0],
+                questionTime: new Date(),
+                timeCorrections: {}
+            };
         } catch (err) {
             this.LogInfo("failed to generate question (" + JSON.stringify(err) + ")");
         }
@@ -508,7 +514,7 @@ export class DuelCore {
         );
         if (!questionBase && this.questionBases.length > 0)
             questionBase = this.questionBases[0];
-        
+
         if (!questionBase) {
             this.Stop();
             this.LogSilly("no valid questionBase found");
@@ -585,7 +591,7 @@ export class DuelCore {
             // too late
             this.currentQuestion.tip.correct = false;
             this.currentQuestion.tip.message = "too slow";
-            this.currentQuestion.feedback.scoring[player.username].points =  Math.floor(-this.gameArguments.pointDeductionWhenTooSlow);
+            this.currentQuestion.feedback.scoring[player.username].points = Math.floor(-this.gameArguments.pointDeductionWhenTooSlow);
             this.currentQuestion.feedback.scoring[opponent.username].points = this.currentQuestion.feedback.scoring[player.username].points;
         } else {
             if (this.currentQuestion.tip.answerId == this.currentQuestion.correctAnswer) {
@@ -642,7 +648,7 @@ export class DuelCore {
 
         this.currentQuestion = undefined;
 
-        
+
         if (this.CheckForEnd()) {
             return; // game over
         }
@@ -698,12 +704,12 @@ export class DuelCore {
      * @param player - player to be spectated
      */
     private SpectatePlayer(player: DuelPlayer) {
-      const playerStats: iDuelPlayerData = player.GetPlayerData();
-  
-      const spectators: PlayerBase[] = this.players
-      for (let spec of spectators) {
-        spec.Inform(MessageType.DuelPlayerData, playerStats);
-      }
+        const playerStats: iDuelPlayerData = player.GetPlayerData();
+
+        const spectators: PlayerBase[] = this.players
+        for (let spec of spectators) {
+            spec.Inform(MessageType.DuelPlayerData, playerStats);
+        }
     }
     //#endregion
     //#endregion
@@ -722,7 +728,7 @@ export class DuelCore {
         player.ready = rs.ready;
 
         this.SpectatePlayer(player);
-        
+
         // do start when conditions are met
         /*if (this.players.length != 2)
             return;
@@ -746,12 +752,12 @@ export class DuelCore {
         if (this.choiceChooser.username != username) {
             return; // not the choice chooser
         }
-        
+
         const opponent: DuelPlayer | undefined = this.players.find(p => p.username != username);
         if (!opponent) {
             return; // invalid player data
         }
-        
+
         const choiceChooser: DuelPlayer = this.choiceChooser;
         this.choiceChooser = undefined;
 

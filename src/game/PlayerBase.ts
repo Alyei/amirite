@@ -3,9 +3,17 @@ import {
   PlayerState,
   PlayerRole,
   MessageType,
-  iQuestionQPlayerData
+  iQuestionQPlayerData,
+  iQuestionQSaveGameData,
+  iDeterminationGameData,
+  iMillionaireGameData,
+  iDuelEndGameData
 } from "../models/GameModels";
 import { logger } from "../server/logging";
+import { UserModel, QuestionQGameDataModel, DeterminationGameDataModel, MillionaireGameDataModel, DuelGameDataModel } from "../models/Schemas";
+import { GameDataManager } from "./GameDataManager";
+
+
 //#endregion
 
 //#region interfaces
@@ -77,6 +85,102 @@ export class PlayerBase {
   //#endregion
 
   //#region publicFunctions
+  /**XXX
+   * Saves the ID of a game the user participated in with the user's data in the database
+   * @param gameId - the ID of the game the user participated in
+   */
+  public SaveGameId(gameId: string) {
+    UserModel.find({ username: this.username }).
+      then((res: any) => {
+        if (res == undefined)
+          return;
+        let user: any;
+        try { user = res[0] } catch {}
+        if (user == undefined)
+          return;
+
+        let gameIds: string[];
+        try { gameIds = user.gameIds; } catch {}
+        if (gameIds == undefined)
+          gameIds = [];
+
+        if (gameIds.find(gId => gId == gameId) != undefined)
+          return;
+        
+        gameIds.push(gameId);
+
+        try { UserModel.remove({ username: this.username }); } catch {}
+
+        user.gameIds = gameIds;
+        const userModel: any = new UserModel(user);
+        try { userModel.save()} catch {}
+      });
+  }
+
+  /**
+   * Loads the IDs of the games the user participated in and passes them to a callback
+   * @param callback - the function that will be executed when the IDs are loaded
+   */
+  public GetGameIds(callback: (gameIds: string[]) => void) {
+    UserModel.find({ username: this.username }).
+      then((res: any) => {
+        if (res == undefined)
+          return;
+        let user: any;
+        try { user = res[0] } catch {}
+        if (user == undefined)
+          return;
+
+        let gameIds: string[];
+        try { gameIds = user.gameIds; } catch {}
+        if (gameIds == undefined)
+          gameIds = [];
+
+        callback(gameIds);
+      });
+  }
+
+  /**
+   * Loads all the game data the user is permitted to receive and passes it to a callback
+   * @param callback - the function that will be executed when the data has been loaded
+   */
+  public GetPermittedGameData(callback: (gameDataList: any[]) => void) {
+    this.GetGameIds((gameIds: string[]) => {
+      QuestionQGameDataModel.find({ gameId: { $in: gameIds }}).
+      then((qRes: any) => {
+        const gdm: GameDataManager = new GameDataManager();
+        const permittedGameData: { gameData: any, playerData: any }[] = [];
+
+        for (let qd of qRes) {
+          try { permittedGameData.push(gdm.QQGetPermittedGameData(qd, this.username)); } catch {}
+        }
+
+        DeterminationGameDataModel.find({ gameId: { $in: gameIds }}).
+        then((deRes: any) => {
+          for (let qd of qRes) {
+            try { permittedGameData.push(gdm.DeGetPermittedGameData(qd, this.username)); } catch {}
+          }
+
+          MillionaireGameDataModel.find({ gameId: { $in: gameIds }}).
+          then((mRes: any) => {
+            for (let qd of qRes) {
+              try { permittedGameData.push(gdm.MiGetPermittedGameData(qd, this.username)); } catch {}
+            }
+
+            DuelGameDataModel.find({ gameId: { $in: gameIds }}).
+            then((duRes: any) => {
+              for (let qd of qRes) {
+                try { permittedGameData.push(gdm.DuGetPermittedGameData(qd, this.username)); } catch {}
+              }
+
+              callback(permittedGameData);
+            });
+          });
+        });
+      });
+    })
+  }
+
   /**
    * Uses the object's socket to emit the passed data with the message type as socket event
    * @param messageType - socket event / data format

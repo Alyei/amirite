@@ -28,6 +28,7 @@ import { platform } from "os";
 import { QuestionModel, DeterminationGameDataModel } from "../models/Schemas";
 import { logger } from "../server/logging";
 import { RunningGames } from "./RunningGames";
+import { GameDataManager } from "./GameDataManager";
 //#endregion
 
 //#region enums
@@ -130,7 +131,8 @@ export class DeterminationCore {
    * @param player - player to be spectated
    */
   private SpectatePlayer(player: DeterminationPlayer) {
-    const playerStats: iDeterminationPlayerStatistic = this.GetPlayerStats(player);
+    const gdm: GameDataManager = new GameDataManager();
+    const playerStats: iDeterminationPlayerStatistic = gdm.DeGetPlayerStats(player);
 
     /*const privilegedSpectators: DeterminationPlayer[] = this.players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
     for (let ps of privilegedSpectators) {
@@ -190,10 +192,9 @@ export class DeterminationCore {
    * Sends the game's data to all users of the game
    */
   private SendGameData(): void {
-    const gameDataFP: iDeterminationEndGameData = {
-      playerStatistics: this.GetPlayerStatistics()
-    };
+    const gdm: GameDataManager = new GameDataManager();
     const gameData: iDeterminationGameData = this.GetGameData();
+    const gameDataFP: iDeterminationEndGameData = gdm.DeGetStatisticsOfGame(gameData);
 
     const privileged: PlayerBase[] = this.Players.filter(p => p.roles.find(r => [PlayerRole.Host, PlayerRole.Mod].find(permitted => r == permitted) != undefined) != undefined);
     const players: PlayerBase[] = this.Players;
@@ -217,49 +218,6 @@ export class DeterminationCore {
         3 // tries
       );
     }
-  }
-
-  /**
-   * Returns the statistics of every player of the game
-   * @returns - an array containing the statistics of each player of the game
-   */
-  private GetPlayerStatistics(): iDeterminationPlayerStatistic[] {
-    const result: iDeterminationPlayerStatistic[] = [];
-    for (let player of this.players) {
-      result.push(this.GetPlayerStats(player));
-    }
-    return result;
-  }
-
-  /**
-   * Returns the players statistics
-   * @param player - the player who's statistics are to return
-   * @returns - the player's statistics
-   */
-  private GetPlayerStats(player: DeterminationPlayer): iDeterminationPlayerStatistic {
-    return {
-      username: player.username,
-      score: player.score,
-      roles: player.roles,
-      state: player.state,
-      tips: player.tipData.length,
-      correctTips: player.tipData.filter(td => td.correct).length,
-      totalValuedTime: this.GetSum(player.tipData.map(td => td.duration)),
-      totalTimeCorrection: this.GetSum(player.tipData.map(td => td.timeCorrection))
-    };
-  }
-
-  /**
-   * Calculates and returns the sum of the numbers of the passed array
-   * @param numberArray - array of numbers that are to sum up
-   * @returns - number that equals the sum of the passed numbers
-   */
-  private GetSum(numberArray: number[]): number {
-    let result: number = 0;
-    for (let j of numberArray) {
-      result += j;
-    }
-    return result;
   }
 
   /**
@@ -290,7 +248,7 @@ export class DeterminationCore {
       return; // question answered
     }
     try {
-      const correction: number = player.Ping / 2;
+      const correction: number = question.timeCorrection;
       this.timers[
         "questionTimeout2:" + player.username + ":" + question.question.questionId
       ] = global.setTimeout(() => {
@@ -411,10 +369,11 @@ export class DeterminationCore {
    * @returns - new JSON implementing the iQuestionQStartGameData-interface
    */
   private GetStartGameData(): iDeterminationStartGameData {
+    const gdm: GameDataManager = new GameDataManager();
     const startGameData: iDeterminationStartGameData = {
       gameId: this.gameId,
       gamemode: this.gamemode,
-      playerStatistics: this.GetPlayerStatistics(),
+      playerStatistics: gdm.DeGetPlayerStatisticsOfGame(this.GetGameData()),
       questionAmount: this.questions.length,
       gameArguments: this.gameArguments
     };
@@ -686,6 +645,13 @@ export class DeterminationCore {
       }
       this.LogSilly("The game has been saved");
     });
+
+    for (let p of this.players) {
+      try {
+        p.SaveGameId(this.gameId);
+        this.LogSilly("the game's ID has been added to " + p.username + "'s game list");
+      } catch { this.LogInfo("failed to add the game's ID to " + p.username + "'s game list"); }
+    }
   }
 
   /**
@@ -922,7 +888,7 @@ export class DeterminationCore {
 
     feedback.points = points;
     feedback.score = player.score;
-    
+
     player.tipData.push(feedback);
 
     const th: Tryharder = new Tryharder();

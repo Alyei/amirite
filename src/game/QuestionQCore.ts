@@ -31,6 +31,7 @@ import {
 } from "../models/Schemas";
 import { logger } from "../server/logging";
 import { RunningGames } from "./RunningGames";
+import { GameDataManager } from "./GameDataManager";
 //#endregion
 
 //#region enums
@@ -154,6 +155,13 @@ export class QuestionQCore {
       }
       this.LogSilly("the game has been saved");
     });
+
+    for (let p of this.players) {
+      try {
+        p.SaveGameId(this.gameId);
+        this.LogSilly("the game's ID has been added to " + p.username + "'s game list");
+      } catch { this.LogInfo("failed to add the game's ID to " + p.username + "'s game list"); }
+    }
   }
 
   /**
@@ -301,7 +309,8 @@ export class QuestionQCore {
    * @param player - player to be spectated
    */
   private SpectatePlayer(player: QuestionQPlayer) {
-    const playerStats: iQuestionQPlayerStatistic = this.GetPlayerStats(player);
+    const gdm: GameDataManager = new GameDataManager();
+    const playerStats: iQuestionQPlayerStatistic = gdm.QQGetPlayerStats(player);
 
     /*const privilegedSpectators: QuestionQPlayer[] = this.players.filter(p => p.roles.find(r => r == PlayerRole.Mod || r == PlayerRole.Host) != undefined);
     for (let ps of privilegedSpectators) {
@@ -319,29 +328,12 @@ export class QuestionQCore {
    * @returns - an array containing the statistics of each player of the game
    */
   private GetPlayerStatistics(): iQuestionQPlayerStatistic[] {
+    const gdm: GameDataManager = new GameDataManager();
     const result: iQuestionQPlayerStatistic[] = [];
     for (let player of this.players) {
-      result.push(this.GetPlayerStats(player));
+      result.push(gdm.QQGetPlayerStats(player));
     }
     return result;
-  }
-
-  /**
-   * Returns the players statistics
-   * @param player - the player who's statistics are to return
-   * @returns - the player's statistics
-   */
-  private GetPlayerStats(player: QuestionQPlayer): iQuestionQPlayerStatistic {
-    return {
-      username: player.username,
-      score: player.score,
-      roles: player.roles,
-      state: player.state,
-      questionIds: player.tips.map(td => td.feedback.questionId),
-      correctAnswers: player.tips.filter(td => td.feedback.correct).length,
-      totalValuedTime: this.GetSum(player.tips.map(td => td.feedback.duration)),
-      totalTimeCorrection: this.GetSum(player.tips.map(td => td.feedback.timeCorrection))
-    };
   }
 
   /**
@@ -569,20 +561,6 @@ export class QuestionQCore {
     this.SpectatePlayer(player);
 
     this.CheckForEnd();
-  }
-
-  /**
-   * Calculates and returns the sum of the numbers of the passed array
-   * @param numberArray - array of numbers that are to sum up
-   * @returns - number that equals the sum of the passed numbers
-   */
-  private GetSum(numberArray: number[]): number {
-    let result: number = 0;
-    for (let j of numberArray)
-    {
-      result += j;
-    }
-    return result;
   }
 
   /**
