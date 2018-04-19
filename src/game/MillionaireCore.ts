@@ -129,7 +129,7 @@ export class MillionaireCore {
     this.Start();
   }
   //#endregion
-  
+
   //#region gameMechanics
   //#region privateFunctions
   /**
@@ -473,6 +473,13 @@ export class MillionaireCore {
       });
     } catch (err) {
       this.LogSilly("failed to save game\r\n" + err.message + "\r\n\r\n" + JSON.stringify(gameData));
+    }
+
+    for (let p of this.players) {
+      try {
+        p.SaveGameId(this.gameId);
+        this.LogSilly("the game's ID has been added to " + p.username + "'s game list");
+      } catch { this.LogInfo("failed to add the game's ID to " + p.username + "'s game list"); }
     }
   }
 

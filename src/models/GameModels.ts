@@ -583,9 +583,15 @@ export interface iDeterminationGameData {
 
 /**
  * The iDeterminationEndGameData-interface contains the data to notify all players about the player's statistics
+ * @property gameId: string - the game's ID
+ * @property gamemode: Gamemode - the game's gamemode
+ * @property gameArguments: iDeterminationHostArguments - the game arguments the game has been hosted with
  * @property playerStatistics: iDeterminationPlayerStatistic[] - the players' statistics
  */
 export interface iDeterminationEndGameData {
+  gameId: string;
+  gamemode: Gamemode;
+  gameArguments: iDeterminationHostArguments;
   playerStatistics: iDeterminationPlayerStatistic[];
 }
 
@@ -1129,7 +1135,7 @@ export interface iDuelEndGameData {
   gameId: string;
   gamemode: Gamemode;
   gameArguments: iDuelHostArguments;
-  playerData: iDuelPlayerData[];
+  players: iDuelPlayerData[];
   questions: iDuelPlayerQuestionData[];
 }
 

@@ -30,17 +30,9 @@ let userSchema: mongoose.Schema = new mongoose.Schema({
     required: false,
     default: Date.now()
   },
-  rooms: [{}],
-  firstName: String,
-  lastName: String,
-  notifications: {
-    type: [
-      {
-        type: String,
-        message: String,
-        tags: [String]
-      }
-    ]
+  gameIds: {
+    type: [String],
+    required: false
   }
 });
 
