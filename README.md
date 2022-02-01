@@ -40,7 +40,7 @@ To start, clone the project and run
 
 to install all the project's dependencies.
 
-After that, you have to generate keys. We generated our own private key and certificate by running 
+After that, you have to generate keys (or simply use the existing ones). We generated our own private key and certificate by running 
 
 *openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365*
 
